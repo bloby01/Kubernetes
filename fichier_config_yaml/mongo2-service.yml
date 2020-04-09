@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo2
+  labels:
+    app: mongo2
+spec:
+  ports:
+  - port: 27017
+    name: mongo2
+  clusterIP: None
+  selector:
+    app: mongo2

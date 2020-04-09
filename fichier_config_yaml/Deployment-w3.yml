@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: w3
+ namespace: traefik
+spec:
+ replicas: 3
+ selector:
+  matchLabels:
+   app: w3
+ template:
+  metadata:
+   labels:
+    app: w3
+  spec:
+   containers:
+   - image: bloby01/web:4.1.2
+     name: w3
+     livenessProbe:
+      httpGet:
+       path: /
+       port: 80
+      initialDelaySeconds: 5
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+     ports:
+     - containerPort: 80
+       name: http
+       protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: w3
+  name: w3
+  namespace: traefik
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: "80"
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: w3
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}

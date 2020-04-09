@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo2
+spec:
+  selector:
+    matchLabels:
+      app: mongo2
+  serviceName: "mongo2"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mongo2
+    spec:
+      containers:
+        - image: mongo:3.4.1
+          name: mongodb2
+          command:
+          - mongod
+          - --replSet
+          - rs0
+          ports:
+          - containerPort: 27017
+            name: peer
+          volumeMounts:
+          - mountPath: /data/db
+            name: database
+      volumes:
+        - name: database
+          persistentVolumeClaim:
+            claimName: mybase

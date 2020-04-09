@@ -1,0 +1,19 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: mon-service-web
+spec:
+  selector:
+    matchLabels:
+      app: mon-apache
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: mon-apache
+    spec:
+      containers:
+      - name: apache
+        image: bloby01/web:1
+        ports:
+        - containerPort: 80

@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+ name: apache
+spec:
+ containers:
+ - image: bloby01/web:2
+   name: web-apache
+   livenessProbe:
+    httpGet:
+     path: /
+     port: 80
+    initialDelaySeconds: 5
+    timeoutSeconds:1
+    periodSeconds: 10
+    failureThreshold: 3
+   ports:
+   - containerPort: 80
+     name: http
+     protocol: TCP

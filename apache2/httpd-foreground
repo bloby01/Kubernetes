@@ -1,0 +1,2 @@
+set -e
+/usr/sbin/httpd -DFOREGROUND

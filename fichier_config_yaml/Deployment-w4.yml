@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: w4
+ namespace: traefik
+spec:
+ replicas: 3
+ selector:
+  matchLabels:
+   app: w4
+ template:
+  metadata:
+   labels:
+    app: w4
+  spec:
+   containers:
+   - image: bloby01/web:4.1.2
+     name: w4
+     livenessProbe:
+      httpGet:
+       path: /
+       port: 80
+      initialDelaySeconds: 5
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+     ports:
+     - containerPort: 80
+       name: http
+       protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: w4
+  name: w4
+  namespace: traefik
+spec:
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: "80"
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: w4
+  sessionAffinity: None
+  type: LoadBalancer
+status:
+  loadBalancer: {}

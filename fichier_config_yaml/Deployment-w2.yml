@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: w2
+ namespace: traefik
+spec:
+ replicas: 3
+ selector:
+  matchLabels:
+   app: w2
+ template:
+  metadata:
+   labels:
+    app: w2
+  spec:
+   containers:
+   - image: bloby01/web:2
+     name: w2
+     livenessProbe:
+      httpGet:
+       path: /
+       port: 80
+      initialDelaySeconds: 5
+      timeoutSeconds: 1
+      periodSeconds: 10
+      failureThreshold: 3
+     ports:
+     - containerPort: 80
+       name: http
+       protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: w2
+  name: w2
+  namespace: traefik
+#  selfLink: /api/v1/namespaces/traefik/services/w1
+#  uid: afec7dca-e89f-476b-abc2-cc1d3af1f405
+spec:
+#  clusterIP: 10.104.95.148
+#  externalTrafficPolicy: Cluster
+  ports:
+  - name: "80"
+#    nodePort: 31814
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: w2
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}

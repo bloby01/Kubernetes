@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  backend:
+    serviceName: other
+    servicePort: 80
+  rules:
+  - host: cmconsulting.online
+    http:
+      paths:
+      - backend:
+          serviceName: cmconsulting
+          servicePort: 80
+  - host: mondomaine.com
+    http:
+      paths:
+      - path: /blob/*
+        backend:
+          serviceName: blob
+          servicePort: 80

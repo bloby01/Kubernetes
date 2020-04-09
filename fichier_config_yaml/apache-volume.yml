@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+ name: apache4
+spec:
+ volumes:
+ - name: www
+   hostPath:
+    path: "/mnt/racine"
+ imagePullSecrets:
+ - name: bloby01
+ containers:
+ - image: bloby01/web:3
+   volumeMounts: 
+   - mountPath: /data
+     name: www
+   imagePullPolicy: Always
+   name: web-apache
+   ports:
+   - containerPort: 80
+     name: http
+     protocol: TCP

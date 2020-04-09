@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: web-apache
+ labels:
+  app: web-apache
+spec:
+ replicas: 1
+ selector:
+  matchLabels:
+   app: web
+ template:
+  metadata:
+   labels:
+    app: web
+  spec:
+   containers:
+   - name: web
+     image: bloby01/web1:latest
+     resources:
+       requests:
+         cpu: "500m"
+         memory: "128Mi"
+     ports:
+     - containerPort: 80
+       name: http
+       protocol: TCP
+
