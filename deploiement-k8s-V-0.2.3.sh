@@ -65,6 +65,7 @@ verif(){
 docker(){
 vrai="1"
 export DOCKERURL=${docker_ee} && \
+echo  "7"  >  /etc/yum/vars/dockerosversion && \
 echo  "${DOCKERURL}/centos"  >  /etc/yum/vars/dockerurl && \
 yum-config-manager  --add-repo  "$DOCKERURL/centos/docker-ee.repo" && \
 sed -i -e "s|enabled=1|enabled=0|g" /etc/yum.repos.d/docker-ee.repo && \
