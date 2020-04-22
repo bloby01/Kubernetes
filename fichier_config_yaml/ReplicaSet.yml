@@ -13,7 +13,7 @@ spec:
     app: web-apache
   spec:
    containers:
-   - image: bloby01/web:2
+   - image: bloby01/web:1
      name: web-apache
      livenessProbe:
       httpGet:
