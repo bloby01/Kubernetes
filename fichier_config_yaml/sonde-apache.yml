@@ -11,7 +11,7 @@ spec:
      path: /
      port: 80
     initialDelaySeconds: 5
-    timeoutSeconds:1
+    timeoutSeconds: 1
     periodSeconds: 10
     failureThreshold: 3
    ports:
