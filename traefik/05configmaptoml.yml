@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+ name: traefik-conf
+ namespace: traefik
+data:
+ traefik.toml: |-
+   defaultEntryPoints = ["http","https"]
+   [web]
+   address = ":8080"
