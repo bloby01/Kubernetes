@@ -19,17 +19,17 @@
 #                                                                               #
 #               Internet                                                        #
 #                   |                                                           #
-#                  master1 (VM) NFS HELM DHCPD NAMED NAT                        #
+#                  master1 (VM) DHCPD NAMED NAT                                 #
 #                       |                                                       #
 #                      -------------------                                      #
 #                      |  switch  interne|--(VM) Client linux                   #
 #                      |-----------------|                                      #
 #                        |     |      |                                         #
 #                        |     |      |                                         #
-#                 (vm)worker1  |      |              \                          #
-#                      (vm)worker2    |              | NFS                      #
-#                            (vm) worker3            |                          #
-#                                                    /                          #
+#                 (vm)worker1  |      |                                         #
+#                      (vm)worker2    |                                         #
+#                            (vm) worker3                                       #
+#                                                                               #
 #                                                                               #
 #                                                                               #
 #################################################################################
@@ -60,8 +60,8 @@
 
 numetape=0
 NBR=0
-appmaster="git bind ntp yum-utils nfs-utils dhcp  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
-appworker="ntp yum-utils nfs-utils kubelet kubeadm --disableexcludes=kubernetes"
+appmaster="git bind ntp yum-utils dhcp  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
+appworker="ntp yum-utils kubelet kubeadm --disableexcludes=kubernetes"
 
 #                                                                               #
 #################################################################################
@@ -585,11 +585,11 @@ verif
 # Configuration du service NFS.
 #
 #
-vrai="1"
-nfsconfigserver && \
-vrai="0"
-nom="Etape ${numetape} - Configuration du service NFS"
-verif
+#vrai="1"
+#nfsconfigserver && \
+#vrai="0"
+#nom="Etape ${numetape} - Configuration du service NFS"
+#verif
 #################################################
 # 
 # Configuration et démarrage du serveur BIND9 selon le rôle de chacuns.
