@@ -754,11 +754,11 @@ verif
 # Déploiement du persistentVolumeDynamique sur le cluster
 #
 #
-vrai="1"
-githelm  && \
-vrai="0"
-nom="Etape ${numetape} - Déploiement du persistentVolumeDynamique sur le cluster"
-verif
+#vrai="1"
+#githelm  && \
+#vrai="0"
+#nom="Etape ${numetape} - Déploiement du persistentVolumeDynamique sur le cluster"
+#verif
 
 
 fi
