@@ -6,7 +6,7 @@
 #                                                                              #
 #                    Pré-configuration VM master sur cloud IONOS               #
 #                                                                              #
-#  1 ) Configuration du NAT                                                    #
+#                                                    #
 #  2 ) Configuration des interfaces réseaux                                    #
 #  3 ) Configuration des interfaces dans les zones appropriés                  #
 #  4 ) Configurer le fichier /etc/hosts                                        #
