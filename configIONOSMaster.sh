@@ -32,6 +32,16 @@ eth="ens"
 #                    Déclaration fonctions                                     #
 #                                                                              #
 ################################################################################
+config_clavier_fr() {
+  loadkeys fr
+}
+
+config_sshd() {
+  sed -i -e  "s|#PermitRootLogin yes|PermitRootLogin yes|g" /etc/ssh/sshd_config
+  sed -i -e  "s|PermitRootLogin without-password|#PermitRootLogin without-password|g" /etc/ssh/sshd_config
+  sed -i -e  "s|PasswordAuthentication no|PasswordAuthentication yes|g" /etc/ssh/sshd_config
+}
+
 config_motd_master() {
 rm -f /etc/motd
 cp MilleniumFalcon /etc/motd
@@ -95,5 +105,7 @@ config_interface2
 config_nat
 config_network
 config_hosts
-
+config_clavier_fr
+config_sshd
+systemctl restart sshd
 systemctl restart NetworkManager
