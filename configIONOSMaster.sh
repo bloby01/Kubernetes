@@ -58,23 +58,6 @@ IPV6INIT=no
 IPV6_AUTOCONF=no
 EOF
 }
-config_interface2() {
-cat <<EOF > /etc/sysconfig/network-scripts/ifcfg-ens7
-DEVICE=ens7
-ONBOOT=yes
-BOOTPROTO=static
-NAME=ens7
-IPADDR=172.21.0.100
-NETMASK=255.255.255.0
-ZONE=trusted
-IPV6INIT=no
-IPV6_AUTOCONF=no
-EOF
-}
-config_nat() {
-firewall-cmd  --zone=trusted --add-masquerade --permanent
-firewall-cmd  --zone=trusted --add-masquerade
-}
 
 config_network() {
   if [ -f ${network} ]
@@ -101,11 +84,10 @@ EOF
 
 config_motd_master
 config_interface0
-config_interface2
-config_nat
 config_network
 config_hosts
 config_clavier_fr
 config_sshd
 systemctl restart sshd
 systemctl restart NetworkManager
+scp stagiaire@`ip route | head -n 1 | cut -f 3 -d " "`:nfs/base-kubernetes-V2.0.2.tar.xz .
