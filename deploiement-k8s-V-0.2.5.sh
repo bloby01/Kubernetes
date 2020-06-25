@@ -439,14 +439,14 @@ vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote et du fichier resolv.conf"
 verif
 fi
+#vrai="1"
+#echo -n "Collez l'URL de télechargement de Docker-EE: "
+#read docker_ee && \
+#vrai="0"
+#nom="recuperation de l url de docker"
+#verif
 vrai="1"
-echo -n "Collez l'URL de télechargement de Docker-EE: "
-read docker_ee && \
-vrai="0"
-nom="recuperation de l url de docker"
-verif
 x=0 ; until [ "${x}" = "y" -o "${x}" = "Y" -o "${x}" = "n" -o "${x}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read x ; done
-vrai="1"
 if [ "$x" = "y" -o "$x" = "Y" ]
 then
 prox="yes"
