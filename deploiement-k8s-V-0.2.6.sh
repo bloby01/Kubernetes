@@ -107,10 +107,12 @@ vrai="1"
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 yum-config-manager --enable docker-ce-stable
+yum -y install https://download.docke r.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+yum  install  -y containerd.io && \
 #yum install -y wget
 #wget -O dockerinstall.sh https://get.docker.com
 #sh dockerinstall.sh
-yum  install  -y containerd.io  docker-ce && \
+yum  install  -y docker-ce && \
 systemctl enable  --now docker.service && \
 vrai="0"
 nom="Déploiement de docker sur le noeud"
