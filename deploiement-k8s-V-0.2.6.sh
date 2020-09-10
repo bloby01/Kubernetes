@@ -259,12 +259,12 @@ nom="Configuration du module br_netfilter"
 
 # Fonction de serveur de temps
 temps() {
-#vrai="1"
+vrai="1"
 #ntpdate -u 0.fr.pool.ntp.org && \
 #sed -i -e  "s|server 0.centos.pool.ntp.org|server 0.fr.pool.ntp.org|g" /etc/ntp.conf && \
 #systemctl enable --now ntpd.service && \
-#vrai="0"
-#nom="Configuration du serveur de temps"
+vrai="0"
+nom="Configuration du serveur de temps"
 }
 
 # Fonction  de configuration de profil avec proxy auth
