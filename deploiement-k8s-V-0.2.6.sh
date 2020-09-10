@@ -106,10 +106,11 @@ docker(){
 vrai="1"
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum-config-manager --enable docker-ce-stable
 #yum install -y wget
 #wget -O dockerinstall.sh https://get.docker.com
 #sh dockerinstall.sh
-yum  install  -y   docker-ce-stable && \
+yum  install  -y containerd.io  docker-ce && \
 systemctl enable  --now docker.service && \
 vrai="0"
 nom="Déploiement de docker sur le noeud"
