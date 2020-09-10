@@ -60,7 +60,7 @@
 
 numetape=0
 NBR=0
-appmaster="git bind yum-utils dhcp-common  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
+appmaster="git bind bind-utils yum-utils dhcp-common  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
 appworker="ntp yum-utils kubelet kubeadm --disableexcludes=kubernetes"
 
 #                                                                               #
@@ -592,7 +592,7 @@ verif
 #
 #
 vrai="1"
-/usr/sbin/dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
+dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
 cat <<EOF > /etc/named/ddns.key
 key DDNS_UPDATE {
 	algorithm HMAC-MD5.SIG-ALG.REG.INT;
