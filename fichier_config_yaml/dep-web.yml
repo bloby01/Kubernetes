@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: apache
-        image: bloby01/web:1
+        image: bloby01/web:v1
         ports:
         - containerPort: 80
