@@ -1,5 +1,7 @@
 #!/bin/sh
-#   Version : 0.2.4
+#   Version : 0.2.5
+#   Version systeme CENTOS7 Maximum
+
 #   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
 #   !!!!!!!!!!!!!   vérifier le proxy avec login et password
 #
