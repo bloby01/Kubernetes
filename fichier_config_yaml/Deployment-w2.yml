@@ -14,7 +14,7 @@ spec:
     app: w2
   spec:
    containers:
-   - image: bloby01/web:2
+   - image: bloby01/web:v1
      name: w2
      livenessProbe:
       httpGet:
