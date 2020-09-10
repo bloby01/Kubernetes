@@ -62,7 +62,7 @@
 
 numetape=0
 NBR=0
-appmaster="bind bind-utils yum-utils dhcp-server  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
+appmaster="bind bind-utils tc yum-utils dhcp-server  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
 appworker="yum-utils kubelet kubeadm --disableexcludes=kubernetes"
 
 #                                                                               #
