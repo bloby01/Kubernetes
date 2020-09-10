@@ -1,5 +1,5 @@
 #!/bin/sh
-#   Version : 0.2.4
+#   Version : 0.2.6
 #   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
 #   !!!!!!!!!!!!!   vérifier le proxy avec login et password
 #
@@ -60,7 +60,7 @@
 
 numetape=0
 NBR=0
-appmaster="git bind ntp yum-utils dhcp  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
+appmaster="git bind yum-utils dhcp-common  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
 appworker="ntp yum-utils kubelet kubeadm --disableexcludes=kubernetes"
 
 #                                                                               #
@@ -104,12 +104,6 @@ numetape=`expr ${numetape} + 1 `
 # Fonction d'installation de docker-CE en derniere version
 docker(){
 vrai="1"
-#export DOCKERURL=${docker_ee} && \
-#echo  "7"  >  /etc/yum/vars/dockerosversion && \
-#echo  "${DOCKERURL}/centos"  >  /etc/yum/vars/dockerurl && \
-#yum-config-manager  --add-repo  "$DOCKERURL/centos/docker-ee.repo" && \
-#sed -i -e "s|enabled=1|enabled=0|g" /etc/yum.repos.d/docker-ee.repo && \
-#sed -i -e  "151 s|enabled=0|enabled=1|g" /etc/yum.repos.d/docker-ee.repo && \
 yum install -y wget
 wget -O dockerinstall.sh https://get.docker.com
 sh dockerinstall.sh
@@ -139,7 +133,6 @@ zone 0.21.172.in-addr.arpa. {
   key DDNS_UPDATE;
 }
 option domain-name "mon.dom";
-#option domain-name-servers 172.21.0.100, 172.21.0.101, 172.21.0.102 ;
 option domain-name-servers 172.21.0.100;
 default-lease-time 600;
 max-lease-time 7200;
@@ -266,12 +259,12 @@ nom="Configuration du module br_netfilter"
 
 # Fonction de serveur de temps
 temps() {
-vrai="1"
-ntpdate -u 0.fr.pool.ntp.org && \
-sed -i -e  "s|server 0.centos.pool.ntp.org|server 0.fr.pool.ntp.org|g" /etc/ntp.conf && \
-systemctl enable --now ntpd.service && \
-vrai="0"
-nom="Configuration du serveur de temps"
+#vrai="1"
+#ntpdate -u 0.fr.pool.ntp.org && \
+#sed -i -e  "s|server 0.centos.pool.ntp.org|server 0.fr.pool.ntp.org|g" /etc/ntp.conf && \
+#systemctl enable --now ntpd.service && \
+#vrai="0"
+#nom="Configuration du serveur de temps"
 }
 
 # Fonction  de configuration de profil avec proxy auth
