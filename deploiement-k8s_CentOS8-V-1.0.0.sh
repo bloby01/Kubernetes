@@ -725,7 +725,9 @@ verif
 #
 #
 vrai="1"
-kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml && \
+#kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml && \
+kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml && \
+
 vrai="0"
 nom="Etape ${numetape} - Installation de calico"
 verif
