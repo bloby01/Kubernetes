@@ -60,8 +60,8 @@
 
 numetape=0
 NBR=0
-appmaster="git bind bind-utils yum-utils dhcp-server  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
-appworker="ntp yum-utils kubelet kubeadm --disableexcludes=kubernetes"
+appmaster="bind bind-utils yum-utils dhcp-server  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
+appworker="yum-utils kubelet kubeadm --disableexcludes=kubernetes"
 
 #                                                                               #
 #################################################################################
@@ -826,7 +826,7 @@ then
     fi
   fi
 vrai="1"
-systemctl restart network && \
+systemctl restart NetworkManager && \
 vrai="0"
 nom="Etape ${numetape} - Restart de la pile réseau du worker"
 verif
