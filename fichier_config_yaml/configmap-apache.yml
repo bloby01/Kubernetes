@@ -4,7 +4,7 @@ metadata:
  name: apache2
 spec:
  containers:
- - image: bloby01/web:1
+ - image: bloby01/web:v1
    env:
    - name: my-config
      valueFrom:
