@@ -6,7 +6,7 @@ spec:
  imagePullSecrets:
  - name: bloby01
  containers:
- - image: bloby01/web:3
+ - image: bloby01/web:v3
    imagePullPolicy: Always
    name: web-apache
    livenessProbe:
