@@ -474,6 +474,8 @@ verif
 #
 vrai="1"
 firewall-cmd  --set-default-zone trusted && \
+firewall-cmd --add-interface=lo --zone=trusted && \
+firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 vrai="0"
 nom="Etape ${numetape} - Regles de firewall à trusted"
 verif
