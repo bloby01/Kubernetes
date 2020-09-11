@@ -1,28 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: web-apache
+ name: weby
  labels:
-  app: web-apache
+  app: weby
 spec:
  replicas: 1
  selector:
   matchLabels:
-   app: web
+   app: weby
  template:
   metadata:
    labels:
-    app: web
+    app: weby
   spec:
    containers:
-   - name: web
-     image: bloby01/web1:latest
+   - name: weby
+     image: bloby01/web:v1
      resources:
-       requests:
-         cpu: "500m"
-         memory: "128Mi"
+      requests:
+       cpu: 500m
+       memory: 128Mi
      ports:
      - containerPort: 80
        name: http
        protocol: TCP
-
