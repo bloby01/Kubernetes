@@ -20,3 +20,10 @@ spec:
        backend:
          serviceName: w1
          servicePort: 80
+# - host: "w2.mon.dom"
+#   http:
+#     paths:
+#     - path: /
+#       backend:
+#         serviceName: w2
+#         servicePort: 80
