@@ -431,6 +431,7 @@ vrai="1"
 hostnamectl  set-hostname  ${noeud}-k8s.mon.dom && \
 export node="master" && \
 cat <<EOF > /etc/resolv.conf
+options ndots:15 timeout:1 attempts:5
 domain mon.dom
 nameserver 172.21.0.100
 nameserver 8.8.8.8
