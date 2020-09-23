@@ -1,5 +1,4 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: apps/v1kind: Deployment
 metadata:
  name: weby
  labels:
@@ -21,6 +20,9 @@ spec:
       requests:
        cpu: 500m
        memory: 128Mi
+      limits:
+       cpu: 60m
+       memory: 150Mi
      livenessProbe:
       httpGet:
        path: /
