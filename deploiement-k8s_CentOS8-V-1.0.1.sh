@@ -1,5 +1,5 @@
 #!/bin/sh
-#   Version : 1.0.0
+#   Version : 1.0.1
 #   Deploiement sur CentOS 8 minimum.
 #   
 #   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
@@ -412,7 +412,8 @@ nom="Configuration du client docker avec proxy"
 #                                                                                          #
 ############################################################################################
 clear
-
+rm -f /etc/localtime
+ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
 
 until [ "${noeud}" = "worker" -o "${noeud}" = "master" ]
 do
