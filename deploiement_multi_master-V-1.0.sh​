@@ -408,9 +408,9 @@ clear
 rm -f /etc/localtime
 ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
 
-until [ "${noeud}" = "worker" -o "${noeud}" = "master" ]
+until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "loadbalancer" ]
 do
-echo -n 'Indiquez si cette machine doit être "master" ou "worker", mettre en toutes lettres votre réponse: '
+echo -n 'Indiquez si cette machine doit être "loadbalancer", "master", "worker", mettre en toutes lettres votre réponse: '
 read noeud
 done
 if [ "${noeud}" = "worker" ]
@@ -494,7 +494,7 @@ verif
 ############################################################################################
 #
 vrai="1"
-if [ "${node}" = "lb" -o "${node}" = "LB" ]
+if [ "${node}" = "loadbalancer" ]
 then
   useradd -m stagiaire
   nom="Etape ${numetape} - Création du compte stagiaire"
