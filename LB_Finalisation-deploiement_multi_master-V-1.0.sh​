@@ -1,0 +1,80 @@
+
+#####################################################################
+#                                                                   #
+#                     Reprise de la configuration LB                #
+#                                                                   #
+#####################################################################
+if [ "${node}" = "master3-k8s.mon.dom" ]
+then
+#
+# Création des clés pour ssh-copy-id
+#
+#
+vrai="1"
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du ssh agent"
+verif
+#################################################
+# 
+# autorisation du compte stagiaire à gérer le cluster kubernetes
+#
+#
+vrai="1"
+alias Master="ssh root@master1-k8s.mon.dom" && \
+Master mkdir  -p   /home/stagiaire/.kube && \
+export KUBECONFIG=`ssh root@Master:/etc/kubernetes/admin.conf`
+#scp  -i   root@Master:/etc/kubernetes/admin.conf  /home/stagiaire/.kube/config && \
+#chown  -R  stagiaire:stagiaire   /home/stagiaire/.kube && \
+vrai="0"
+nom="Etape ${numetape} - Construction du compte stagiaire avec le controle de K8S"
+verif
+#################################################
+# 
+# Installation de bash-completion pour faciliter les saisies
+#
+#
+vrai="1"
+yum install -y bash-completion && \
+cat <<EOF >> /home/stagiaire/.bashrc
+source <(kubectl completion bash)
+EOF
+vrai="0"
+nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
+verif
+################################################
+#
+# Intégration du compte stagiaire au groupe docker
+#
+#
+vrai="1"
+usermod  -aG docker stagiaire && \
+vrai="0"
+nom="Etape ${numetape} - Intégration du compte stagiaire au groupe docker"
+verif
+################################################
+#
+# Démarrage du service Nginx LB
+#
+#
+vrai="1"
+docker run -d -p 80:80 -p 443:443  --name lb_nginx bloby01/nginx-lb-multimaster:v1
+nom="Etape ${numetape} - Démarrage du service nginx LoadBalancer sur les trois masters"
+verif
+sleep 5
+clear
+echo "#####################################################"
+echo "#         État du service nginx sur LB              #"
+echo "#####################################################"
+ehco " "
+docker ps -al
+echo " "
+echo -n " Faire entrée pour continuer."
+read tt
+#####################################################################
+#                                                                   #
+#                     Fin de la configuration LB                    #
+#                                                                   #
+#####################################################################
+fi
