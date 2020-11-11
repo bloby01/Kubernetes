@@ -67,7 +67,7 @@
 
 numetape=0
 NBR=0
-applb="bind bind-utils iproute-tc yum-utils dhcp-server  kubectl 
+applb="bind bind-utils iproute-tc yum-utils dhcp-server  kubectl" 
 appmaster="nfs-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 appworker="nfs-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 
@@ -416,15 +416,13 @@ done
 if [ "${noeud}" = "worker" ]
 then
 vrai="1"
-x="0"
-until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
+x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
 export node="worker"
 elif [ "${noeud}" = "master" ]
 then
 vrai="1"
-x="0"
-until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
+x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
 export node="master" && \
 cat <<EOF > /etc/resolv.conf
@@ -614,11 +612,11 @@ key DDNS_UPDATE {
 };
 EOF
 secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
-sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
+sed -i -e "s|bad|$secret|g" /etc/named/ddns.key &&\
 chown root:named /etc/named/ddns.key && \
 chmod 640 /etc/named/ddns.key && \
-`sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 10.0.0.100; 127.0.0.1; };|g" /etc/named.conf`
-`sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;10.0.0.0/24; };|g" /etc/named.conf`
+sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 10.0.0.100; 127.0.0.1; };|g" /etc/named.conf &&\
+sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;10.0.0.0/24; };|g" /etc/named.conf && \
 echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
 named && \
 namedMonDom && \
