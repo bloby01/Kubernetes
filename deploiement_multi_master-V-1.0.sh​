@@ -499,7 +499,7 @@ then
 export node="loadbalancer"
 	if [ -d /home/stagiaire ]
 	then
-	echo le compte stagiaire exist."
+	echo "le compte stagiaire exist."
 	else
 	useradd -m stagiaire
 	fi
