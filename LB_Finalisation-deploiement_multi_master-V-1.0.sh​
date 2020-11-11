@@ -4,8 +4,7 @@
 #                     Reprise de la configuration LB                #
 #                                                                   #
 #####################################################################
-if [ "${node}" = "master3-k8s.mon.dom" ]
-then
+
 #
 # Création des clés pour ssh-copy-id
 #
@@ -77,4 +76,3 @@ read tt
 #                     Fin de la configuration LB                    #
 #                                                                   #
 #####################################################################
-fi
