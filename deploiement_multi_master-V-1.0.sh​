@@ -1,5 +1,5 @@
 #!/bin/sh
-#   Version : 1.0.1
+#   Version : 1.0
 #   Deploiement sur CentOS 8 minimum.
 #   
 #   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
@@ -734,7 +734,7 @@ docker build -t bloby01/nginx-lb-multimaster:v1 .
 fi
 ############################################################################################
 #                                                                                          #
-#                       Déploiement du master Kubernetes                                   #
+#                       Déploiement sur masters Kubernetes                                   #
 #                                                                                          #
 ############################################################################################
 # 
@@ -838,16 +838,165 @@ vrai="1"
 docker && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et installation du service docker-ce"
+#################################################
+#
+# Génération des certificats pour les noeuds master
+#
+#
+vrai="1"
+if [ "${node}" = "master1-k8s.mon.dom" ]
+then 
+mkdir -p ~/k8s/crt ~/k8s/key ~/k8s/csr
+cat <<EOF> ~/k8s/openssl.cnf
+[ req ]
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_ca ]
+basicConstraints = critical, CA:TRUE
+keyUsage = critical, digitalSignature, keyEncipherment, keyCertSign
+[ v3_req_etcd ]
+basicConstraints = CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectAltName = @alt_names_etcd
+[ alt_names_etcd ]
+DNS.1 = master1-k8s.mon.dom
+DNS.2 = master2-k8s.mon.dom
+DNS.3 = master3-k8s.mon.dom
+EOF
+openssl genrsa -out ~/k8s/key/etcd-ca.key 4096
+openssl req -x509 -new -sha256 -nodes -key ~/k8s/key/etcd-ca.key -days 3650 -out ~/k8s/crt/etcd-ca.crt -subj "/CN=etcd-ca" -extensions v3_ca -config ~/k8s/openssl.cnf
+openssl genrsa -out ~/k8s/key/etcd.key 4096
+openssl req -new -sha256 -key ~/k8s/key/etcd.key -subj "/CN=etcd" -out ~/k8s/csr/etcd.csr
+openssl x509 -req -in ~/k8s/csr/etcd.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
+openssl genrsa -out ~/k8s/key/etcd-peer.key 4096
+openssl req -new -sha256 -key ~/k8s/key/etcd-peer.key -subj "/CN=etcd-peer" -out ~/k8s/csr/etcd-peer.csr
+openssl x509 -req -in ~/k8s/csr/etcd-peer.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd-peer.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
+vrai="0"
+nom="Etape ${numetape} - Création des certificats pour synchroniser la base ETCD entre les masters"
+fi
+#################################################
+#
+#  Construction de l'ETCD dans chacun des trois noeuds.
+#
+#
+vrai="1"
+ETCD_VER=v3.2.9 && \
+GOOGLE_URL=https://storage.googleapis.com/etcd && \
+GITHUB_URL=https://github.com/coreos/etcd/releases/download && \
+DOWNLOAD_URL=${GOOGLE_URL} && \
+mkdir ~/etcd_${ETCD_VER} && \
+cd ~/etcd_${ETCD_VER} && \
+cat <<EOF>etcd_${ETCD_VER}-install.sh
+curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o etcd-${ETCD_VER}-linux-amd64.tar.gz
+tar xzvf etcd-${ETCD_VER}-linux-amd64.tar.gz -C .
+EOF
+chmod +x etcd_${ETCD_VER}-install.sh && \
+./etcd_${ETCD_VER}-install.sh && \
 
+
+cd ~
+cat <<EOF>~/etcd.service
+[Unit]
+Description=etcd
+Documentation=https://github.com/coreos
+
+[Service]
+ExecStart=/usr/local/bin/etcd \\
+  --name ${noeud}${x}-k8s.mon.dom \\
+  --cert-file=/etc/etcd/pki/etcd.crt \\
+  --key-file=/etc/etcd/pki/etcd.key \\
+  --peer-cert-file=/etc/etcd/pki/etcd-peer.crt \\
+  --peer-key-file=/etc/etcd/pki/etcd-peer.key \\
+  --trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
+  --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
+  --peer-client-cert-auth \\
+  --client-cert-auth \\
+  --initial-advertise-peer-urls https://${noeud}${x}-k8s.mon.dom:2380 \\
+  --listen-peer-urls https://${noeud}${x}-k8s.mon.dom:2380 \\
+  --listen-client-urls https://${noeud}${x}-k8s.mon.dom:2379,http://127.0.0.1:2379 \\
+  --advertise-client-urls https://${noeud}${x}-k8s.mon.dom:2379 \\
+  --initial-cluster-token etcd-cluster-0 \\
+  --initial-cluster master1-k8s.mon.dom=https://master1-k8s.mon.dom:2380,master2-k8s.mon.dom=https://master2-k8s.mon.dom:2380,master3-k8s.mon.dom=https://master3-k8s.mon.dom:2380 \\
+  --data-dir=/var/lib/etcd
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+ETCD_VER=v3.2.9
+for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
+ssh ${master} "test -d /etc/etcd/pki && rm -rf /etc/etcd/pki" ; \
+ssh ${master} "test -d /var/lib/etcd && rm -rf /var/lib/etcd" ; \
+ssh ${master} “mkdir -p /etc/etcd/pki ; mkdir -p /var/lib/etcd” ;  \
+scp ~/k8s/crt/etcd* ~/k8s/key/etcd* ${master}:/etc/etcd/pki/;  \
+scp etcd.service ${master}:/etc/systemd/system/etcd.service ; \
+scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcd ${master}:/usr/local/bin; \
+scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcdctl ${master}:/usr/local/bin;
+done
+
+for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
+ssh  ${master} “systemctl daemon-reload” ; \
+ssh ${master} “systemctl start etcd” ; 
+done
+vrai="0"
+nom="Etape ${numetape} - Déploiement et démarrage du service ETCD sur chaque noeud master"
+verif
+#################################################
+#
+# Vérification du fonctionnement des services ETCD
+#
+#
+clear
+echo "###################################################################################"
+echo " " ; echo " "
+echo "Affiche l'état des noeuds master du cluster"
+etcdctl --ca-file /etc/etcd/pki/etcd-ca.crt --cert-file /etc/etcd/pki/etcd.crt --key-file /etc/etcd/pki/etcd.key cluster-health
+echo " " ; echo " "
+echo "Affiche les membres master et le status <LEADER> pour un noeud"
+etcdctl --ca-file /etc/etcd/pki/etcd-ca.crt --cert-file /etc/etcd/pki/etcd.crt --key-file /etc/etcd/pki/etcd.key member list
+echo " "
+echo "Faire entrée pour continuer."
+read tt
 #################################################
 # 
 # deployement des masters
 #
 #
 vrai="1"
-kubeadm init --apiserver-advertise-address=10.0.0.100 --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr=192.168.0.0/16  && \
+if [ "${node}" = "master1-k8s.mon.dom" ]
+then
+cat <<EOF>~/kubeadm-init.yaml
+apiVersion: kubeadm.k8s.io/v1alpha1
+kind: MasterConfiguration
+api:
+  advertiseAddress: master1-k8s.mon.dom
+  bindPort: 6443
+etcd:
+  endpoints:
+  - https://master1-k8s.mon.dom:2379
+  - https://master2-k8s.mon.dom:2379
+  - https://master3-k8s.mon.dom:2379
+  caFile: /etc/etcd/pki/etcd-ca.crt
+  certFile: /etc/etcd/pki/etcd.crt
+  keyFile: /etc/etcd/pki/etcd.key
+  dataDir: /var/lib/etcd
+networking:
+  podSubnet: 192.168.0.0/16
+apiServerCertSANs:
+- master1-k8s.mon.dom
+- master2-k8s.mon.dom
+- master3-k8s.mon.dom
+- kube-lb-k8s.mon.dom
+
+certificatesDir: /etc/kubernetes/pki/
+EOF
+useradd -d -m /home/kubeadmin -s /bin/bash -G docker,sudo kubeadmin
+kubeadm init --config ~/kubeadm-init.yaml
 vrai="0"
-nom="Etape ${numetape} - Deploiement du cluster K8S"
+nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
 verif
 #################################################
 # 
@@ -870,6 +1019,7 @@ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml && \
 vrai="0"
 nom="Etape ${numetape} - Installation de calico"
 verif
+fi
 ################################################
 #
 # Déploiement du persistentVolumeDynamique sur le cluster
