@@ -497,7 +497,12 @@ vrai="1"
 if [ "${noeud}" = "loadbalancer" ]
 then
 export node="loadbalancer"
-  useradd -m stagiaire
+	if [ -d /home/stagiaire ]
+	then
+	echo le compte stagiaire exist."
+	else
+	useradd -m stagiaire
+	fi
   nom="Etape ${numetape} - Création du compte stagiaire"
   verif
 vrai="1"
