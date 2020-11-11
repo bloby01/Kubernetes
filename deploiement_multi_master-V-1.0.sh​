@@ -502,9 +502,10 @@ export node="loadbalancer"
 	echo "le compte stagiaire exist."
 	else
 	useradd -m stagiaire
-	fi
-  nom="Etape ${numetape} - Création du compte stagiaire"
-  verif
+	fi && \
+vrai="0"
+nom="Etape ${numetape} - Création du compte stagiaire"
+verif
 vrai="1"
   if [ "$prox" = "yes" ]
   then
