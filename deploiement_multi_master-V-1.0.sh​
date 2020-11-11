@@ -683,7 +683,7 @@ verif
 #             Configuration du LB Nginx avec docker         #
 #                                                           #
 #############################################################
-mkdir -p ~/nginx && cd nginx
+mkdir -p ~/nginx && cd ~/nginx
 cat <<EOF> nginx.conf
 worker_processes  1;
 include /etc/nginx/modules-enabled/*.conf;
