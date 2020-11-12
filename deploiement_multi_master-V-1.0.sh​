@@ -1050,7 +1050,12 @@ apiServerCertSANs:
 
 certificatesDir: /etc/kubernetes/pki/
 EOF
-useradd -d -m /home/kubeadmin -s /bin/bash -G docker,sudo kubeadmin
+if [ -d /home/kubeadmin ]
+then
+echo "le compte kubeadmin exist déjà"
+else
+useradd -d -m -s /bin/bash -G docker,sudo kubeadmin
+fi
 kubeadm init --config ~/kubeadm-init.yaml
 vrai="0"
 nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
