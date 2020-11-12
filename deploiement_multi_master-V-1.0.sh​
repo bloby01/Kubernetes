@@ -1052,7 +1052,7 @@ certificatesDir: /etc/kubernetes/pki/
 EOF
 if [ -d /home/kubeadmin ]
 then
-userdel -a kubeadmin
+userdel -r kubeadmin
 useradd -m -s /bin/bash -aG wheel,docker kubeadmin
 else
 useradd -m -s /bin/bash -aG wheel,docker kubeadmin
