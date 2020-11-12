@@ -1050,6 +1050,41 @@ then
 
 #certificatesDir: /etc/kubernetes/pki/
 #EOF
+cat <<EOF>~/kubeadm-init.yaml
+apiVersion: kubeadm.k8s.io/v1alpha3
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServerCertSANs:
+- 10.0.0.100
+- 10.0.0.110
+- 10.0.0.111
+- 10.0.0.112
+- 10.0.0.113
+- 10.0.0.114
+- 10.0.0.115
+- master1-k8s.mon.dom
+- master2-k8s.mon.dom
+- master3-k8s.mon.dom
+- loadbalancer-k8s.mon.dom
+- minion1-k8s.mon.dom
+- minion2-k8s.mon.dom
+- minion3-k8s.mon.dom
+controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
+etcd:
+  external:
+    endpoints:
+    - https://master1-k8s.mon.dom:2379
+    - https://master2-k8s.mon.dom:2379
+    - https://master3-k8s.mon.dom:2379
+    caFile: /etc/etcd/pki/etcd-ca.crt
+    certFile: /etc/etcd/pki/etcd.crt
+    keyFile: /etc/etcd/pki/etcd.key
+networking:
+  podSubnet: 192.168.0.0/16
+apiServerExtraArgs:
+  apiserver-count: "3"
+EOF
+
 if [ -d /home/kubeadmin ]
 then
 userdel -r kubeadmin
@@ -1057,16 +1092,19 @@ useradd -m -s /bin/bash -G wheel,docker kubeadmin
 else
 useradd -m -s /bin/bash -G wheel,docker kubeadmin
 fi
-kubeadm init --apiserver-advertise-address=master1-k8s.mon.dom \
---apiserver-bind-port=6443 \
---apiserver-cert-extra-sans="master1-k8s.mon.dom,master2-k8s.mon.dom,master3-k8s.mon.dom,loadbalancer-k8s.mon.dom,minion1-k8s.mon.dom,minion2-k8s.mon.dom,minion3-k8s.mon.dom" \
---pod-network-cidr=192.168.0.0/16 \
---cert-dir=/etc/kubernetes/pki/ \
---etcd-endpoints="https://master1-k8s.mon.dom:2379,https://master2-k8s.mon.dom:2379,https://master3-k8s.mon.dom:2379" \
---etcd-caFile=/etc/etcd/pki/etcd-ca.crt \
---etcd-certFile=/etc/etcd/pki/etcd.crt \
---etcd-keyFile=/etc/etcd/pki/etcd.key \
---etcd-dataDir=/var/lib/etcd
+
+kubeadm init --config=kubeadm-init.yaml
+
+#kubeadm init --apiserver-advertise-address=master1-k8s.mon.dom \
+#--apiserver-bind-port=6443 \
+#--apiserver-cert-extra-sans="master1-k8s.mon.dom,master2-k8s.mon.dom,master3-k8s.mon.dom,loadbalancer-k8s.mon.dom,minion1-k8s.mon.dom,minion2-k8s.mon.dom,minion3-k8s.mon.dom" \
+#--pod-network-cidr=192.168.0.0/16 \
+#--cert-dir=/etc/kubernetes/pki/ \
+#--etcd-endpoints="https://master1-k8s.mon.dom:2379,https://master2-k8s.mon.dom:2379,https://master3-k8s.mon.dom:2379" \
+#--etcd-caFile=/etc/etcd/pki/etcd-ca.crt \
+#--etcd-certFile=/etc/etcd/pki/etcd.crt \
+#--etcd-keyFile=/etc/etcd/pki/etcd.key \
+#--etcd-dataDir=/var/lib/etcd
 
 vrai="0"
 nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
