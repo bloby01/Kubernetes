@@ -863,7 +863,11 @@ nom="Etape ${numetape} - Configuration et installation du service docker-ce"
 #
 vrai="1"
 if [ "${node}" = "master1-k8s.mon.dom" ]
-then 
+then
+clear
+echo "breack"
+echo " la valeur de la variable \$node est :$node"
+read tt
 mkdir -p ~/k8s/crt ~/k8s/key ~/k8s/csr
 cat <<EOF> ~/k8s/openssl.cnf
 [ req ]
