@@ -434,6 +434,20 @@ EOF
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote et du fichier resolv.conf"
 verif
+elif [ "${noeud}" = "loadbalancer" ]
+then
+vrai="1"
+hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
+export node="loadbalancer" && \
+cat <<EOF > /etc/resolv.conf
+options ndots:15 timeout:1 attempts:5
+domain mon.dom
+nameserver 10.0.0.100
+nameserver 8.8.8.8
+EOF
+vrai="0"
+nom="Etape ${numetape} - Construction du nom d hote et du fichier resolv.conf"
+verif
 fi
 #######################
 # passage de proxy    #
