@@ -856,6 +856,7 @@ vrai="1"
 docker && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et installation du service docker-ce"
+verif
 #################################################
 #
 # Génération des certificats pour les noeuds master
@@ -913,6 +914,7 @@ openssl req -new -sha256 -key ~/k8s/key/etcd-peer.key -subj "/CN=etcd-peer" -out
 openssl x509 -req -in ~/k8s/csr/etcd-peer.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd-peer.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
 vrai="0"
 nom="Etape ${numetape} - Création CA et certificats pour les liaisons TLS"
+verif
 fi
 #################################################
 #
