@@ -940,7 +940,7 @@ fi
 #
 #
 vrai="1"
-ETCD_VER=v3.2.9 && \
+ETCD_VER=v3.3.25 && \
 GOOGLE_URL=https://storage.googleapis.com/etcd && \
 GITHUB_URL=https://github.com/coreos/etcd/releases/download && \
 DOWNLOAD_URL=${GOOGLE_URL} && \
@@ -955,7 +955,6 @@ chmod +x etcd_${ETCD_VER}-install.sh && \
 
 
 cd ~
-ETCD_VER=v3.2.9
 for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
 cat <<EOF>~/etcd.service
 [Unit]
