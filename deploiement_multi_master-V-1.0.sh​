@@ -753,7 +753,28 @@ FROM nginx
 add nginx.conf /etc/nginx/nginx.conf
 EOF
 su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
-################################################
+###########################################################
+#
+#   Script en attente de démarrage des trois noeuds master
+#
+clear
+echo " "
+echo "#################################################################################"
+echo "#		Assurez vous d'avoir démarré les trois noeuds master avant"
+echo "#                    de passer à l'étape suivante."
+echo " "
+read tt
+until [ "${aa}" = "y" -o "${aa}" = "Y" ]
+do
+clear
+ping -c1 master1-k8s.mon.dom
+ping -c1 master2-k8s.mon.dom
+ping -c1 master3-k8s.mon.dom
+echo " "
+echo "Vous confirmez voir la réponse au ping des trois noeuds? y/n"
+read aa
+done
+##########################################################
 #
 # Démarrage du service Nginx LB
 #
