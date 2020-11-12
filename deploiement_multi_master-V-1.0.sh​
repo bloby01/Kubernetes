@@ -454,8 +454,8 @@ fi
 #######################
 
 vrai="1"
-x=0 ; until [ "${x}" = "y" -o "${x}" = "Y" -o "${x}" = "n" -o "${x}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read x ; done
-if [ "$x" = "y" -o "$x" = "Y" ]
+x=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
+if [ "${t}" = "y" -o "${t}" = "Y" ]
 then
 prox="yes"
 echo -n "Mettre l'url d'acces au format suivant <IP:PORT/>  : "
@@ -1026,8 +1026,8 @@ vrai="1"
 if [ `hostname` = "master1-k8s.mon.dom" ]
 then
 cat <<EOF>~/kubeadm-init.yaml
-apiVersion: kubeadm.k8s.io/v1
-kind: MasterConfiguration
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
 api:
   advertiseAddress: master1-k8s.mon.dom
   bindPort: 6443
@@ -1054,7 +1054,7 @@ if [ -d /home/kubeadmin ]
 then
 echo "le compte kubeadmin exist déjà"
 else
-useradd -d -m -s /bin/bash -G docker,sudo kubeadmin
+useradd -m -s /bin/bash -G docker,sudo kubeadmin
 fi
 kubeadm init --config ~/kubeadm-init.yaml
 vrai="0"
