@@ -958,7 +958,7 @@ Documentation=https://github.com/coreos
 
 [Service]
 ExecStart=/usr/local/bin/etcd \\
-  --name ${node}${x}-k8s.mon.dom \\
+  --name `hostname` \\
   --cert-file=/etc/etcd/pki/etcd.crt \\
   --key-file=/etc/etcd/pki/etcd.key \\
   --peer-cert-file=/etc/etcd/pki/etcd-peer.crt \\
@@ -967,10 +967,10 @@ ExecStart=/usr/local/bin/etcd \\
   --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
   --peer-client-cert-auth \\
   --client-cert-auth \\
-  --initial-advertise-peer-urls https://${node}${x}-k8s.mon.dom:2380 \\
-  --listen-peer-urls https://${node}${x}-k8s.mon.dom:2380 \\
-  --listen-client-urls https://${node}${x}-k8s.mon.dom:2379,http://127.0.0.1:2379 \\
-  --advertise-client-urls https://${node}${x}-k8s.mon.dom:2379 \\
+  --initial-advertise-peer-urls https://`hostname`:2380 \\
+  --listen-peer-urls https://`hostname`:2380 \\
+  --listen-client-urls https://`hostname`:2379,http://127.0.0.1:2379 \\
+  --advertise-client-urls https://`hostname`:2379 \\
   --initial-cluster-token etcd-cluster-0 \\
   --initial-cluster master1-k8s.mon.dom=https://master1-k8s.mon.dom:2380,master2-k8s.mon.dom=https://master2-k8s.mon.dom:2380,master3-k8s.mon.dom=https://master3-k8s.mon.dom:2380 \\
   --data-dir=/var/lib/etcd
@@ -985,7 +985,7 @@ ETCD_VER=v3.2.9
 for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
 ssh ${master} "test -d /etc/etcd/pki && rm -rf /etc/etcd/pki" ; \
 ssh ${master} "test -d /var/lib/etcd && rm -rf /var/lib/etcd" ; \
-ssh ${master} “mkdir -p /etc/etcd/pki ; mkdir -p /var/lib/etcd” ;  \
+ssh ${master} "mkdir -p /etc/etcd/pki ; mkdir -p /var/lib/etcd" ;  \
 scp ~/k8s/crt/etcd* ~/k8s/key/etcd* ${master}:/etc/etcd/pki/;  \
 scp etcd.service ${master}:/etc/systemd/system/etcd.service ; \
 scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcd ${master}:/usr/local/bin; \
