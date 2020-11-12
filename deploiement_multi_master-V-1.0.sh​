@@ -1025,31 +1025,31 @@ read tt
 vrai="1"
 if [ `hostname` = "master1-k8s.mon.dom" ]
 then
-cat <<EOF>~/kubeadm-init.yaml
-apiVersion: kubeadm.k8s.io/v1beta2
-kind: MasterConfiguration
-api:
-  advertiseAddress: master1-k8s.mon.dom
-  bindPort: 6443
-etcd:
-  endpoints:
-  - https://master1-k8s.mon.dom:2379
-  - https://master2-k8s.mon.dom:2379
-  - https://master3-k8s.mon.dom:2379
-  caFile: /etc/etcd/pki/etcd-ca.crt
-  certFile: /etc/etcd/pki/etcd.crt
-  keyFile: /etc/etcd/pki/etcd.key
-  dataDir: /var/lib/etcd
-networking:
-  podSubnet: 192.168.0.0/16
-apiServerCertSANs:
-- master1-k8s.mon.dom
-- master2-k8s.mon.dom
-- master3-k8s.mon.dom
-- loadbalancer-k8s.mon.dom
+#cat <<EOF>~/kubeadm-init.yaml
+#apiVersion: kubeadm.k8s.io/v1beta2
+#kind: MasterConfiguration
+#api:
+#  advertiseAddress: master1-k8s.mon.dom
+#  bindPort: 6443
+#etcd:
+#  endpoints:
+#  - https://master1-k8s.mon.dom:2379
+#  - https://master2-k8s.mon.dom:2379
+#  - https://master3-k8s.mon.dom:2379
+#  caFile: /etc/etcd/pki/etcd-ca.crt
+#  certFile: /etc/etcd/pki/etcd.crt
+#  keyFile: /etc/etcd/pki/etcd.key
+#  dataDir: /var/lib/etcd
+#networking:
+#  podSubnet: 192.168.0.0/16
+#apiServerCertSANs:
+#- master1-k8s.mon.dom
+#- master2-k8s.mon.dom
+#- master3-k8s.mon.dom
+#- loadbalancer-k8s.mon.dom
 
-certificatesDir: /etc/kubernetes/pki/
-EOF
+#certificatesDir: /etc/kubernetes/pki/
+#EOF
 if [ -d /home/kubeadmin ]
 then
 userdel -r kubeadmin
@@ -1057,7 +1057,17 @@ useradd -m -s /bin/bash -G wheel,docker kubeadmin
 else
 useradd -m -s /bin/bash -G wheel,docker kubeadmin
 fi
-kubeadm init --config ~/kubeadm-init.yaml
+kubeadm init --apiserver-advertise-address=master1-k8s.mon.dom \
+--apiserver-bind-port=6443 \
+--apiserver-cert-extra-sans="master1-k8s.mon.dom,master2-k8s.mon.dom,master3-k8s.mon.dom,loadbalancer-k8s.mon.dom,minion1-k8s.mon.dom,minion2-k8s.mon.dom,minion3-k8s.mon.dom" \
+--pod-network-cidr=192.168.0.0/16 \
+--cert-dir=/etc/kubernetes/pki/ \
+--etcd-endpoints="https://master1-k8s.mon.dom:2379,https://master2-k8s.mon.dom:2379,https://master3-k8s.mon.dom:2379" \
+--etcd-caFile=/etc/etcd/pki/etcd-ca.crt \
+--etcd-certFile=/etc/etcd/pki/etcd.crt \
+--etcd-keyFile=/etc/etcd/pki/etcd.key \
+--etcd-dataDir=/var/lib/etcd
+
 vrai="0"
 nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
 verif
