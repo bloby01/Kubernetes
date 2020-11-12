@@ -864,10 +864,26 @@ nom="Etape ${numetape} - Configuration et installation du service docker-ce"
 vrai="1"
 if [ `hostname` = "master1-k8s.mon.dom" ]
 then
-clear
-echo "breack"
-echo " la valeur de la variable \$node est :$node"
-read tt
+#################################################
+#
+# Création des clés pour ssh-copy-id
+#
+#
+vrai="1"
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
+for i in master2-k8s.mon.dom master3-k8s.mon.dom
+do
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i} && \
+done && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du ssh agent"
+verif
+#################################################
+#
+# Création CA et certificats pour les liaisons TLS
+#
+#
+vrai="1"
 mkdir -p ~/k8s/crt ~/k8s/key ~/k8s/csr
 cat <<EOF> ~/k8s/openssl.cnf
 [ req ]
@@ -895,7 +911,7 @@ openssl genrsa -out ~/k8s/key/etcd-peer.key 4096
 openssl req -new -sha256 -key ~/k8s/key/etcd-peer.key -subj "/CN=etcd-peer" -out ~/k8s/csr/etcd-peer.csr
 openssl x509 -req -in ~/k8s/csr/etcd-peer.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd-peer.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
 vrai="0"
-nom="Etape ${numetape} - Création des certificats pour synchroniser la base ETCD entre les masters"
+nom="Etape ${numetape} - Création CA et certificats pour les liaisons TLS"
 fi
 #################################################
 #
@@ -1145,9 +1161,9 @@ verif
 #
 #
 vrai="1"
-alias master="ssh root@master1-k8s.mon.dom" && \
-export token=`master kubeadm token list | tail -1 | cut -f 1,2 -d " "` && \
-tokensha=`master openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
+alias leader="ssh root@master1-k8s.mon.dom" && \
+export token=`leader kubeadm token list | tail -1 | cut -f 1,2 -d " "` && \
+tokensha=`leader openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
 export tokenca=sha256:${tokensha} && \
 vrai="0"
 nom="Etape ${numetape} - Recuperation des clés sur le master pour l'intégration au cluster"
