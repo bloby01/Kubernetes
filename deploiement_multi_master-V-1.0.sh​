@@ -188,15 +188,15 @@ namedMonDom () {
 vrai="1"
 cat <<EOF > /var/named/mon.dom.db
 \$TTL 300
-@       IN SOA  master-k8s.mon.dom. root.master-k8s.mon.dom. (
+@       IN SOA  loadbalancer-k8s.mon.dom. root.loadbalancer-k8s.mon.dom. (
               1       ; serial
               600      ; refresh
               900      ; retry
               3600      ; expire
               300 )    ; minimum
-@             NS      master-k8s.mon.dom.
-master-k8s   A       10.0.0.100
-traefik     CNAME   master-k8s.mon.dom.
+@             NS      loadbalancer-k8s.mon.dom.
+loadbalancer-k8s   A       10.0.0.100
+traefik     CNAME   master1-k8s.mon.dom.
 w1          CNAME   worker1-k8s.mon.dom.
 EOF
 vrai="0"
@@ -208,14 +208,14 @@ namedRevers () {
 vrai="1"
 cat <<EOF > /var/named/10.0.0.db
 \$TTL 300
-@       IN SOA  master-k8s.mon.dom. root.master-k8s.mon.dom. (
+@       IN SOA  loadbalancer-k8s.mon.dom. root.loadbalancer-k8s.mon.dom. (
               1       ; serial
               600      ; refresh
               900      ; retry
               3600      ; expire
               300 )    ; minimum
-@             NS      master-k8s.mon.dom.
-100           PTR     master-k8s.mon.dom.
+@             NS      loadbalancer-k8s.mon.dom.
+100           PTR     loadbalancer-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.0.10.in-addr.arpa.db"
