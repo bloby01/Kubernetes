@@ -862,7 +862,7 @@ nom="Etape ${numetape} - Configuration et installation du service docker-ce"
 #
 #
 vrai="1"
-if [ "${node}" = "master1-k8s.mon.dom" ]
+if [ `hostname` = "master1-k8s.mon.dom" ]
 then
 clear
 echo "breack"
