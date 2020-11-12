@@ -1027,7 +1027,7 @@ if [ `hostname` = "master1-k8s.mon.dom" ]
 then
 cat <<EOF>~/kubeadm-init.yaml
 apiVersion: kubeadm.k8s.io/v1beta2
-kind: ClusterConfiguration
+kind: MasterConfiguration
 api:
   advertiseAddress: master1-k8s.mon.dom
   bindPort: 6443
@@ -1052,9 +1052,10 @@ certificatesDir: /etc/kubernetes/pki/
 EOF
 if [ -d /home/kubeadmin ]
 then
-echo "le compte kubeadmin exist déjà"
+userdel -a kubeadmin
+useradd -m -s /bin/bash -aG wheel,docker kubeadmin
 else
-useradd -m -s /bin/bash -G docker,sudo kubeadmin
+useradd -m -s /bin/bash -aG wheel,docker kubeadmin
 fi
 kubeadm init --config ~/kubeadm-init.yaml
 vrai="0"
