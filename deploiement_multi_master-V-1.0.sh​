@@ -874,7 +874,7 @@ ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 for i in master2-k8s.mon.dom master3-k8s.mon.dom
 do
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i} && \
-done && \
+done
 vrai="0"
 nom="Etape ${numetape} - Configuration du ssh agent"
 verif
