@@ -870,7 +870,7 @@ then
 #
 #
 vrai="1"
-rm -rf ~/.ssh/*
+rm -rf ~/.ssh/id_rsa*
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 for i in master2-k8s.mon.dom master3-k8s.mon.dom
 do
