@@ -68,8 +68,8 @@
 numetape=0
 NBR=0
 applb="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server kubectl --disableexcludes=kubernetes" 
-appmaster="nfs-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
-appworker="nfs-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
+appmaster="nfs-utils bind-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
+appworker="nfs-utils bind-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 
 #                                                                               #
 #################################################################################
@@ -917,6 +917,9 @@ subjectAltName = @alt_names_etcd
 DNS.1 = master1-k8s.mon.dom
 DNS.2 = master2-k8s.mon.dom
 DNS.3 = master3-k8s.mon.dom
+IP.1 = `nslookup master1-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+IP.2 = `nslookup master2-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+IP.3 = `nslookup master3-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
 EOF
 openssl genrsa -out ~/k8s/key/etcd-ca.key 4096
 openssl req -x509 -new -sha256 -nodes -key ~/k8s/key/etcd-ca.key -days 3650 -out ~/k8s/crt/etcd-ca.crt -subj "/CN=etcd-ca" -extensions v3_ca -config ~/k8s/openssl.cnf
@@ -993,7 +996,7 @@ done
 
 for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
 ssh  ${master} “systemctl daemon-reload” ; \
-ssh ${master} “systemctl start etcd” ; 
+ssh ${master} “systemctl enable --now etcd” ; 
 done
 vrai="0"
 nom="Etape ${numetape} - Déploiement et démarrage du service ETCD sur chaque noeud master"
