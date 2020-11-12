@@ -52,25 +52,6 @@ usermod  -aG docker stagiaire && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du compte stagiaire au groupe docker"
 verif
-################################################
-#
-# Démarrage du service Nginx LB
-#
-#
-vrai="1"
-docker run -d -p 80:80 -p 443:443 -p 6443:6443  --name lb_nginx bloby01/nginx-lb-multimaster:v1
-nom="Etape ${numetape} - Démarrage du service nginx LoadBalancer sur les trois masters"
-verif
-sleep 5
-clear
-echo "#####################################################"
-echo "#         État du service nginx sur LB              #"
-echo "#####################################################"
-ehco " "
-docker ps -al
-echo " "
-echo -n " Faire entrée pour continuer."
-read tt
 #####################################################################
 #                                                                   #
 #                     Fin de la configuration LB                    #
