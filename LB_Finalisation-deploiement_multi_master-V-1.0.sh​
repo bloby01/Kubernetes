@@ -58,7 +58,7 @@ verif
 #
 #
 vrai="1"
-docker run -d -p 80:80 -p 443:443  --name lb_nginx bloby01/nginx-lb-multimaster:v1
+docker run -d -p 80:80 -p 443:443 -p 6443:6443  --name lb_nginx bloby01/nginx-lb-multimaster:v1
 nom="Etape ${numetape} - Démarrage du service nginx LoadBalancer sur les trois masters"
 verif
 sleep 5
