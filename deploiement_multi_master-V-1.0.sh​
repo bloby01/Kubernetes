@@ -995,8 +995,8 @@ scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcdctl ${master}:/usr/local
 done
 
 for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
-ssh  ${master} “systemctl daemon-reload” ; \
-ssh ${master} “systemctl enable --now etcd” ; 
+ssh  ${master} "systemctl daemon-reload" ; \
+ssh ${master} "systemctl enable --now etcd" ; 
 done
 vrai="0"
 nom="Etape ${numetape} - Déploiement et démarrage du service ETCD sur chaque noeud master"
