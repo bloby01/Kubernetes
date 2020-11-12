@@ -808,6 +808,17 @@ then
   fi
 #################################################
 # 
+# installation du repository kubernetes.
+#
+#
+vrai="1"
+repok8s && \
+vrai="0"
+nom="Etape ${numetape} - Installation du repository kubernetes sur le master"
+verif
+
+#################################################
+# 
 # installation des applications.
 #
 #
