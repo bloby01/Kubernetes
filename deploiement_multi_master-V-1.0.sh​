@@ -944,55 +944,55 @@ EOF
 		HOST=${ETCDHOSTS[$i]}
 		NAME=${NAMES[$i]}
 		cat <<EOF> /tmp/${HOST}/kubeadmcfg.yaml
-		apiVersion: kubeadm.k8s.io/v1beta2
-		kind: ClusterConfiguration
-		kubernetesVersion: stable
-		apiServer:
-		 CertSANs:
-		 - 10.0.0.100
-		 - 10.0.0.110
-		 - 10.0.0.111
-		 - 10.0.0.112
-		 - 10.0.0.113
-		 - 10.0.0.114
-		 - 10.0.0.115
-		 - master1-k8s.mon.dom
-		 - master2-k8s.mon.dom
-		 - master3-k8s.mon.dom
-		 - loadbalancer-k8s.mon.dom
-		 - minion1-k8s.mon.dom
-		 - minion2-k8s.mon.dom
-		 - minion3-k8s.mon.dom
-		controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
-		etcd:
-		  external:
-		    endpoints:
-		    - https://master1-k8s.mon.dom:2379
-		    - https://master2-k8s.mon.dom:2379
-		    - https://master3-k8s.mon.dom:2379
-		    caFile: /etc/kubernetes/pki/etcd/ca.crt
-		    certFile: /etc/kubernetes/pki/etcd/server.crt
-		    keyFile: /etc/kubernetes/pki/etcd/server.key
-		networking:
-		  podSubnet: 192.168.0.0/16
-		apiServerExtraArgs:
-		  apiserver-count: "3"
-		#apiVersion: "kubeadm.k8s.io/v1beta1"
-		#kind: ClusterConfiguration
-		#etcd:
-		#    local:
-		#        serverCertSANs:
-		#        - "${HOST}"
-		#        peerCertSANs:
-		#        - "${HOST}"
-		#        extraArgs:
-		#            initial-cluster: ${NAMES[0]}=https://${ETCDHOSTS[0]}:2380,${NAMES[1]}=https://${ETCDHOSTS[1]}:2380,${NAMES[2]}=https://${ETCDHOSTS[2]}:2380
-		#            initial-cluster-state: new
-		#            name: ${NAME}
-		#            listen-peer-urls: https://${HOST}:2380
-		#            listen-client-urls: https://${HOST}:2379
-		#            advertise-client-urls: https://${HOST}:2379
-		#            initial-advertise-peer-urls: https://${HOST}:2380
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServer:
+ CertSANs:
+ - 10.0.0.100
+ - 10.0.0.110
+ - 10.0.0.111
+ - 10.0.0.112
+ - 10.0.0.113
+ - 10.0.0.114
+ - 10.0.0.115
+ - master1-k8s.mon.dom
+ - master2-k8s.mon.dom
+ - master3-k8s.mon.dom
+ - loadbalancer-k8s.mon.dom
+ - minion1-k8s.mon.dom
+ - minion2-k8s.mon.dom
+ - minion3-k8s.mon.dom
+controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
+etcd:
+ external:
+  endpoints:
+  - https://master1-k8s.mon.dom:2379
+  - https://master2-k8s.mon.dom:2379
+  - https://master3-k8s.mon.dom:2379
+  caFile: /etc/kubernetes/pki/etcd/ca.crt
+  certFile: /etc/kubernetes/pki/etcd/server.crt
+  keyFile: /etc/kubernetes/pki/etcd/server.key
+networking:
+ podSubnet: 192.168.0.0/16
+apiServerExtraArgs:
+ apiserver-count: "3"
+#apiVersion: "kubeadm.k8s.io/v1beta1"
+#kind: ClusterConfiguration
+#etcd:
+#    local:
+#        serverCertSANs:
+#        - "${HOST}"
+#        peerCertSANs:
+#        - "${HOST}"
+#        extraArgs:
+#            initial-cluster: ${NAMES[0]}=https://${ETCDHOSTS[0]}:2380,${NAMES[1]}=https://${ETCDHOSTS[1]}:2380,${NAMES[2]}=https://${ETCDHOSTS[2]}:2380
+#            initial-cluster-state: new
+#            name: ${NAME}
+#            listen-peer-urls: https://${HOST}:2380
+#            listen-client-urls: https://${HOST}:2379
+#            advertise-client-urls: https://${HOST}:2379
+#            initial-advertise-peer-urls: https://${HOST}:2380
 EOF
 		done && \
 	vrai="0"
