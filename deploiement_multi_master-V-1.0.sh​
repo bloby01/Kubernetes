@@ -418,40 +418,10 @@ read noeud
 done
 if [ "${noeud}" = "worker" ]
 then
-vrai="1"
-x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
-hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
-export node="${noeud}"
 elif [ "${noeud}" = "master" ]
 then
-vrai="1"
-x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
-hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
-export node="${noeud}" && \
-selinuxSwap && \
-cat <<EOF > /etc/resolv.conf
-options ndots:15 timeout:1 attempts:5
-domain mon.dom
-nameserver 10.0.0.100
-nameserver 8.8.8.8
-EOF
-vrai="0"
-nom="Etape ${numetape} - Construction du nom d hote et du fichier resolv.conf"
-verif
 elif [ "${noeud}" = "loadbalancer" ]
 then
-vrai="1"
-hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
-export node="${noeud}" && \
-cat <<EOF > /etc/resolv.conf
-options ndots:15 timeout:1 attempts:5
-domain mon.dom
-nameserver 10.0.0.100
-nameserver 8.8.8.8
-EOF
-vrai="0"
-nom="Etape ${numetape} - Construction du nom d hote et du fichier resolv.conf"
-verif
 fi
 #######################
 # passage de proxy    #
@@ -513,7 +483,18 @@ verif
 vrai="1"
 if [ "${noeud}" = "loadbalancer" ]
 then
-export node="loadbalancer"
+vrai="1"
+hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
+export node="${noeud}" && \
+cat <<EOF > /etc/resolv.conf
+options ndots:15 timeout:1 attempts:5
+domain mon.dom
+nameserver 10.0.0.100
+nameserver 8.8.8.8
+EOF
+vrai="0"
+nom="Etape ${numetape} - Construction du nom d hote et du fichier resolv.conf"
+verif
 	if [ -d /home/stagiaire ]
 	then
 	echo "le compte stagiaire exist."
@@ -755,7 +736,7 @@ vrai="1"
 	add nginx.conf /etc/nginx/nginx.conf
 	EOF
 	su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
-fi
+
 ############################################################################################
 #                                                                                          #
 #                       Déploiement sur masters Kubernetes                                   #
@@ -766,8 +747,27 @@ fi
 #
 #
 vrai="1"
-if [ "${noeud}" = "master" ]
+elif [ "${noeud}" = "master" ]
 then
+#################################################
+# 
+# Configuration du nom du noeud + resolv.conf + SwapOFF + SELinux à permissive
+#
+#
+vrai="1"
+x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
+hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
+export node="${noeud}" && \
+selinuxSwap && \
+cat <<EOF > /etc/resolv.conf
+options ndots:15 timeout:1 attempts:5
+domain mon.dom
+nameserver 10.0.0.100
+nameserver 8.8.8.8
+EOF
+vrai="0"
+nom="Etape ${numetape} - Configuration du nom du noeud + resolv.conf + SwapOFF + SELinux à permissive"
+verif
 ###########################################################
 #
 #   Script en attente de démarrage des trois noeuds master
@@ -1315,15 +1315,27 @@ verif
 #                     Fin de la configuration master                #
 #                                                                   #
 #####################################################################
-fi
+
 
 ############################################################################################
 #                                                                                          #
 #                       Déploiement des workers Kubernetes                                 #
 #                                                                                          #
 ############################################################################################
-if [ "${node}" = "worker" ]
+elif [ "${noeud}" = "worker" ]
 then
+#################################################
+# 
+# Configuration du nom du noeud
+#
+#
+vrai="1"
+x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
+hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
+export node="${noeud}"
+vrai="0"
+nom="Etape ${numetape} - Configuration du nom du noeud"
+verif
 	if [ "$prox" = "yes" ]
 	then
 		if [ "$auth" = "y" -o "$auth" = "Y" ]
