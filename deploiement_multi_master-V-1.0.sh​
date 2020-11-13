@@ -465,16 +465,15 @@ prox="yes"
 echo -n "Mettre l'url d'acces au format suivant <IP:PORT/>  : "
 read proxyUrl
 auth=0 ; until [ "${auth}" = "y" -o "${auth}" = "Y" -o "${auth}" = "n" -o "${auth}" = "N" ] ; do echo -n "Y a t il un login et un mot de passe pour passer le proxy ? Y/N : " ; read auth ; done
-  if [ "$auth" = "y" -o "$auth" = "Y" ]
-  then
-  echo -n "Mettre votre login <jean> :  "
-  read proxyLogin
-  echo -n "Mettre votre mot de passe <password> :  "
-  read proxyPassword
-  clear
-  fi
+	if [ "$auth" = "y" -o "$auth" = "Y" ]
+	then
+	echo -n "Mettre votre login <jean> :  "
+	read proxyLogin
+	echo -n "Mettre votre mot de passe <password> :  "
+	read proxyPassword
+	clear
+	fi
 fi
-
 vrai="0"
 nom="Etape ${numetape} - Serveur proxy"
 verif
@@ -525,237 +524,237 @@ vrai="0"
 nom="Etape ${numetape} - Création du compte stagiaire"
 verif
 vrai="1"
-  if [ "$prox" = "yes" ]
-  then
-    if [ "$auth" = "y" -o "$auth" = "Y" ]
-    then
-    profilproxyauth
-    yumproxyauth
-      if [ -d /etc/systemd/system/docker.service.d/ ]
-      then
-      dockerproxyauth
-      else
-      mkdir -p /etc/systemd/system/docker.service.d/
-      dockerproxyauth
-      fi
-      if [ -d /home/stagiaire/.docker/ ]
-      then
-      clientdockerproxyauth
-      else
-      mkdir -p /home/stagiaire/.docker/
-      clientdockerproxyauth
-      fi
-      if [ -d /root/.docker/ ]
-      then
-      clientdockerproxyauth
-      else
-      mkdir -p /root/.docker/
-      clientdockerproxyauth
-      fi
-    ################  fin de la conf proxy avec auth
-    elif [ "$auth" = "n" -o "$auth" = "N" ]
-    then
-    profilproxy
-    yumproxy
-      if [ -d /etc/systemd/system/docker.service.d/ ]
-      then
-      dockerproxy
-      else
-      mkdir -p /etc/systemd/system/docker.service.d/
-      dockerproxy
-      fi
-      if [ -d /home/stagiaire/.docker ]
-      then
-      clientdockerproxy
-      else
-      mkdir -p /home/stagiaire/.docker
-      clientdockerproxy
-      fi
-      if [ -d /root/.docker/ ]
-      then
-      clientdockerproxy
-      else
-      mkdir -p /root/.docker/
-      clientdockerproxy
-      fi
-    fi
-  fi
-vrai="0"
-nom="Etape ${numetape} - Déclaration du proxy"
-verif
-#################################################
-#     Liste des interface réseaux sur LB        #
-#################################################
-vrai="1"
-clear
-echo ""
-echo "liste des interfaces réseaux disponibles:"
-echo ""
-echo "-----------------------------------------"
-echo "`ip link`"
-echo ""
-echo "-----------------------------------------"
-echo ""
-echo -n "Mettre le nom de l'interface réseaux Interne: "
-read eth1 && \
-repok8s && \
-selinuxSwap && \
-vrai="0"
-nom="Etape ${numetape} - Selection de l'interface réseau interne du LB"
-verif
-#################################################
-# 
-# installation des applications.
-#
-#
-vrai="1"
-yum  install -y ${applb} && \
-vrai="0"
-nom="Etape ${numetape} - Installation des outils et services sur LB"
-verif
-#################################################
-#
-# Configuration du service NFS.
-#
-#
-vrai="1"
-nfsconfigserver && \
-vrai="0"
-nom="Etape ${numetape} - Configuration du service NFS"
-verif
-#################################################
-# 
-# Configuration et démarrage du serveur BIND9 selon le rôle de chacuns.
-#
-#
-vrai="1"
-dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
-cat <<EOF > /etc/named/ddns.key
-key DDNS_UPDATE {
-	algorithm HMAC-MD5.SIG-ALG.REG.INT;
-  secret "bad" ;
-};
-EOF
-secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
-sed -i -e "s|bad|$secret|g" /etc/named/ddns.key &&\
-chown root:named /etc/named/ddns.key && \
-chmod 640 /etc/named/ddns.key && \
-sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 10.0.0.100; 127.0.0.1; };|g" /etc/named.conf &&\
-sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;10.0.0.0/24; };|g" /etc/named.conf && \
-echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
-named && \
-namedMonDom && \
-chown root:named /var/named/mon.dom.db && \
-chmod 660 /var/named/mon.dom.db && \
-namedRevers && \
-chown root:named /var/named/10.0.0.db && \
-chmod 660 /var/named/10.0.0.db && \
-systemctl enable --now named.service && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et demarrage de bind"
-verif
-#################################################
-# 
-# configuration du NAT sur LB
-#
-vrai="1"
-firewall-cmd --permanent --add-masquerade && \
-firewall-cmd --add-masquerade && \
-vrai="0"
-nom="Etape ${numetape} - Mise en place du NAT"
-verif
-#################################################
-# 
-# configuration du dhcp avec inscription dans le DNS
-#
-#
-vrai="1"
-dhcp && \
-sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
-systemctl enable  --now  dhcpd.service && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et start du service dhcp"
-verif
-#################################################
-# 
-# installation du modules bridge.
-# et activation du routage
-#
-vrai="1"
-moduleBr && \
-vrai="0"
-nom="Etape ${numetape} - Installation du module de brige"
-verif
-#################################################
-# 
-# installation de docker
-#
-#
-vrai="1"
-docker && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et installation du service docker-ce"
-verif
-#############################################################
-#                                                           #
-#             Configuration du LB Nginx avec docker         #
-#                                                           #
-#############################################################
-mkdir -p ~/nginx && cd ~/nginx
-cat <<EOF> nginx.conf
-worker_processes  1;
-include /etc/nginx/modules-enabled/*.conf;
-error_log  /var/log/nginx/error.log warn;
-pid        /var/run/nginx.pid;
+	if [ "$prox" = "yes" ]
+	then
+		if [ "$auth" = "y" -o "$auth" = "Y" ]
+		then
+		profilproxyauth
+		yumproxyauth
+			if [ -d /etc/systemd/system/docker.service.d/ ]
+			then
+			dockerproxyauth
+			else
+			mkdir -p /etc/systemd/system/docker.service.d/
+			dockerproxyauth
+			fi
+			if [ -d /home/stagiaire/.docker/ ]
+			then
+			clientdockerproxyauth
+			else
+			mkdir -p /home/stagiaire/.docker/
+			clientdockerproxyauth
+			fi
+			if [ -d /root/.docker/ ]
+			then
+			clientdockerproxyauth
+			else
+			mkdir -p /root/.docker/
+			clientdockerproxyauth
+			fi
+	################  fin de la conf proxy avec auth
+		elif [ "$auth" = "n" -o "$auth" = "N" ]
+		then
+		profilproxy
+		yumproxy
+			if [ -d /etc/systemd/system/docker.service.d/ ]
+			then
+			dockerproxy
+			else
+			mkdir -p /etc/systemd/system/docker.service.d/
+			dockerproxy
+			fi
+			if [ -d /home/stagiaire/.docker ]
+			then
+			clientdockerproxy
+			else
+			mkdir -p /home/stagiaire/.docker
+			clientdockerproxy
+			fi
+			if [ -d /root/.docker/ ]
+			then
+			clientdockerproxy
+			else
+			mkdir -p /root/.docker/
+			clientdockerproxy
+			fi
+		fi
+	fi
+	vrai="0"
+	nom="Etape ${numetape} - Déclaration du proxy"
+	verif
+	#################################################
+	#     Liste des interface réseaux sur LB        #
+	#################################################
+	vrai="1"
+	clear
+	echo ""
+	echo "liste des interfaces réseaux disponibles:"
+	echo ""
+	echo "-----------------------------------------"
+	echo "`ip link`"
+	echo ""
+	echo "-----------------------------------------"
+	echo ""
+	echo -n "Mettre le nom de l'interface réseaux Interne: "
+	read eth1 && \
+	repok8s && \
+	selinuxSwap && \
+	vrai="0"
+	nom="Etape ${numetape} - Selection de l'interface réseau interne du LB"
+	verif
+	#################################################
+	# 
+	# installation des applications.
+	#
+	#
+	vrai="1"
+	yum  install -y ${applb} && \
+	vrai="0"
+	nom="Etape ${numetape} - Installation des outils et services sur LB"
+	verif
+	#################################################
+	#
+	# Configuration du service NFS.
+	#
+	#
+	vrai="1"
+	nfsconfigserver && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration du service NFS"
+	verif
+	#################################################
+	# 
+	# Configuration et démarrage du serveur BIND9 selon le rôle de chacuns.
+	#
+	#
+	vrai="1"
+	dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
+	cat <<EOF > /etc/named/ddns.key
+	key DDNS_UPDATE {
+		algorithm HMAC-MD5.SIG-ALG.REG.INT;
+	  secret "bad" ;
+	};
+	EOF
+	secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
+	sed -i -e "s|bad|$secret|g" /etc/named/ddns.key &&\
+	chown root:named /etc/named/ddns.key && \
+	chmod 640 /etc/named/ddns.key && \
+	sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 10.0.0.100; 127.0.0.1; };|g" /etc/named.conf &&\
+	sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;10.0.0.0/24; };|g" /etc/named.conf && \
+	echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
+	named && \
+	namedMonDom && \
+	chown root:named /var/named/mon.dom.db && \
+	chmod 660 /var/named/mon.dom.db && \
+	namedRevers && \
+	chown root:named /var/named/10.0.0.db && \
+	chmod 660 /var/named/10.0.0.db && \
+	systemctl enable --now named.service && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration et demarrage de bind"
+	verif
+	#################################################
+	# 
+	# configuration du NAT sur LB
+	#
+	vrai="1"
+	firewall-cmd --permanent --add-masquerade && \
+	firewall-cmd --add-masquerade && \
+	vrai="0"
+	nom="Etape ${numetape} - Mise en place du NAT"
+	verif
+	#################################################
+	# 
+	# configuration du dhcp avec inscription dans le DNS
+	#
+	#
+	vrai="1"
+	dhcp && \
+	sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
+	systemctl enable  --now  dhcpd.service && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration et start du service dhcp"
+	verif
+	#################################################
+	# 
+	# installation du modules bridge.
+	# et activation du routage
+	#
+	vrai="1"
+	moduleBr && \
+	vrai="0"
+	nom="Etape ${numetape} - Installation du module de brige"
+	verif
+	#################################################
+	# 
+	# installation de docker
+	#
+	#
+	vrai="1"
+	docker && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration et installation du service docker-ce"
+	verif
+	#############################################################
+	#                                                           #
+	#             Configuration du LB Nginx avec docker         #
+	#                                                           #
+	#############################################################
+	mkdir -p ~/nginx && cd ~/nginx
+	cat <<EOF> nginx.conf
+	worker_processes  1;
+	include /etc/nginx/modules-enabled/*.conf;
+	error_log  /var/log/nginx/error.log warn;
+	pid        /var/run/nginx.pid;
 
 
-events {
-    worker_connections  1024;
-}
+	events {
+	    worker_connections  1024;
+	}
 
 
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
+	http {
+	    include       /etc/nginx/mime.types;
+	    default_type  application/octet-stream;
 
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
+	    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+			      '$status $body_bytes_sent "$http_referer" '
+			      '"$http_user_agent" "$http_x_forwarded_for"';
 
-    access_log  /var/log/nginx/access.log  main;
+	    access_log  /var/log/nginx/access.log  main;
 
-    sendfile        on;
-    #tcp_nopush     on;
+	    sendfile        on;
+	    #tcp_nopush     on;
 
-    keepalive_timeout  65;
+	    keepalive_timeout  65;
 
-    #gzip  on;
+	    #gzip  on;
 
-    include /etc/nginx/conf.d/*.conf;
-}
-stream {
-        upstream apiserver {
-            server master1-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
-            server master2-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
-            server master3-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
-            #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
-            #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
-        }
+	    include /etc/nginx/conf.d/*.conf;
+	}
+	stream {
+		upstream apiserver {
+		    server master1-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
+		    server master2-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
+		    server master3-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
+		    #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
+		    #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
+		}
 
-    server {
-        listen 6443;
-        proxy_connect_timeout 1s;
-        proxy_timeout 3s;
-        proxy_pass apiserver;
-    }
-}
-EOF
+	    server {
+		listen 6443;
+		proxy_connect_timeout 1s;
+		proxy_timeout 3s;
+		proxy_pass apiserver;
+	    }
+	}
+	EOF
 
-cat <<EOF > Dockerfile
-FROM nginx
-add nginx.conf /etc/nginx/nginx.conf
-EOF
-su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
+	cat <<EOF > Dockerfile
+	FROM nginx
+	add nginx.conf /etc/nginx/nginx.conf
+	EOF
+	su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
 fi
 ############################################################################################
 #                                                                                          #
@@ -779,16 +778,16 @@ echo "##########################################################################
 echo "#		Assurez vous que les trois noeuds master soient démarré avant"
 echo "#                    de passer à l'étape suivante."
 echo " "
-until [ "${aa}" = "y" -o "${aa}" = "Y" ]
-do
-clear
-ping -c1 ${HOST0}
-ping -c1 ${HOST1}
-ping -c1 ${HOST2}
-echo " "
-echo -n "Vous confirmez voir la réponse au ping des trois noeuds? y/n: "
-read aa
-done
+	until [ "${aa}" = "y" -o "${aa}" = "Y" ]
+	do
+	clear
+	ping -c1 ${HOST0}
+	ping -c1 ${HOST1}
+	ping -c1 ${HOST2}
+	echo " "
+	echo -n "Vous confirmez voir la réponse au ping des trois noeuds? y/n: "
+	read aa
+	done
 #################################################
 #
 # Création des clés pour ssh-copy-id
@@ -797,73 +796,73 @@ done
 vrai="1"
 rm -rf ~/.ssh/id_rsa*
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
-for i in ${HOST0} ${HOST1} ${HOST2}
-do
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i}
-done
-vrai="0"
-nom="Etape ${numetape} - Création des clés pour ssh-copy-id."
-verif
-for HOST in ${HOST0} ${HOST1} ${HOST2}
-do
+	for i in ${HOST0} ${HOST1} ${HOST2}
+	do
+	ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i}
+	done
+	vrai="0"
+	nom="Etape ${numetape} - Création des clés pour ssh-copy-id."
+	verif
+	for HOST in ${HOST0} ${HOST1} ${HOST2}
+	do
 	clear
 	echo " Configuration de la machine ${HOST}"
-	  if [ "$prox" = "yes" ]
-	  then
-	    if [ "$auth" = "y" -o "$auth" = "Y" ]
-	    then
-	    profilproxyauth
-	    yumproxyauth
-	      if [ -d /etc/systemd/system/docker.service.d/ ]
-	      then
-	      dockerproxyauth
-	      else
-	      mkdir -p /etc/systemd/system/docker.service.d/
-	      dockerproxyauth
-	      fi
-	      if [ -d /home/stagiaire/.docker/ ]
-	      then
-	      clientdockerproxyauth
-	      else
-	      mkdir -p /home/stagiaire/.docker/
-	      clientdockerproxyauth
-	      fi
-	      if [ -d /root/.docker/ ]
-	      then
-	      clientdockerproxyauth
-	      else
-	      mkdir -p /root/.docker/
-	      clientdockerproxyauth
-	      fi
-	    ################  fin de la conf proxy avec auth
-	    elif [ "$auth" = "n" -o "$auth" = "N" ]
-	    then
-	    profilproxy
-	    yumproxy
-	      if [ -d /etc/systemd/system/docker.service.d/ ]
-	      then
-	      dockerproxy
-	      else
-	      mkdir -p /etc/systemd/system/docker.service.d/
-	      dockerproxy
-	      fi
-	      if [ -d /home/stagiaire/.docker ]
-	      then
-	      clientdockerproxy
-	      else
-	      mkdir -p /home/stagiaire/.docker
-	      clientdockerproxy
-	      fi
-	      if [ -d /root/.docker/ ]
-	      then
-	      clientdockerproxy
-	      else
-	      mkdir -p /root/.docker/
-	      clientdockerproxy
-	      fi
-	    fi
-	  fi
-	#################################################
+	if [ "$prox" = "yes" ]
+	then
+		if [ "$auth" = "y" -o "$auth" = "Y" ]
+		then
+		profilproxyauth
+		yumproxyauth
+			if [ -d /etc/systemd/system/docker.service.d/ ]
+			then
+			dockerproxyauth
+			else
+			mkdir -p /etc/systemd/system/docker.service.d/
+			dockerproxyauth
+			fi
+			if [ -d /home/stagiaire/.docker/ ]
+			then
+			clientdockerproxyauth
+			else
+			mkdir -p /home/stagiaire/.docker/
+			clientdockerproxyauth
+			fi
+			if [ -d /root/.docker/ ]
+			then
+			clientdockerproxyauth
+			else
+			mkdir -p /root/.docker/
+			clientdockerproxyauth
+			fi
+		################  fin de la conf proxy avec auth
+		elif [ "$auth" = "n" -o "$auth" = "N" ]
+		then
+		profilproxy
+		yumproxy
+			if [ -d /etc/systemd/system/docker.service.d/ ]
+			then
+			dockerproxy
+			else
+			mkdir -p /etc/systemd/system/docker.service.d/
+			dockerproxy
+			fi
+			if [ -d /home/stagiaire/.docker ]
+			then
+			clientdockerproxy
+			else
+			mkdir -p /home/stagiaire/.docker
+			clientdockerproxy
+			fi
+			if [ -d /root/.docker/ ]
+			then
+			clientdockerproxy
+			else
+			mkdir -p /root/.docker/
+			clientdockerproxy
+			fi
+		fi
+	fi
+	################################################
 	# 
 	# installation du repository kubernetes.
 	#
@@ -873,8 +872,7 @@ do
 	vrai="0"
 	nom="Etape ${numetape} - Installation du repository kubernetes sur le master"
 	verif
-
-	#################################################
+	################################################
 	# 
 	# installation des applications.
 	#
@@ -914,234 +912,234 @@ do
 	vrai="0"
 	nom="Etape ${numetape} - Configuration et installation du service docker-ce"
 	verif
-done
-#################################################
-#
-# Génération des certificats pour les noeuds master
-#
-#
-vrai="1"
-if [ `hostname` = "master1-k8s.mon.dom" ]
-then
-#################################################
-#
-# Création du fichier de démarrage de service ETCD
-#                avec une priorité haute
-#
-vrai="1"
-if [ -d /etc/systemd/system/kubelet.service.d/ ]
-then 
-echo "le dossier /etc/systemd/system/kubelet.service.d/ est présent. "
-else
-mkdir /etc/systemd/system/kubelet.service.d
-fi
-cat <<EOF> /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
-[Service]
-ExecStart=
-ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests
-Restart=always
-EOF
-systemctl daemon-reload && \
-systemctl restart kubelet && \
-vrai="0"
-nom="Etape ${numetape} - Création du fichier de démarrage de service ETCD avec une priorité haute."
-verif
-#################################################
-#
-# Création d'un fichier de configuration pour chaque noeud membre ETCD
-#
-vrai="1"
-# Update HOST0, HOST1, and HOST2 with the IPs or resolvable names of your hosts
-#export HOST0=master1-k8s.mon.dom
-#export HOST1=master2-k8s.mon.dom
-#export HOST2=master3-k8s.mon.dom
+	done
+	#################################################
+	#
+	# Génération des certificats pour les noeuds master
+	#
+	#
+	vrai="1"
+	if [ `hostname` = "master1-k8s.mon.dom" ]
+	then
+	#################################################
+	#
+	# Création du fichier de démarrage de service ETCD
+	#                avec une priorité haute
+	#
+	vrai="1"
+		if [ -d /etc/systemd/system/kubelet.service.d/ ]
+		then 
+		echo "le dossier /etc/systemd/system/kubelet.service.d/ est présent. "
+		else
+		mkdir /etc/systemd/system/kubelet.service.d
+		fi
+	cat <<EOF> /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
+	[Service]
+	ExecStart=
+	ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests
+	Restart=always
+	EOF
+	systemctl daemon-reload && \
+	systemctl restart kubelet && \
+	vrai="0"
+	nom="Etape ${numetape} - Création du fichier de démarrage de service ETCD avec une priorité haute."
+	verif
+	#################################################
+	#
+	# Création d'un fichier de configuration pour chaque noeud membre ETCD
+	#
+	vrai="1"
+	# Update HOST0, HOST1, and HOST2 with the IPs or resolvable names of your hosts
+	#export HOST0=master1-k8s.mon.dom
+	#export HOST1=master2-k8s.mon.dom
+	#export HOST2=master3-k8s.mon.dom
 
-# Create temp directories to store files that will end up on other hosts.
-mkdir -p /tmp/${HOST0}/ /tmp/${HOST1}/ /tmp/${HOST2}/
+	# Create temp directories to store files that will end up on other hosts.
+	mkdir -p /tmp/${HOST0}/ /tmp/${HOST1}/ /tmp/${HOST2}/
 
-ETCDHOSTS=(${HOST0} ${HOST1} ${HOST2})
-NAMES=("infra0" "infra1" "infra2")
+	ETCDHOSTS=(${HOST0} ${HOST1} ${HOST2})
+	NAMES=("infra0" "infra1" "infra2")
 
-for i in "${!ETCDHOSTS[@]}"; do
-HOST=${ETCDHOSTS[$i]}
-NAME=${NAMES[$i]}
-cat << EOF > /tmp/${HOST}/kubeadmcfg.yaml
-apiVersion: kubeadm.k8s.io/v1beta2
-kind: ClusterConfiguration
-kubernetesVersion: stable
-apiServer:
- CertSANs:
- - 10.0.0.100
- - 10.0.0.110
- - 10.0.0.111
- - 10.0.0.112
- - 10.0.0.113
- - 10.0.0.114
- - 10.0.0.115
- - master1-k8s.mon.dom
- - master2-k8s.mon.dom
- - master3-k8s.mon.dom
- - loadbalancer-k8s.mon.dom
- - minion1-k8s.mon.dom
- - minion2-k8s.mon.dom
- - minion3-k8s.mon.dom
-controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
-etcd:
-  external:
-    endpoints:
-    - https://master1-k8s.mon.dom:2379
-    - https://master2-k8s.mon.dom:2379
-    - https://master3-k8s.mon.dom:2379
-    caFile: /etc/kubernetes/pki/etcd/ca.crt
-    certFile: /etc/kubernetes/pki/etcd/server.crt
-    keyFile: /etc/kubernetes/pki/etcd/server.key
-networking:
-  podSubnet: 192.168.0.0/16
-apiServerExtraArgs:
-  apiserver-count: "3"
-#apiVersion: "kubeadm.k8s.io/v1beta1"
-#kind: ClusterConfiguration
-#etcd:
-#    local:
-#        serverCertSANs:
-#        - "${HOST}"
-#        peerCertSANs:
-#        - "${HOST}"
-#        extraArgs:
-#            initial-cluster: ${NAMES[0]}=https://${ETCDHOSTS[0]}:2380,${NAMES[1]}=https://${ETCDHOSTS[1]}:2380,${NAMES[2]}=https://${ETCDHOSTS[2]}:2380
-#            initial-cluster-state: new
-#            name: ${NAME}
-#            listen-peer-urls: https://${HOST}:2380
-#            listen-client-urls: https://${HOST}:2379
-#            advertise-client-urls: https://${HOST}:2379
-#            initial-advertise-peer-urls: https://${HOST}:2380
-#EOF
-done && \
-vrai="0"
-nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
-verif
-#################################################
-#
-# Création CA et certificats pour ETCD
-#
-#
-#vrai="1"
-kubeadm init phase certs etcd-ca && \
-kubeadm init phase certs etcd-server --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
-kubeadm init phase certs etcd-peer --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
-kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
-kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
-cp -R /etc/kubernetes/pki /tmp/${HOST2}/ && \
-# cleanup non-reusable certificates
-find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
+		for i in "${!ETCDHOSTS[@]}"; do
+		HOST=${ETCDHOSTS[$i]}
+		NAME=${NAMES[$i]}
+		cat << EOF > /tmp/${HOST}/kubeadmcfg.yaml
+		apiVersion: kubeadm.k8s.io/v1beta2
+		kind: ClusterConfiguration
+		kubernetesVersion: stable
+		apiServer:
+		 CertSANs:
+		 - 10.0.0.100
+		 - 10.0.0.110
+		 - 10.0.0.111
+		 - 10.0.0.112
+		 - 10.0.0.113
+		 - 10.0.0.114
+		 - 10.0.0.115
+		 - master1-k8s.mon.dom
+		 - master2-k8s.mon.dom
+		 - master3-k8s.mon.dom
+		 - loadbalancer-k8s.mon.dom
+		 - minion1-k8s.mon.dom
+		 - minion2-k8s.mon.dom
+		 - minion3-k8s.mon.dom
+		controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
+		etcd:
+		  external:
+		    endpoints:
+		    - https://master1-k8s.mon.dom:2379
+		    - https://master2-k8s.mon.dom:2379
+		    - https://master3-k8s.mon.dom:2379
+		    caFile: /etc/kubernetes/pki/etcd/ca.crt
+		    certFile: /etc/kubernetes/pki/etcd/server.crt
+		    keyFile: /etc/kubernetes/pki/etcd/server.key
+		networking:
+		  podSubnet: 192.168.0.0/16
+		apiServerExtraArgs:
+		  apiserver-count: "3"
+		#apiVersion: "kubeadm.k8s.io/v1beta1"
+		#kind: ClusterConfiguration
+		#etcd:
+		#    local:
+		#        serverCertSANs:
+		#        - "${HOST}"
+		#        peerCertSANs:
+		#        - "${HOST}"
+		#        extraArgs:
+		#            initial-cluster: ${NAMES[0]}=https://${ETCDHOSTS[0]}:2380,${NAMES[1]}=https://${ETCDHOSTS[1]}:2380,${NAMES[2]}=https://${ETCDHOSTS[2]}:2380
+		#            initial-cluster-state: new
+		#            name: ${NAME}
+		#            listen-peer-urls: https://${HOST}:2380
+		#            listen-client-urls: https://${HOST}:2379
+		#            advertise-client-urls: https://${HOST}:2379
+		#            initial-advertise-peer-urls: https://${HOST}:2380
+		#EOF
+		done && \
+		vrai="0"
+		nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
+		verif
+	#################################################
+	#
+	# Création CA et certificats pour ETCD
+	#
+	#
+	#vrai="1"
+	kubeadm init phase certs etcd-ca && \
+	kubeadm init phase certs etcd-server --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+	kubeadm init phase certs etcd-peer --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+	kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+	kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+	cp -R /etc/kubernetes/pki /tmp/${HOST2}/ && \
+	# cleanup non-reusable certificates
+	find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
 
-kubeadm init phase certs etcd-server --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
-kubeadm init phase certs etcd-peer --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
-kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
-kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
-cp -R /etc/kubernetes/pki /tmp/${HOST1}/ && \
-find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
+	kubeadm init phase certs etcd-server --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+	kubeadm init phase certs etcd-peer --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+	kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+	kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+	cp -R /etc/kubernetes/pki /tmp/${HOST1}/ && \
+	find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
 
-kubeadm init phase certs etcd-server --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
-kubeadm init phase certs etcd-peer --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
-kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
-kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
-# No need to move the certs because they are for HOST0
+	kubeadm init phase certs etcd-server --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+	kubeadm init phase certs etcd-peer --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+	kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+	kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+	# No need to move the certs because they are for HOST0
 
-# clean up certs that should not be copied off this host
-find /tmp/${HOST2} -name ca.key -type f -delete && \
-find /tmp/${HOST1} -name ca.key -type f -delete && \
-vrai="0"
-nom="Etape ${numetape} - Création CA et certificats pour ETCD."
-verif
-####################################################
-#
-# Copie des certificats dans les noeuds master ETCD
-#
-#
-for HOST in ${HOST0} ${HOST1} ${HOST2}
-do
-vrai="1"
-USER=root
-#HOST=${HOST1}
-scp -r /tmp/${HOST}/* ${USER}@${HOST}:.
-ssh ${USER}@${HOST} chown -R root:root pki
-ssh ${USER}@${HOST} mv pki /etc/kubernetes/
-done
-vrai="0"
-nom="Etape ${numetape} - Copie des certificats dans les noeuds master ETCD."
-verif
-#############################################################
-#
-# Création des manifests de pods dans les noeuds master ETCD
-#
-#
-vrai="1"
-ssh root@HOST0 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
-ssh root@HOST1 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
-ssh root@HOST2 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
-vrai="0"
-nom="Etape ${numetape} - Création des manifests de pods dans les noeuds master ETCD."
-verif
-#############################################################
-#
-# Vérification de l'état de santée du cluster ETCD
-#
-#
-vrai="1"
-docker run --rm -it \
---net host \
--v /etc/kubernetes:/etc/kubernetes quay.io/coreos/etcd:${ETCD_TAG} etcdctl \
---cert-file /etc/kubernetes/pki/etcd/peer.crt \
---key-file /etc/kubernetes/pki/etcd/peer.key \
---ca-file /etc/kubernetes/pki/etcd/ca.crt \
---endpoints https://${HOST0}:2379 cluster-health
-echo " "
-echo "Faire entrée pour continuer ou contrôle C pour arréter."
-read tt && \
-vrai="0"
-nom="Etape ${numetape} - Vérification de l'état de santée du cluster ETCD."
-verif
-#################################################
-#
-# Création CA et certificats pour les liaisons TLS
-#
-#
-#vrai="1"
-#mkdir -p ~/k8s/crt ~/k8s/key ~/k8s/csr
-#cat <<EOF> ~/k8s/openssl.cnf
-#[ req ]
-#distinguished_name = req_distinguished_name
-#[req_distinguished_name]
-#[ v3_ca ]
-#basicConstraints = critical, CA:TRUE
-#keyUsage = critical, digitalSignature, keyEncipherment, keyCertSign
-#[ v3_req_etcd ]
-#basicConstraints = CA:FALSE
-#keyUsage = critical, digitalSignature, keyEncipherment
-#extendedKeyUsage = serverAuth, clientAuth
-#subjectAltName = @alt_names_etcd
-#[ alt_names_etcd ]
-#DNS.1 = master1-k8s.mon.dom
-#DNS.2 = master2-k8s.mon.dom
-#DNS.3 = master3-k8s.mon.dom
-#IP.1 = `nslookup master1-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
-#IP.2 = `nslookup master2-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
-#IP.3 = `nslookup master3-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
-#EOF
-#openssl genrsa -out ~/k8s/key/etcd-ca.key 4096
-#openssl req -x509 -new -sha256 -nodes -key ~/k8s/key/etcd-ca.key -days 3650 -out ~/k8s/crt/etcd-ca.crt -subj "/CN=etcd-ca" -extensions v3_ca -config ~/k8s/openssl.cnf
-#openssl genrsa -out ~/k8s/key/etcd.key 4096
-#openssl req -new -sha256 -key ~/k8s/key/etcd.key -subj "/CN=etcd" -out ~/k8s/csr/etcd.csr
-#openssl x509 -req -in ~/k8s/csr/etcd.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
-#openssl genrsa -out ~/k8s/key/etcd-peer.key 4096
-#openssl req -new -sha256 -key ~/k8s/key/etcd-peer.key -subj "/CN=etcd-peer" -out ~/k8s/csr/etcd-peer.csr
-#openssl x509 -req -in ~/k8s/csr/etcd-peer.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd-peer.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
-#vrai="0"
-#nom="Etape ${numetape} - Création CA et certificats pour les liaisons TLS"
-#verif
+	# clean up certs that should not be copied off this host
+	find /tmp/${HOST2} -name ca.key -type f -delete && \
+	find /tmp/${HOST1} -name ca.key -type f -delete && \
+	vrai="0"
+	nom="Etape ${numetape} - Création CA et certificats pour ETCD."
+	verif
+	####################################################
+	#
+	# Copie des certificats dans les noeuds master ETCD
+	#
+	#
+	for HOST in ${HOST0} ${HOST1} ${HOST2}
+	do
+	vrai="1"
+	USER=root
+	#HOST=${HOST1}
+	scp -r /tmp/${HOST}/* ${USER}@${HOST}:.
+	ssh ${USER}@${HOST} chown -R root:root pki
+	ssh ${USER}@${HOST} mv pki /etc/kubernetes/
+	done
+	vrai="0"
+	nom="Etape ${numetape} - Copie des certificats dans les noeuds master ETCD."
+	verif
+	#############################################################
+	#
+	# Création des manifests de pods dans les noeuds master ETCD
+	#
+	#
+	vrai="1"
+	ssh root@HOST0 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
+	ssh root@HOST1 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
+	ssh root@HOST2 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
+	vrai="0"
+	nom="Etape ${numetape} - Création des manifests de pods dans les noeuds master ETCD."
+	verif
+	#############################################################
+	#
+	# Vérification de l'état de santée du cluster ETCD
+	#
+	#
+	vrai="1"
+	docker run --rm -it \
+	--net host \
+	-v /etc/kubernetes:/etc/kubernetes quay.io/coreos/etcd:${ETCD_TAG} etcdctl \
+	--cert-file /etc/kubernetes/pki/etcd/peer.crt \
+	--key-file /etc/kubernetes/pki/etcd/peer.key \
+	--ca-file /etc/kubernetes/pki/etcd/ca.crt \
+	--endpoints https://${HOST0}:2379 cluster-health
+	echo " "
+	echo "Faire entrée pour continuer ou contrôle C pour arréter."
+	read tt && \
+	vrai="0"
+	nom="Etape ${numetape} - Vérification de l'état de santée du cluster ETCD."
+	verif
+	#################################################
+	#
+	# Création CA et certificats pour les liaisons TLS
+	#
+	#
+	#vrai="1"
+	#mkdir -p ~/k8s/crt ~/k8s/key ~/k8s/csr
+	#cat <<EOF> ~/k8s/openssl.cnf
+	#[ req ]
+	#distinguished_name = req_distinguished_name
+	#[req_distinguished_name]
+	#[ v3_ca ]
+	#basicConstraints = critical, CA:TRUE
+	#keyUsage = critical, digitalSignature, keyEncipherment, keyCertSign
+	#[ v3_req_etcd ]
+	#basicConstraints = CA:FALSE
+	#keyUsage = critical, digitalSignature, keyEncipherment
+	#extendedKeyUsage = serverAuth, clientAuth
+	#subjectAltName = @alt_names_etcd
+	#[ alt_names_etcd ]
+	#DNS.1 = master1-k8s.mon.dom
+	#DNS.2 = master2-k8s.mon.dom
+	#DNS.3 = master3-k8s.mon.dom
+	#IP.1 = `nslookup master1-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+	#IP.2 = `nslookup master2-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+	#IP.3 = `nslookup master3-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+	#EOF
+	#openssl genrsa -out ~/k8s/key/etcd-ca.key 4096
+	#openssl req -x509 -new -sha256 -nodes -key ~/k8s/key/etcd-ca.key -days 3650 -out ~/k8s/crt/etcd-ca.crt -subj "/CN=etcd-ca" -extensions v3_ca -config ~/k8s/openssl.cnf
+	#openssl genrsa -out ~/k8s/key/etcd.key 4096
+	#openssl req -new -sha256 -key ~/k8s/key/etcd.key -subj "/CN=etcd" -out ~/k8s/csr/etcd.csr
+	#openssl x509 -req -in ~/k8s/csr/etcd.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
+	#openssl genrsa -out ~/k8s/key/etcd-peer.key 4096
+	#openssl req -new -sha256 -key ~/k8s/key/etcd-peer.key -subj "/CN=etcd-peer" -out ~/k8s/csr/etcd-peer.csr
+	#openssl x509 -req -in ~/k8s/csr/etcd-peer.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd-peer.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
+	#vrai="0"
+	#nom="Etape ${numetape} - Création CA et certificats pour les liaisons TLS"
+	#verif
 
-fi
+	fi
 #################################################
 #
 #  Construction de l'ETCD dans chacun des trois noeuds.
@@ -1163,50 +1161,50 @@ fi
 
 
 #cd ~
-#for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
-#cat <<EOF>~/etcd.service
-#[Unit]
-#Description=etcd
-#Documentation=https://github.com/coreos
+	#for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
+	#cat <<EOF>~/etcd.service
+	#[Unit]
+	#Description=etcd
+	#Documentation=https://github.com/coreos
 
-#[Service]
-#ExecStart=/usr/local/bin/etcd \\
-#  --name ${master} \\
-#  --cert-file=/etc/etcd/pki/etcd.crt \\
-#  --key-file=/etc/etcd/pki/etcd.key \\
-#  --peer-cert-file=/etc/etcd/pki/etcd-peer.crt \\
-#  --peer-key-file=/etc/etcd/pki/etcd-peer.key \\
-#  --trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
-#  --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
-#  --peer-client-cert-auth \\
-#  --client-cert-auth \\
-#  --initial-advertise-peer-urls https://${master}:2380 \\
-#  --listen-peer-urls https://${master}:2380 \\
-#  --listen-client-urls https://${master}:2379,http://127.0.0.1:2379 \\
-#  --advertise-client-urls https://${master}:2379 \\
-#  --initial-cluster-token etcd-cluster-0 \\
-#  --initial-cluster master1-k8s.mon.dom=https://master1-k8s.mon.dom:2380,master2-k8s.mon.dom=https://master2-k8s.mon.dom:2380,master3-k8s.mon.dom=https://master3-k8s.mon.dom:2380 \\
-#  --data-dir=/var/lib/etcd
-#  --initial-cluster-state=new
-#Restart=on-failure
-#RestartSec=5
-#
-#[Install]
-#WantedBy=multi-user.target
-#EOF
-#ssh ${master} "test -d /etc/etcd/pki && rm -rf /etc/etcd/pki" ; \
-#ssh ${master} "test -d /var/lib/etcd && rm -rf /var/lib/etcd" ; \
-#ssh ${master} "mkdir -p /etc/etcd/pki ; mkdir -p /var/lib/etcd" ;  \
-#scp ~/k8s/crt/etcd* ~/k8s/key/etcd* ${master}:/etc/etcd/pki/;  \
-#scp etcd.service ${master}:/etc/systemd/system/etcd.service ; \
-#scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcd ${master}:/usr/local/bin; \
-#scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcdctl ${master}:/usr/local/bin;
-#done
+	#[Service]
+	#ExecStart=/usr/local/bin/etcd \\
+	#  --name ${master} \\
+	#  --cert-file=/etc/etcd/pki/etcd.crt \\
+	#  --key-file=/etc/etcd/pki/etcd.key \\
+	#  --peer-cert-file=/etc/etcd/pki/etcd-peer.crt \\
+	#  --peer-key-file=/etc/etcd/pki/etcd-peer.key \\
+	#  --trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
+	#  --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
+	#  --peer-client-cert-auth \\
+	#  --client-cert-auth \\
+	#  --initial-advertise-peer-urls https://${master}:2380 \\
+	#  --listen-peer-urls https://${master}:2380 \\
+	#  --listen-client-urls https://${master}:2379,http://127.0.0.1:2379 \\
+	#  --advertise-client-urls https://${master}:2379 \\
+	#  --initial-cluster-token etcd-cluster-0 \\
+	#  --initial-cluster master1-k8s.mon.dom=https://master1-k8s.mon.dom:2380,master2-k8s.mon.dom=https://master2-k8s.mon.dom:2380,master3-k8s.mon.dom=https://master3-k8s.mon.dom:2380 \\
+	#  --data-dir=/var/lib/etcd
+	#  --initial-cluster-state=new
+	#Restart=on-failure
+	#RestartSec=5
+	#
+	#[Install]
+	#WantedBy=multi-user.target
+	#EOF
+	#ssh ${master} "test -d /etc/etcd/pki && rm -rf /etc/etcd/pki" ; \
+	#ssh ${master} "test -d /var/lib/etcd && rm -rf /var/lib/etcd" ; \
+	#ssh ${master} "mkdir -p /etc/etcd/pki ; mkdir -p /var/lib/etcd" ;  \
+	#scp ~/k8s/crt/etcd* ~/k8s/key/etcd* ${master}:/etc/etcd/pki/;  \
+	#scp etcd.service ${master}:/etc/systemd/system/etcd.service ; \
+	#scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcd ${master}:/usr/local/bin; \
+	#scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcdctl ${master}:/usr/local/bin;
+	#done
 
-#for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
-#ssh  ${master} "systemctl daemon-reload" ; \
-#ssh ${master} "systemctl enable --now etcd" ; 
-#done
+	#for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
+	#ssh  ${master} "systemctl daemon-reload" ; \
+	#ssh ${master} "systemctl enable --now etcd" ; 
+	#done
 #vrai="0"
 #nom="Etape ${numetape} - Déploiement et démarrage du service ETCD sur chaque noeud master"
 #verif
@@ -1232,55 +1230,56 @@ fi
 #
 #
 #vrai="1"
-#if [ `hostname` = "master1-k8s.mon.dom" ]
-#then
-#cat <<EOF>~/kubeadm-init.yaml
-#apiVersion: kubeadm.k8s.io/v1beta2
-#kind: ClusterConfiguration
-#kubernetesVersion: stable
-#apiServer:
-# CertSANs:
-# - 10.0.0.100
-# - 10.0.0.110
-# - 10.0.0.111
-# - 10.0.0.112
-# - 10.0.0.113
-# - 10.0.0.114
-# - 10.0.0.115
-# - master1-k8s.mon.dom
-# - master2-k8s.mon.dom
-# - master3-k8s.mon.dom
-# - loadbalancer-k8s.mon.dom
-# - minion1-k8s.mon.dom
-# - minion2-k8s.mon.dom
-# - minion3-k8s.mon.dom
-#controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
-#etcd:
-#  external:
-#    endpoints:
-#    - https://master1-k8s.mon.dom:2379
-#    - https://master2-k8s.mon.dom:2379
-#    - https://master3-k8s.mon.dom:2379
-#    caFile: /etc/etcd/pki/etcd-ca.crt
-#    certFile: /etc/etcd/pki/etcd.crt
-#    keyFile: /etc/etcd/pki/etcd.key
-#networking:
-#  podSubnet: 192.168.0.0/16
-#apiServerExtraArgs:
-#  apiserver-count: "3"
-#EOF
-#
-#if [ -d /home/kubeadmin ]
-#then
-#userdel -r kubeadmin
-#useradd -m -s /bin/bash -G wheel,docker kubeadmin
-#else
-#useradd -m -s /bin/bash -G wheel,docker kubeadmin
-#fi
-#kubeadm init --config=kubeadm-init.yaml
-#vrai="0"
-#nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
-#verif
+	#if [ `hostname` = "master1-k8s.mon.dom" ]
+	#then
+	#cat <<EOF>~/kubeadm-init.yaml
+	#apiVersion: kubeadm.k8s.io/v1beta2
+	#kind: ClusterConfiguration
+	#kubernetesVersion: stable
+	#apiServer:
+	# CertSANs:
+	# - 10.0.0.100
+	# - 10.0.0.110
+	# - 10.0.0.111
+	# - 10.0.0.112
+	# - 10.0.0.113
+	# - 10.0.0.114
+	# - 10.0.0.115
+	# - master1-k8s.mon.dom
+	# - master2-k8s.mon.dom
+	# - master3-k8s.mon.dom
+	# - loadbalancer-k8s.mon.dom
+	# - minion1-k8s.mon.dom
+	# - minion2-k8s.mon.dom
+	# - minion3-k8s.mon.dom
+	#controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
+	#etcd:
+	#  external:
+	#    endpoints:
+	#    - https://master1-k8s.mon.dom:2379
+	#    - https://master2-k8s.mon.dom:2379
+	#    - https://master3-k8s.mon.dom:2379
+	#    caFile: /etc/etcd/pki/etcd-ca.crt
+	#    certFile: /etc/etcd/pki/etcd.crt
+	#    keyFile: /etc/etcd/pki/etcd.key
+	#networking:
+	#  podSubnet: 192.168.0.0/16
+	#apiServerExtraArgs:
+	#  apiserver-count: "3"
+	#EOF
+	#
+		#if [ -d /home/kubeadmin ]
+		#then
+		#userdel -r kubeadmin
+		#useradd -m -s /bin/bash -G wheel,docker kubeadmin
+		#else
+		#useradd -m -s /bin/bash -G wheel,docker kubeadmin
+		#fi
+	#kubeadm init --config=kubeadm-init.yaml
+	#vrai="0"
+	#nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
+	#verif
+	#fi
 #################################################
 # 
 # permettre à root de temporairement gérer le cluster kubernetes
@@ -1298,11 +1297,9 @@ verif
 #
 vrai="1"
 kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml && \
-
 vrai="0"
 nom="Etape ${numetape} - Installation de calico"
 verif
-#fi
 ################################################
 #
 # Déploiement du persistentVolumeDynamique sur le cluster
@@ -1313,14 +1310,12 @@ verif
 #vrai="0"
 #nom="Etape ${numetape} - Déploiement du persistentVolumeDynamique sur le cluster"
 #verif
-fi
-
 #####################################################################
 #                                                                   #
 #                     Fin de la configuration master                #
 #                                                                   #
 #####################################################################
-
+fi
 
 ############################################################################################
 #                                                                                          #
@@ -1329,61 +1324,61 @@ fi
 ############################################################################################
 if [ "${node}" = "worker" ]
 then
-  if [ "$prox" = "yes" ]
-  then
-    if [ "$auth" = "y" -o "$auth" = "Y" ]
-    then
-    profilproxyauth
-    yumproxyauth
-      if [ -d /etc/systemd/system/docker.service.d/ ]
-      then
-      dockerproxyauth
-      else
-      mkdir -p /etc/systemd/system/docker.service.d/
-      dockerproxyauth
-      fi
-      if [ -d /home/stagiaire/.docker/ ]
-      then
-      clientdockerproxyauth
-      else
-      mkdir -p /home/stagiaire/.docker/
-      clientdockerproxyauth
-      fi
-      if [ -d /root/.docker/ ]
-      then
-      clientdockerproxyauth
-      else
-      mkdir -p /root/.docker/
-      clientdockerproxyauth
-      fi
-    ################  fin de la conf proxy avec auth
-    elif [ "$auth" = "n" -o "$auth" = "N" ]
-    then
-    profilproxy
-    yumproxy
-      if [ -d /etc/systemd/system/docker.service.d/ ]
-      then
-      dockerproxy
-      else
-      mkdir -p /etc/systemd/system/docker.service.d/
-      dockerproxy
-      fi
-      if [ -d /home/stagiaire/.docker/ ]
-      then
-      clientdockerproxy
-      else
-      mkdir -p /home/stagiaire/.docker/
-      clientdockerproxy
-      fi
-      if [ -d /root/.docker/ ]
-      then
-      clientdockerproxy
-      else
-      mkdir -p /root/.docker/
-      clientdockerproxy
-      fi
-    fi
-  fi
+	if [ "$prox" = "yes" ]
+	then
+		if [ "$auth" = "y" -o "$auth" = "Y" ]
+		then
+		profilproxyauth
+		yumproxyauth
+			if [ -d /etc/systemd/system/docker.service.d/ ]
+			then
+			dockerproxyauth
+			else
+			mkdir -p /etc/systemd/system/docker.service.d/
+			dockerproxyauth
+			fi
+			if [ -d /home/stagiaire/.docker/ ]
+			then
+			clientdockerproxyauth
+			else
+			mkdir -p /home/stagiaire/.docker/
+			clientdockerproxyauth
+			fi
+			if [ -d /root/.docker/ ]
+			then
+			clientdockerproxyauth
+			else
+			mkdir -p /root/.docker/
+			clientdockerproxyauth
+			fi
+			################  fin de la conf proxy avec auth
+		elif [ "$auth" = "n" -o "$auth" = "N" ]
+		then
+		profilproxy
+		yumproxy
+			if [ -d /etc/systemd/system/docker.service.d/ ]
+			then
+			dockerproxy
+			else
+			mkdir -p /etc/systemd/system/docker.service.d/
+			dockerproxy
+			fi
+			if [ -d /home/stagiaire/.docker/ ]
+			then
+			clientdockerproxy
+			else
+			mkdir -p /home/stagiaire/.docker/
+			clientdockerproxy
+			fi
+			if [ -d /root/.docker/ ]
+			then
+			clientdockerproxy
+			else
+			mkdir -p /root/.docker/
+			clientdockerproxy
+			fi
+		fi
+	fi
 vrai="1"
 systemctl restart NetworkManager && \
 vrai="0"
