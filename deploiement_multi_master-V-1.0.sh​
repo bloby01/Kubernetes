@@ -1272,7 +1272,7 @@ ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 	#vrai="0"
 	#nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
 	#verif
-	#fi
+	fi
 #################################################
 # 
 # permettre à root de temporairement gérer le cluster kubernetes
