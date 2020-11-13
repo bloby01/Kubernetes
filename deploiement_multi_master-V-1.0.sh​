@@ -759,7 +759,24 @@ fi
 #                       Déploiement sur masters Kubernetes                                   #
 #                                                                                          #
 ############################################################################################
-# 
+for HOST in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom
+do
+#################################################
+#
+# Création des clés pour ssh-copy-id
+#
+#
+vrai="1"
+rm -rf ~/.ssh/id_rsa*
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
+for i in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom
+do
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i}
+done
+vrai="0"
+nom="Etape ${numetape} - Création des clés pour ssh-copy-id."
+verif
+#
 # installation du repo kubernetes et des paramètres.
 #
 #
@@ -882,57 +899,165 @@ if [ `hostname` = "master1-k8s.mon.dom" ]
 then
 #################################################
 #
-# Création des clés pour ssh-copy-id
+# Création du fichier de démarrage de service ETCD
+#                avec une priorité haute
+#
+vrai="1"
+cat << EOF > /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
+[Service]
+ExecStart=
+ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests
+Restart=always
+EOF
+systemctl daemon-reload && \
+systemctl restart kubelet && \
+vrai="0"
+nom="Etape ${numetape} - Création du fichier de démarrage de service ETCD avec une priorité haute."
+verif
+#################################################
+#
+# Création d'un fichier de configuration pour chaque noeud membre ETCD
+#
+vrai="1"
+# Update HOST0, HOST1, and HOST2 with the IPs or resolvable names of your hosts
+export HOST0=master1-k8s.mon.dom
+export HOST1=master2-k8s.mon.dom
+export HOST2=master3-k8s.mon.dom
+
+# Create temp directories to store files that will end up on other hosts.
+mkdir -p /tmp/${HOST0}/ /tmp/${HOST1}/ /tmp/${HOST2}/
+
+ETCDHOSTS=(${HOST0} ${HOST1} ${HOST2})
+NAMES=("infra0" "infra1" "infra2")
+
+for i in "${!ETCDHOSTS[@]}"; do
+HOST=${ETCDHOSTS[$i]}
+NAME=${NAMES[$i]}
+cat << EOF > /tmp/${HOST}/kubeadmcfg.yaml
+apiVersion: "kubeadm.k8s.io/v1beta1"
+kind: ClusterConfiguration
+etcd:
+    local:
+        serverCertSANs:
+        - "${HOST}"
+        peerCertSANs:
+        - "${HOST}"
+        extraArgs:
+            initial-cluster: ${NAMES[0]}=https://${ETCDHOSTS[0]}:2380,${NAMES[1]}=https://${ETCDHOSTS[1]}:2380,${NAMES[2]}=https://${ETCDHOSTS[2]}:2380
+            initial-cluster-state: new
+            name: ${NAME}
+            listen-peer-urls: https://${HOST}:2380
+            listen-client-urls: https://${HOST}:2379
+            advertise-client-urls: https://${HOST}:2379
+            initial-advertise-peer-urls: https://${HOST}:2380
+EOF
+done && \
+vrai="0"
+nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
+verif
+#################################################
+#
+# Création CA et certificats pour ETCD
+#
+#
+#vrai="1"
+kubeadm init phase certs etcd-ca && \
+kubeadm init phase certs etcd-server --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+kubeadm init phase certs etcd-peer --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+cp -R /etc/kubernetes/pki /tmp/${HOST2}/ && \
+# cleanup non-reusable certificates
+find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
+
+kubeadm init phase certs etcd-server --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+kubeadm init phase certs etcd-peer --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+cp -R /etc/kubernetes/pki /tmp/${HOST1}/ && \
+find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
+
+kubeadm init phase certs etcd-server --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+kubeadm init phase certs etcd-peer --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+# No need to move the certs because they are for HOST0
+
+# clean up certs that should not be copied off this host
+find /tmp/${HOST2} -name ca.key -type f -delete && \
+find /tmp/${HOST1} -name ca.key -type f -delete && \
+vrai="0"
+nom="Etape ${numetape} - Création CA et certificats pour ETCD."
+verif
+####################################################
+#
+# Copie des certificats dans les noeuds master ETCD
+#
+#
+for HOST in ${HOST0} ${HOST1} ${HOST2}
+do
+vrai="1"
+USER=root
+#HOST=${HOST1}
+scp -r /tmp/${HOST}/* ${USER}@${HOST}: 
+ssh ${USER}@${HOST} chown -R root:root pki
+ssh ${USER}@${HOST} mv pki /etc/kubernetes/
+done
+vrai="0"
+nom="Etape ${numetape} - Copie des certificats dans les noeuds master ETCD."
+verif
+#############################################################
+#
+# Création des manifests de pods dans les noeuds master ETCD
 #
 #
 vrai="1"
-rm -rf ~/.ssh/id_rsa*
-ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
-for i in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom
-do
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i}
-done
+ssh root@HOST0 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
+ssh root@HOST1 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
+ssh root@HOST2 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
 vrai="0"
-nom="Etape ${numetape} - Configuration du ssh agent"
+nom="Etape ${numetape} - Création des manifests de pods dans les noeuds master ETCD."
 verif
+
 #################################################
 #
 # Création CA et certificats pour les liaisons TLS
 #
 #
-vrai="1"
-mkdir -p ~/k8s/crt ~/k8s/key ~/k8s/csr
-cat <<EOF> ~/k8s/openssl.cnf
-[ req ]
-distinguished_name = req_distinguished_name
-[req_distinguished_name]
-[ v3_ca ]
-basicConstraints = critical, CA:TRUE
-keyUsage = critical, digitalSignature, keyEncipherment, keyCertSign
-[ v3_req_etcd ]
-basicConstraints = CA:FALSE
-keyUsage = critical, digitalSignature, keyEncipherment
-extendedKeyUsage = serverAuth, clientAuth
-subjectAltName = @alt_names_etcd
-[ alt_names_etcd ]
-DNS.1 = master1-k8s.mon.dom
-DNS.2 = master2-k8s.mon.dom
-DNS.3 = master3-k8s.mon.dom
-IP.1 = `nslookup master1-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
-IP.2 = `nslookup master2-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
-IP.3 = `nslookup master3-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
-EOF
-openssl genrsa -out ~/k8s/key/etcd-ca.key 4096
-openssl req -x509 -new -sha256 -nodes -key ~/k8s/key/etcd-ca.key -days 3650 -out ~/k8s/crt/etcd-ca.crt -subj "/CN=etcd-ca" -extensions v3_ca -config ~/k8s/openssl.cnf
-openssl genrsa -out ~/k8s/key/etcd.key 4096
-openssl req -new -sha256 -key ~/k8s/key/etcd.key -subj "/CN=etcd" -out ~/k8s/csr/etcd.csr
-openssl x509 -req -in ~/k8s/csr/etcd.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
-openssl genrsa -out ~/k8s/key/etcd-peer.key 4096
-openssl req -new -sha256 -key ~/k8s/key/etcd-peer.key -subj "/CN=etcd-peer" -out ~/k8s/csr/etcd-peer.csr
-openssl x509 -req -in ~/k8s/csr/etcd-peer.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd-peer.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
-vrai="0"
-nom="Etape ${numetape} - Création CA et certificats pour les liaisons TLS"
-verif
+#vrai="1"
+#mkdir -p ~/k8s/crt ~/k8s/key ~/k8s/csr
+#cat <<EOF> ~/k8s/openssl.cnf
+#[ req ]
+#distinguished_name = req_distinguished_name
+#[req_distinguished_name]
+#[ v3_ca ]
+#basicConstraints = critical, CA:TRUE
+#keyUsage = critical, digitalSignature, keyEncipherment, keyCertSign
+#[ v3_req_etcd ]
+#basicConstraints = CA:FALSE
+#keyUsage = critical, digitalSignature, keyEncipherment
+#extendedKeyUsage = serverAuth, clientAuth
+#subjectAltName = @alt_names_etcd
+#[ alt_names_etcd ]
+#DNS.1 = master1-k8s.mon.dom
+#DNS.2 = master2-k8s.mon.dom
+#DNS.3 = master3-k8s.mon.dom
+#IP.1 = `nslookup master1-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+#IP.2 = `nslookup master2-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+#IP.3 = `nslookup master3-k8s.mon.dom | tail -2 | cut -f 2 -d " "`
+#EOF
+#openssl genrsa -out ~/k8s/key/etcd-ca.key 4096
+#openssl req -x509 -new -sha256 -nodes -key ~/k8s/key/etcd-ca.key -days 3650 -out ~/k8s/crt/etcd-ca.crt -subj "/CN=etcd-ca" -extensions v3_ca -config ~/k8s/openssl.cnf
+#openssl genrsa -out ~/k8s/key/etcd.key 4096
+#openssl req -new -sha256 -key ~/k8s/key/etcd.key -subj "/CN=etcd" -out ~/k8s/csr/etcd.csr
+#openssl x509 -req -in ~/k8s/csr/etcd.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
+#openssl genrsa -out ~/k8s/key/etcd-peer.key 4096
+#openssl req -new -sha256 -key ~/k8s/key/etcd-peer.key -subj "/CN=etcd-peer" -out ~/k8s/csr/etcd-peer.csr
+#openssl x509 -req -in ~/k8s/csr/etcd-peer.csr -sha256 -CA ~/k8s/crt/etcd-ca.crt -CAkey ~/k8s/key/etcd-ca.key -CAcreateserial -out ~/k8s/crt/etcd-peer.crt -days 365 -extensions v3_req_etcd -extfile ~/k8s/openssl.cnf
+#vrai="0"
+#nom="Etape ${numetape} - Création CA et certificats pour les liaisons TLS"
+#verif
+
 fi
 #################################################
 #
