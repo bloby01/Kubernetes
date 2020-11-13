@@ -1302,7 +1302,7 @@ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml && \
 vrai="0"
 nom="Etape ${numetape} - Installation de calico"
 verif
-fi
+#fi
 ################################################
 #
 # Déploiement du persistentVolumeDynamique sur le cluster
