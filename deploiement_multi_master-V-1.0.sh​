@@ -421,13 +421,13 @@ then
 vrai="1"
 x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
-export node="worker"
+export node="${noeud}"
 elif [ "${noeud}" = "master" ]
 then
 vrai="1"
 x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
-export node="master" && \
+export node="${noeud}" && \
 selinuxSwap && \
 cat <<EOF > /etc/resolv.conf
 options ndots:15 timeout:1 attempts:5
@@ -442,7 +442,7 @@ elif [ "${noeud}" = "loadbalancer" ]
 then
 vrai="1"
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
-export node="loadbalancer" && \
+export node="${noeud}" && \
 cat <<EOF > /etc/resolv.conf
 options ndots:15 timeout:1 attempts:5
 domain mon.dom
@@ -458,7 +458,7 @@ fi
 #######################
 
 vrai="1"
-x=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
+t=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
 if [ "${t}" = "y" -o "${t}" = "Y" ]
 then
 prox="yes"
