@@ -418,9 +418,9 @@ read noeud
 done
 
 #######################
-# passage de proxy    #
-#######################
-
+# Passage de proxy    
+#
+#
 vrai="1"
 t=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
 if [ "${t}" = "y" -o "${t}" = "Y" ]
@@ -439,7 +439,7 @@ auth=0 ; until [ "${auth}" = "y" -o "${auth}" = "Y" -o "${auth}" = "n" -o "${aut
 	fi
 fi
 vrai="0"
-nom="Etape ${numetape} - Serveur proxy"
+nom="Etape ${numetape} - Passage de proxy"
 verif
 
 #################################################
@@ -554,189 +554,179 @@ vrai="1"
 			fi
 		fi
 	fi
-	vrai="0"
-	nom="Etape ${numetape} - Déclaration du proxy"
-	verif
-	#################################################
-	#     Liste des interface réseaux sur LB        #
-	#################################################
-	vrai="1"
-	clear
-	echo ""
-	echo "liste des interfaces réseaux disponibles:"
-	echo ""
-	echo "-----------------------------------------"
-	echo "`ip link`"
-	echo ""
-	echo "-----------------------------------------"
-	echo ""
-	echo -n "Mettre le nom de l'interface réseaux Interne: "
-	read eth1 && \
-	repok8s && \
-	selinuxSwap && \
-	vrai="0"
-	nom="Etape ${numetape} - Selection de l'interface réseau interne du LB"
-	verif
-	#################################################
-	# 
-	# installation des applications.
-	#
-	#
-	vrai="1"
-	yum  install -y ${applb} && \
-	vrai="0"
-	nom="Etape ${numetape} - Installation des outils et services sur LB"
-	verif
-	#################################################
-	#
-	# Configuration du service NFS.
-	#
-	#
-	vrai="1"
-	nfsconfigserver && \
-	vrai="0"
-	nom="Etape ${numetape} - Configuration du service NFS"
-	verif
-	#################################################
-	# 
-	# Configuration et démarrage du serveur BIND9 selon le rôle de chacuns.
-	#
-	#
-	vrai="1"
-	dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
-	cat <<EOF > /etc/named/ddns.key
-	key DDNS_UPDATE {
-		algorithm HMAC-MD5.SIG-ALG.REG.INT;
-	  secret "bad" ;
-	};
-	EOF
-	secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
-	sed -i -e "s|bad|$secret|g" /etc/named/ddns.key &&\
-	chown root:named /etc/named/ddns.key && \
-	chmod 640 /etc/named/ddns.key && \
-	sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 10.0.0.100; 127.0.0.1; };|g" /etc/named.conf &&\
-	sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;10.0.0.0/24; };|g" /etc/named.conf && \
-	echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
-	named && \
-	namedMonDom && \
-	chown root:named /var/named/mon.dom.db && \
-	chmod 660 /var/named/mon.dom.db && \
-	namedRevers && \
-	chown root:named /var/named/10.0.0.db && \
-	chmod 660 /var/named/10.0.0.db && \
-	systemctl enable --now named.service && \
-	vrai="0"
-	nom="Etape ${numetape} - Configuration et demarrage de bind"
-	verif
-	#################################################
-	# 
-	# configuration du NAT sur LB
-	#
-	vrai="1"
-	firewall-cmd --permanent --add-masquerade && \
-	firewall-cmd --add-masquerade && \
-	vrai="0"
-	nom="Etape ${numetape} - Mise en place du NAT"
-	verif
-	#################################################
-	# 
-	# configuration du dhcp avec inscription dans le DNS
-	#
-	#
-	vrai="1"
-	dhcp && \
-	sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
-	systemctl enable  --now  dhcpd.service && \
-	vrai="0"
-	nom="Etape ${numetape} - Configuration et start du service dhcp"
-	verif
-	#################################################
-	# 
-	# installation du modules bridge.
-	# et activation du routage
-	#
-	vrai="1"
-	moduleBr && \
-	vrai="0"
-	nom="Etape ${numetape} - Installation du module de brige"
-	verif
-	#################################################
-	# 
-	# installation de docker
-	#
-	#
-	vrai="1"
-	docker && \
-	vrai="0"
-	nom="Etape ${numetape} - Configuration et installation du service docker-ce"
-	verif
-	#############################################################
-	#                                                           #
-	#             Configuration du LB Nginx avec docker         #
-	#                                                           #
-	#############################################################
-	mkdir -p ~/nginx && cd ~/nginx
-	cat <<EOF> nginx.conf
-	worker_processes  1;
-	include /etc/nginx/modules-enabled/*.conf;
-	error_log  /var/log/nginx/error.log warn;
-	pid        /var/run/nginx.pid;
+vrai="0"
+nom="Etape ${numetape} - Déclaration du proxy"
+verif
+#################################################
+#     Liste des interface réseaux sur LB        #
+#################################################
+vrai="1"
+clear
+echo ""
+echo "liste des interfaces réseaux disponibles:"
+echo ""
+echo "-----------------------------------------"
+echo "`ip link`"
+echo ""
+echo "-----------------------------------------"
+echo ""
+echo -n "Mettre le nom de l'interface réseaux Interne: "
+read eth1 && \
+repok8s && \
+selinuxSwap && \
+vrai="0"
+nom="Etape ${numetape} - Selection de l'interface réseau interne du LB"
+verif
+#################################################
+# 
+# installation des applications.
+#
+#
+vrai="1"
+yum  install -y ${applb} && \
+vrai="0"
+nom="Etape ${numetape} - Installation des outils et services sur LB"
+verif
+#################################################
+#
+# Configuration du service NFS.
+#
+#
+vrai="1"
+nfsconfigserver && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du service NFS"
+verif
+#################################################
+# 
+# Configuration et démarrage du serveur BIND9 selon le rôle de chacuns.
+#
+#
+vrai="1"
+dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
+cat <<EOF > /etc/named/ddns.key
+key DDNS_UPDATE {
+	algorithm HMAC-MD5.SIG-ALG.REG.INT;
+  secret "bad" ;
+};
+EOF
+secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
+sed -i -e "s|bad|$secret|g" /etc/named/ddns.key &&\
+chown root:named /etc/named/ddns.key && \
+chmod 640 /etc/named/ddns.key && \
+sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 10.0.0.100; 127.0.0.1; };|g" /etc/named.conf &&\
+sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;10.0.0.0/24; };|g" /etc/named.conf && \
+echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
+named && \
+namedMonDom && \
+chown root:named /var/named/mon.dom.db && \
+chmod 660 /var/named/mon.dom.db && \
+namedRevers && \
+chown root:named /var/named/10.0.0.db && \
+chmod 660 /var/named/10.0.0.db && \
+systemctl enable --now named.service && \
+vrai="0"
+nom="Etape ${numetape} - Configuration et demarrage de bind"
+verif
+#################################################
+# 
+# configuration du NAT sur LB
+#
+vrai="1"
+firewall-cmd --permanent --add-masquerade && \
+firewall-cmd --add-masquerade && \
+vrai="0"
+nom="Etape ${numetape} - Mise en place du NAT"
+verif
+#################################################
+# 
+# configuration du dhcp avec inscription dans le DNS
+#
+#
+vrai="1"
+dhcp && \
+sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
+systemctl enable  --now  dhcpd.service && \
+vrai="0"
+nom="Etape ${numetape} - Configuration et start du service dhcp"
+verif
+#################################################
+# 
+# installation du modules bridge.
+# et activation du routage
+#
+vrai="1"
+moduleBr && \
+vrai="0"
+nom="Etape ${numetape} - Installation du module de brige"
+verif
+#################################################
+# 
+# installation de docker
+#
+#
+vrai="1"
+docker && \
+vrai="0"
+nom="Etape ${numetape} - Configuration et installation du service docker-ce"
+verif
+#############################################################
+#                                                           #
+#             Configuration du LB Nginx avec docker         #
+#                                                           #
+#############################################################
+mkdir -p ~/nginx && cd ~/nginx
+cat <<EOF> nginx.conf
+worker_processes  1;
+include /etc/nginx/modules-enabled/*.conf;
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
 
+events {
+    worker_connections  1024;
+}
 
-	events {
-	    worker_connections  1024;
-	}
-
-
-	http {
-	    include       /etc/nginx/mime.types;
-	    default_type  application/octet-stream;
-
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
 	    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-			      '$status $body_bytes_sent "$http_referer" '
-			      '"$http_user_agent" "$http_x_forwarded_for"';
-
+		      '$status $body_bytes_sent "$http_referer" '
+		      '"$http_user_agent" "$http_x_forwarded_for"';
 	    access_log  /var/log/nginx/access.log  main;
-
 	    sendfile        on;
-	    #tcp_nopush     on;
-
+    #tcp_nopush     on;
 	    keepalive_timeout  65;
-
 	    #gzip  on;
-
 	    include /etc/nginx/conf.d/*.conf;
+}
+stream {
+	upstream apiserver {
+	    server master1-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
+	    server master2-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
+	    server master3-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
+	    #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
+	    #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
 	}
-	stream {
-		upstream apiserver {
-		    server master1-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
-		    server master2-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
-		    server master3-k8s.mon.dom:6443 weight=5 max_fails=3 fail_timeout=30s;
-		    #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
-		    #server ${HOST_IP}:6443 weight=5 max_fails=3 fail_timeout=30s;
-		}
-
 	    server {
-		listen 6443;
-		proxy_connect_timeout 1s;
-		proxy_timeout 3s;
-		proxy_pass apiserver;
-	    }
-	}
-	EOF
-
-	cat <<EOF > Dockerfile
-	FROM nginx
-	add nginx.conf /etc/nginx/nginx.conf
-	EOF
-	su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
-	############################################################################################
-	#                                                                                          #
-	#	                 Fin deu Déploiement loadbalancer                                  #
-	#	                                                                                   #
-	############################################################################################
-
-elif [ "${noeud}" = "master" ]
+	listen 6443;
+	proxy_connect_timeout 1s;
+	proxy_timeout 3s;
+	proxy_pass apiserver;
+    }
+}
+EOF
+cat <<EOF > Dockerfile
+FROM nginx
+add nginx.conf /etc/nginx/nginx.conf
+EOF
+su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
+############################################################################################
+#                                                                                          #
+#	                 Fin deu Déploiement loadbalancer                                  #
+#	                                                                                   #
+############################################################################################
+fi
+if [ "${noeud}" = "master" ]
 then
 #################################################
 # 
@@ -1311,7 +1301,8 @@ verif
 #                       Déploiement des workers Kubernetes                                 #
 #                                                                                          #
 ############################################################################################
-elif [ "${noeud}" = "worker" ]
+fi
+if [ "${noeud}" = "worker" ]
 then
 #################################################
 # 
@@ -1352,7 +1343,7 @@ verif
 			mkdir -p /root/.docker/
 			clientdockerproxyauth
 			fi
-			################  fin de la conf proxy avec auth
+		################  fin de la conf proxy avec auth
 		elif [ "$auth" = "n" -o "$auth" = "N" ]
 		then
 		profilproxy
