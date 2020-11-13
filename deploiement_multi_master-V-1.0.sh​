@@ -912,12 +912,12 @@ vrai="1"
 		else
 		mkdir /etc/systemd/system/kubelet.service.d
 		fi
-  cat <<__EOF__> /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
+  cat <<EOF> /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
 	[Service]
 	ExecStart=
 	ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests
 	Restart=always
-  __EOF__
+EOF
 	systemctl daemon-reload && \
 	systemctl restart kubelet && \
 	vrai="0"
@@ -942,7 +942,7 @@ vrai="1"
 		for i in "${!ETCDHOSTS[@]}"; do
 		HOST=${ETCDHOSTS[$i]}
 		NAME=${NAMES[$i]}
-		cat <<TER_> /tmp/${HOST}/kubeadmcfg.yaml
+		cat <<EOF> /tmp/${HOST}/kubeadmcfg.yaml
 		apiVersion: kubeadm.k8s.io/v1beta2
 		kind: ClusterConfiguration
 		kubernetesVersion: stable
@@ -992,7 +992,7 @@ vrai="1"
 		#            listen-client-urls: https://${HOST}:2379
 		#            advertise-client-urls: https://${HOST}:2379
 		#            initial-advertise-peer-urls: https://${HOST}:2380
-		TER_
+EOF
 		done && \
 	vrai="0"
 	nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
