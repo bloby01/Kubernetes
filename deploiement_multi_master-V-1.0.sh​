@@ -781,11 +781,12 @@ echo "#                    de passer à l'étape suivante."
 echo " "
 until [ "${aa}" = "y" -o "${aa}" = "Y" ]
 do
+clear
 ping -c1 ${HOST0}
 ping -c1 ${HOST1}
 ping -c1 ${HOST2}
 echo " "
-echo "Vous confirmez voir la réponse au ping des trois noeuds? y/n"
+echo -n "Vous confirmez voir la réponse au ping des trois noeuds? y/n: "
 read aa
 done
 #################################################
@@ -928,7 +929,13 @@ then
 #                avec une priorité haute
 #
 vrai="1"
-cat << EOF > /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
+if [ -d /etc/systemd/system/kubelet.service.d/ ]
+then 
+echo "le dossier /etc/systemd/system/kubelet.service.d/ est présent. "
+else
+mkdir /etc/systemd/system/kubelet.service.d
+fi
+cat <<EOF> /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
 [Service]
 ExecStart=
 ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests
