@@ -105,7 +105,7 @@ systemctl enable --now nfs-server
 verif(){
 numetape=`expr ${numetape} + 1 `
   if [ "${vrai}" -eq "0" ]; then
-    echo "Machine: ${node}${x}-k8s.mon.dom - ${nom} - OK"
+    echo "Machine: ${HOST} - ${nom} - OK"
   else
     echo "Erreur sur Machine: ${node}${x}-k8s.mon.dom - ${nom} - ERREUR"
     exit 0
@@ -722,8 +722,8 @@ EOF
 su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
 ############################################################################################
 #                                                                                          #
-#	                 Fin deu Déploiement loadbalancer                                  #
-#	                                                                                   #
+#	                 Fin deu Déploiement loadbalancer                                        #
+#	                                                                                         #
 ############################################################################################
 fi
 if [ "${noeud}" = "master" ]
@@ -737,6 +737,7 @@ vrai="1"
 x="0" ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer 1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
 export node="${noeud}" && \
+export HOST="${node}" && \
 selinuxSwap && \
 cat <<EOF > /etc/resolv.conf
 options ndots:15 timeout:1 attempts:5
