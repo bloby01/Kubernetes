@@ -942,7 +942,7 @@ vrai="1"
 		for i in "${!ETCDHOSTS[@]}"; do
 		HOST=${ETCDHOSTS[$i]}
 		NAME=${NAMES[$i]}
-		cat <<__EOF__> /tmp/${HOST}/kubeadmcfg.yaml
+		cat <<TER_> /tmp/${HOST}/kubeadmcfg.yaml
 		apiVersion: kubeadm.k8s.io/v1beta2
 		kind: ClusterConfiguration
 		kubernetesVersion: stable
@@ -992,7 +992,7 @@ vrai="1"
 		#            listen-client-urls: https://${HOST}:2379
 		#            advertise-client-urls: https://${HOST}:2379
 		#            initial-advertise-peer-urls: https://${HOST}:2380
-		__EOF__
+		TER_
 		done && \
 	vrai="0"
 	nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
