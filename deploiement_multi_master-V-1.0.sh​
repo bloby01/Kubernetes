@@ -1,7 +1,7 @@
 #!/bin/bash
 #   Version : 1.0
 #   Deploiement sur CentOS 8 minimum.
-#   
+#
 #   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
 #   !!!!!!!!!!!!!   vérifier le proxy avec login et password
 #
@@ -67,7 +67,7 @@
 
 numetape=0
 NBR=0
-applb="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server kubectl --disableexcludes=kubernetes" 
+applb="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server kubectl --disableexcludes=kubernetes"
 appmaster="nfs-utils bind-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 appworker="nfs-utils bind-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 export HOST0=master1-k8s.mon.dom
@@ -418,7 +418,7 @@ read noeud
 done
 
 #######################
-# Passage de proxy    
+# Passage de proxy
 #
 #
 vrai="1"
@@ -443,7 +443,7 @@ nom="Etape ${numetape} - Passage de proxy"
 verif
 
 #################################################
-# 
+#
 # Libre passage des flux in et out sur les interfaces réseaux
 #
 #
@@ -578,7 +578,7 @@ vrai="0"
 nom="Etape ${numetape} - Selection de l'interface réseau interne du LB"
 verif
 #################################################
-# 
+#
 # installation des applications.
 #
 #
@@ -598,7 +598,7 @@ vrai="0"
 nom="Etape ${numetape} - Configuration du service NFS"
 verif
 #################################################
-# 
+#
 # Configuration et démarrage du serveur BIND9 selon le rôle de chacuns.
 #
 #
@@ -629,7 +629,7 @@ vrai="0"
 nom="Etape ${numetape} - Configuration et demarrage de bind"
 verif
 #################################################
-# 
+#
 # configuration du NAT sur LB
 #
 vrai="1"
@@ -639,7 +639,7 @@ vrai="0"
 nom="Etape ${numetape} - Mise en place du NAT"
 verif
 #################################################
-# 
+#
 # configuration du dhcp avec inscription dans le DNS
 #
 #
@@ -651,7 +651,7 @@ vrai="0"
 nom="Etape ${numetape} - Configuration et start du service dhcp"
 verif
 #################################################
-# 
+#
 # installation du modules bridge.
 # et activation du routage
 #
@@ -661,7 +661,7 @@ vrai="0"
 nom="Etape ${numetape} - Installation du module de brige"
 verif
 #################################################
-# 
+#
 # installation de docker
 #
 #
@@ -729,7 +729,7 @@ fi
 if [ "${noeud}" = "master" ]
 then
 #################################################
-# 
+#
 # Configuration du nom du noeud + resolv.conf + SwapOFF + SELinux à permissive
 #
 #
@@ -842,7 +842,7 @@ verif
 			fi
 		fi
 	################################################
-	# 
+	#
 	# installation du repository kubernetes.
 	#
 	#
@@ -852,7 +852,7 @@ verif
 	nom="Etape ${numetape} - Installation du repository kubernetes sur le master"
 	verif
 	################################################
-	# 
+	#
 	# installation des applications.
 	#
 	#
@@ -862,7 +862,7 @@ verif
 	nom="Etape ${numetape} - Installation des outils et services sur le master"
 	verif
 	#################################################
-	# 
+	#
 	# installation du modules bridge.
 	# et activation du routage
 	#
@@ -872,7 +872,7 @@ verif
 	nom="Etape ${numetape} - Installation du module de brige"
 	verif
 	#################################################
-	# 
+	#
 	# Démarrage du service kubelet
 	#
 	#
@@ -882,7 +882,7 @@ verif
 	nom="Etape ${numetape} - Démarrage de la kubelet"
 	verif
 	#################################################
-	# 
+	#
 	# installation de docker
 	#
 	#
@@ -907,17 +907,17 @@ vrai="1"
 	#
 	vrai="1"
 		if [ -d /etc/systemd/system/kubelet.service.d/ ]
-		then 
+		then
 		echo "le dossier /etc/systemd/system/kubelet.service.d/ est présent. "
 		else
 		mkdir /etc/systemd/system/kubelet.service.d
 		fi
-	cat <<EOF> /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
+  cat <<__EOF__> /etc/systemd/system/kubelet.service.d/20-etcd-service-manager.conf
 	[Service]
 	ExecStart=
 	ExecStart=/usr/bin/kubelet --address=127.0.0.1 --pod-manifest-path=/etc/kubernetes/manifests
 	Restart=always
-	EOF
+  __EOF__
 	systemctl daemon-reload && \
 	systemctl restart kubelet && \
 	vrai="0"
@@ -942,7 +942,7 @@ vrai="1"
 		for i in "${!ETCDHOSTS[@]}"; do
 		HOST=${ETCDHOSTS[$i]}
 		NAME=${NAMES[$i]}
-		cat << EOF > /tmp/${HOST}/kubeadmcfg.yaml
+		cat <<__EOF__> /tmp/${HOST}/kubeadmcfg.yaml
 		apiVersion: kubeadm.k8s.io/v1beta2
 		kind: ClusterConfiguration
 		kubernetesVersion: stable
@@ -992,7 +992,7 @@ vrai="1"
 		#            listen-client-urls: https://${HOST}:2379
 		#            advertise-client-urls: https://${HOST}:2379
 		#            initial-advertise-peer-urls: https://${HOST}:2380
-		#EOF
+		__EOF__
 		done && \
 	vrai="0"
 	nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
@@ -1182,7 +1182,7 @@ vrai="1"
 
 	#for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
 	#ssh  ${master} "systemctl daemon-reload" ; \
-	#ssh ${master} "systemctl enable --now etcd" ; 
+	#ssh ${master} "systemctl enable --now etcd" ;
 	#done
 #vrai="0"
 #nom="Etape ${numetape} - Déploiement et démarrage du service ETCD sur chaque noeud master"
@@ -1204,7 +1204,7 @@ vrai="1"
 #echo "Faire entrée pour continuer."
 #read tt
 #################################################
-# 
+#
 # deployement des masters
 #
 #
@@ -1260,7 +1260,7 @@ vrai="1"
 	#verif
 	#fi
 #################################################
-# 
+#
 # permettre à root de temporairement gérer le cluster kubernetes
 #
 #
@@ -1270,7 +1270,7 @@ vrai="0"
 nom="Etape ${numetape} - Export de la variable KUBECONFIG"
 verif
 #################################################
-# 
+#
 # Construire le réseau calico pour k8s
 #
 #
@@ -1305,7 +1305,7 @@ fi
 if [ "${noeud}" = "worker" ]
 then
 #################################################
-# 
+#
 # Configuration du nom du noeud
 #
 #
@@ -1388,7 +1388,7 @@ vrai="0"
 nom="Etape ${numetape} - Configuration du ssh agent"
 verif
 #################################################
-# 
+#
 # récuparation du token d'intégration et du hash sha256 du certificat CA
 #
 #
@@ -1401,7 +1401,7 @@ vrai="0"
 nom="Etape ${numetape} - Recuperation des clés sur le master pour l'intégration au cluster"
 verif
 #################################################
-# 
+#
 # Constuction du fichier de configuration du repository de kubernetes
 #
 #
@@ -1411,7 +1411,7 @@ vrai="0"
 nom="Etape ${numetape} - Construction du repository de K8S"
 verif
 #################################################
-# 
+#
 # Gestion du SELinux et suppression du swap
 #
 #
@@ -1421,7 +1421,7 @@ vrai="0"
 nom="Etape ${numetape} - Configuration du SELINUX"
 verif
 #################################################
-# 
+#
 # Installation des outils
 #
 #
@@ -1431,7 +1431,7 @@ vrai="0"
 nom="Etape ${numetape} - Installation de outils sur le worker"
 verif
 #################################################
-# 
+#
 # Chargement du module noyau de bridge
 #
 #
@@ -1445,7 +1445,7 @@ vrai="0"
 nom="Etape ${numetape} - Installation du module bridge sur le worker"
 verif
 #################################################
-# 
+#
 # Démarrage du service kubelet
 #
 #
@@ -1465,7 +1465,7 @@ vrai="0"
 nom="Etape ${numetape} - Installation du service docker sur le worker"
 verif
 #################################################
-# 
+#
 # Jonction de l'hôte au cluster
 #
 #
