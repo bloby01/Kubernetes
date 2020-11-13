@@ -416,6 +416,7 @@ do
 echo -n 'Indiquez si cette machine doit être "loadbalancer", "master", "worker", mettre en toutes lettres votre réponse: '
 read noeud
 done
+
 #######################
 # passage de proxy    #
 #######################
@@ -729,17 +730,12 @@ vrai="1"
 	add nginx.conf /etc/nginx/nginx.conf
 	EOF
 	su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
+	############################################################################################
+	#                                                                                          #
+	#	                 Fin deu Déploiement loadbalancer                                  #
+	#	                                                                                   #
+	############################################################################################
 
-############################################################################################
-#                                                                                          #
-#                       Déploiement sur masters Kubernetes                                   #
-#                                                                                          #
-############################################################################################
-#
-# installation du repo kubernetes et des paramètres.
-#
-#
-vrai="1"
 elif [ "${noeud}" = "master" ]
 then
 #################################################
@@ -793,68 +789,68 @@ ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 	do
 	ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i}
 	done
-	vrai="0"
-	nom="Etape ${numetape} - Création des clés pour ssh-copy-id."
-	verif
+vrai="0"
+nom="Etape ${numetape} - Création des clés pour ssh-copy-id."
+verif
 	for HOST in ${HOST0} ${HOST1} ${HOST2}
 	do
 	clear
 	echo " Configuration de la machine ${HOST}"
-	if [ "$prox" = "yes" ]
-	then
-		if [ "$auth" = "y" -o "$auth" = "Y" ]
+		if [ "$prox" = "yes" ]
 		then
-		profilproxyauth
-		yumproxyauth
-			if [ -d /etc/systemd/system/docker.service.d/ ]
+			if [ "$auth" = "y" -o "$auth" = "Y" ]
 			then
-			dockerproxyauth
-			else
-			mkdir -p /etc/systemd/system/docker.service.d/
-			dockerproxyauth
-			fi
-			if [ -d /home/stagiaire/.docker/ ]
+			profilproxyauth
+			yumproxyauth
+				if [ -d /etc/systemd/system/docker.service.d/ ]
+				then
+				dockerproxyauth
+				else
+				mkdir -p /etc/systemd/system/docker.service.d/
+				dockerproxyauth
+				fi
+				if [ -d /home/stagiaire/.docker/ ]
+				then
+				clientdockerproxyauth
+				else
+				mkdir -p /home/stagiaire/.docker/
+				clientdockerproxyauth
+				fi
+				if [ -d /root/.docker/ ]
+				then
+				clientdockerproxyauth
+				else
+				mkdir -p /root/.docker/
+				clientdockerproxyauth
+				fi
+			################  fin de la conf proxy avec auth
+			elif [ "$auth" = "n" -o "$auth" = "N" ]
 			then
-			clientdockerproxyauth
-			else
-			mkdir -p /home/stagiaire/.docker/
-			clientdockerproxyauth
-			fi
-			if [ -d /root/.docker/ ]
-			then
-			clientdockerproxyauth
-			else
-			mkdir -p /root/.docker/
-			clientdockerproxyauth
-			fi
-		################  fin de la conf proxy avec auth
-		elif [ "$auth" = "n" -o "$auth" = "N" ]
-		then
-		profilproxy
-		yumproxy
-			if [ -d /etc/systemd/system/docker.service.d/ ]
-			then
-			dockerproxy
-			else
-			mkdir -p /etc/systemd/system/docker.service.d/
-			dockerproxy
-			fi
-			if [ -d /home/stagiaire/.docker ]
-			then
-			clientdockerproxy
-			else
-			mkdir -p /home/stagiaire/.docker
-			clientdockerproxy
-			fi
-			if [ -d /root/.docker/ ]
-			then
-			clientdockerproxy
-			else
-			mkdir -p /root/.docker/
-			clientdockerproxy
+			profilproxy
+			yumproxy
+				if [ -d /etc/systemd/system/docker.service.d/ ]
+				then
+				dockerproxy
+				else
+				mkdir -p /etc/systemd/system/docker.service.d/
+				dockerproxy
+				fi
+				if [ -d /home/stagiaire/.docker ]
+				then
+				clientdockerproxy
+				else
+				mkdir -p /home/stagiaire/.docker
+				clientdockerproxy
+				fi
+				if [ -d /root/.docker/ ]
+				then
+				clientdockerproxy
+				else
+				mkdir -p /root/.docker/
+				clientdockerproxy
+				fi
 			fi
 		fi
-	fi
 	################################################
 	# 
 	# installation du repository kubernetes.
@@ -906,12 +902,12 @@ ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 	nom="Etape ${numetape} - Configuration et installation du service docker-ce"
 	verif
 	done
-	#################################################
-	#
-	# Génération des certificats pour les noeuds master
-	#
-	#
-	vrai="1"
+#################################################
+#
+# Génération des certificats pour les noeuds master
+#
+#
+vrai="1"
 	if [ `hostname` = "master1-k8s.mon.dom" ]
 	then
 	#################################################
@@ -1272,7 +1268,7 @@ ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 	#vrai="0"
 	#nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
 	#verif
-	fi
+	#fi
 #################################################
 # 
 # permettre à root de temporairement gérer le cluster kubernetes
