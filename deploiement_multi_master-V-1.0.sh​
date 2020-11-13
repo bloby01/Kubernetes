@@ -416,13 +416,6 @@ do
 echo -n 'Indiquez si cette machine doit être "loadbalancer", "master", "worker", mettre en toutes lettres votre réponse: '
 read noeud
 done
-if [ "${noeud}" = "worker" ]
-then
-elif [ "${noeud}" = "master" ]
-then
-elif [ "${noeud}" = "loadbalancer" ]
-then
-fi
 #######################
 # passage de proxy    #
 #######################
