@@ -1004,9 +1004,9 @@ vrai="1"
 		#            initial-advertise-peer-urls: https://${HOST}:2380
 		#EOF
 		done && \
-		vrai="0"
-		nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
-		verif
+	vrai="0"
+	nom="Etape ${numetape} - Création d'un fichier de configuration pour chaque noeud membre ETCD."
+	verif
 	#################################################
 	#
 	# Création CA et certificats pour ETCD
@@ -1046,15 +1046,15 @@ vrai="1"
 	# Copie des certificats dans les noeuds master ETCD
 	#
 	#
-	for HOST in ${HOST0} ${HOST1} ${HOST2}
-	do
-	vrai="1"
-	USER=root
-	#HOST=${HOST1}
-	scp -r /tmp/${HOST}/* ${USER}@${HOST}:.
-	ssh ${USER}@${HOST} chown -R root:root pki
-	ssh ${USER}@${HOST} mv pki /etc/kubernetes/
-	done
+		for HOST in ${HOST0} ${HOST1} ${HOST2}
+		do
+		vrai="1"
+		USER=root
+		#HOST=${HOST1}
+		scp -r /tmp/${HOST}/* ${USER}@${HOST}:.
+		ssh ${USER}@${HOST} chown -R root:root pki
+		ssh ${USER}@${HOST} mv pki /etc/kubernetes/
+		done
 	vrai="0"
 	nom="Etape ${numetape} - Copie des certificats dans les noeuds master ETCD."
 	verif
