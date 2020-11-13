@@ -70,6 +70,9 @@ NBR=0
 applb="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server kubectl --disableexcludes=kubernetes" 
 appmaster="nfs-utils bind-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 appworker="nfs-utils bind-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
+export HOST0=master1-k8s.mon.dom
+export HOST1=master2-k8s.mon.dom
+export HOST2=master3-k8s.mon.dom
 
 #                                                                               #
 #################################################################################
@@ -759,8 +762,32 @@ fi
 #                       Déploiement sur masters Kubernetes                                   #
 #                                                                                          #
 ############################################################################################
-for HOST in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom
+#
+# installation du repo kubernetes et des paramètres.
+#
+#
+vrai="1"
+if [ "${node}" = "master" ]
+then
+###########################################################
+#
+#   Script en attente de démarrage des trois noeuds master
+#
+clear
+echo " "
+echo "#################################################################################"
+echo "#		Assurez vous que les trois noeuds master soient démarré avant"
+echo "#                    de passer à l'étape suivante."
+echo " "
+until [ "${aa}" = "y" -o "${aa}" = "Y" ]
 do
+ping -c1 ${HOST0}
+ping -c1 ${HOST1}
+ping -c1 ${HOST2}
+echo " "
+echo "Vous confirmez voir la réponse au ping des trois noeuds? y/n"
+read aa
+done
 #################################################
 #
 # Création des clés pour ssh-copy-id
@@ -769,126 +796,124 @@ do
 vrai="1"
 rm -rf ~/.ssh/id_rsa*
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
-for i in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom
+for i in ${HOST0} ${HOST1} ${HOST2}
 do
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@${i}
 done
 vrai="0"
 nom="Etape ${numetape} - Création des clés pour ssh-copy-id."
 verif
-#
-# installation du repo kubernetes et des paramètres.
-#
-#
-vrai="1"
-if [ "${node}" = "master" ]
-then
-  if [ "$prox" = "yes" ]
-  then
-    if [ "$auth" = "y" -o "$auth" = "Y" ]
-    then
-    profilproxyauth
-    yumproxyauth
-      if [ -d /etc/systemd/system/docker.service.d/ ]
-      then
-      dockerproxyauth
-      else
-      mkdir -p /etc/systemd/system/docker.service.d/
-      dockerproxyauth
-      fi
-      if [ -d /home/stagiaire/.docker/ ]
-      then
-      clientdockerproxyauth
-      else
-      mkdir -p /home/stagiaire/.docker/
-      clientdockerproxyauth
-      fi
-      if [ -d /root/.docker/ ]
-      then
-      clientdockerproxyauth
-      else
-      mkdir -p /root/.docker/
-      clientdockerproxyauth
-      fi
-    ################  fin de la conf proxy avec auth
-    elif [ "$auth" = "n" -o "$auth" = "N" ]
-    then
-    profilproxy
-    yumproxy
-      if [ -d /etc/systemd/system/docker.service.d/ ]
-      then
-      dockerproxy
-      else
-      mkdir -p /etc/systemd/system/docker.service.d/
-      dockerproxy
-      fi
-      if [ -d /home/stagiaire/.docker ]
-      then
-      clientdockerproxy
-      else
-      mkdir -p /home/stagiaire/.docker
-      clientdockerproxy
-      fi
-      if [ -d /root/.docker/ ]
-      then
-      clientdockerproxy
-      else
-      mkdir -p /root/.docker/
-      clientdockerproxy
-      fi
-    fi
-  fi
-#################################################
-# 
-# installation du repository kubernetes.
-#
-#
-vrai="1"
-repok8s && \
-vrai="0"
-nom="Etape ${numetape} - Installation du repository kubernetes sur le master"
-verif
+for HOST in ${HOST0} ${HOST1} ${HOST2}
+do
+	clear
+	echo " Configuration de la machine ${HOST}"
+	  if [ "$prox" = "yes" ]
+	  then
+	    if [ "$auth" = "y" -o "$auth" = "Y" ]
+	    then
+	    profilproxyauth
+	    yumproxyauth
+	      if [ -d /etc/systemd/system/docker.service.d/ ]
+	      then
+	      dockerproxyauth
+	      else
+	      mkdir -p /etc/systemd/system/docker.service.d/
+	      dockerproxyauth
+	      fi
+	      if [ -d /home/stagiaire/.docker/ ]
+	      then
+	      clientdockerproxyauth
+	      else
+	      mkdir -p /home/stagiaire/.docker/
+	      clientdockerproxyauth
+	      fi
+	      if [ -d /root/.docker/ ]
+	      then
+	      clientdockerproxyauth
+	      else
+	      mkdir -p /root/.docker/
+	      clientdockerproxyauth
+	      fi
+	    ################  fin de la conf proxy avec auth
+	    elif [ "$auth" = "n" -o "$auth" = "N" ]
+	    then
+	    profilproxy
+	    yumproxy
+	      if [ -d /etc/systemd/system/docker.service.d/ ]
+	      then
+	      dockerproxy
+	      else
+	      mkdir -p /etc/systemd/system/docker.service.d/
+	      dockerproxy
+	      fi
+	      if [ -d /home/stagiaire/.docker ]
+	      then
+	      clientdockerproxy
+	      else
+	      mkdir -p /home/stagiaire/.docker
+	      clientdockerproxy
+	      fi
+	      if [ -d /root/.docker/ ]
+	      then
+	      clientdockerproxy
+	      else
+	      mkdir -p /root/.docker/
+	      clientdockerproxy
+	      fi
+	    fi
+	  fi
+	#################################################
+	# 
+	# installation du repository kubernetes.
+	#
+	#
+	vrai="1"
+	repok8s && \
+	vrai="0"
+	nom="Etape ${numetape} - Installation du repository kubernetes sur le master"
+	verif
 
-#################################################
-# 
-# installation des applications.
-#
-#
-vrai="1"
-yum  install -y ${appmaster} && \
-vrai="0"
-nom="Etape ${numetape} - Installation des outils et services sur le master"
-verif
-#################################################
-# 
-# installation du modules bridge.
-# et activation du routage
-#
-vrai="1"
-moduleBr && \
-vrai="0"
-nom="Etape ${numetape} - Installation du module de brige"
-verif
-#################################################
-# 
-# Démarrage du service kubelet
-#
-#
-vrai="1"
-systemctl enable --now kubelet && \
-vrai="0"
-nom="Etape ${numetape} - Démarrage de la kubelet"
-verif
-#################################################
-# 
-# installation de docker
-#
-#
-vrai="1"
-docker && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et installation du service docker-ce"
-verif
+	#################################################
+	# 
+	# installation des applications.
+	#
+	#
+	vrai="1"
+	yum  install -y ${appmaster} && \
+	vrai="0"
+	nom="Etape ${numetape} - Installation des outils et services sur le master"
+	verif
+	#################################################
+	# 
+	# installation du modules bridge.
+	# et activation du routage
+	#
+	vrai="1"
+	moduleBr && \
+	vrai="0"
+	nom="Etape ${numetape} - Installation du module de brige"
+	verif
+	#################################################
+	# 
+	# Démarrage du service kubelet
+	#
+	#
+	vrai="1"
+	systemctl enable --now kubelet && \
+	vrai="0"
+	nom="Etape ${numetape} - Démarrage de la kubelet"
+	verif
+	#################################################
+	# 
+	# installation de docker
+	#
+	#
+	vrai="1"
+	docker && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration et installation du service docker-ce"
+	verif
+done
 #################################################
 #
 # Génération des certificats pour les noeuds master
@@ -920,9 +945,9 @@ verif
 #
 vrai="1"
 # Update HOST0, HOST1, and HOST2 with the IPs or resolvable names of your hosts
-export HOST0=master1-k8s.mon.dom
-export HOST1=master2-k8s.mon.dom
-export HOST2=master3-k8s.mon.dom
+#export HOST0=master1-k8s.mon.dom
+#export HOST1=master2-k8s.mon.dom
+#export HOST2=master3-k8s.mon.dom
 
 # Create temp directories to store files that will end up on other hosts.
 mkdir -p /tmp/${HOST0}/ /tmp/${HOST1}/ /tmp/${HOST2}/
@@ -999,7 +1024,7 @@ do
 vrai="1"
 USER=root
 #HOST=${HOST1}
-scp -r /tmp/${HOST}/* ${USER}@${HOST}: 
+scp -r /tmp/${HOST}/* ${USER}@${HOST}:.
 ssh ${USER}@${HOST} chown -R root:root pki
 ssh ${USER}@${HOST} mv pki /etc/kubernetes/
 done
@@ -1018,7 +1043,25 @@ ssh root@HOST2 kubeadm init phase etcd local --config=/root/kubeadmcfg.yaml && \
 vrai="0"
 nom="Etape ${numetape} - Création des manifests de pods dans les noeuds master ETCD."
 verif
-
+#############################################################
+#
+# Vérification de l'état de santée du cluster ETCD
+#
+#
+vrai="1"
+docker run --rm -it \
+--net host \
+-v /etc/kubernetes:/etc/kubernetes quay.io/coreos/etcd:${ETCD_TAG} etcdctl \
+--cert-file /etc/kubernetes/pki/etcd/peer.crt \
+--key-file /etc/kubernetes/pki/etcd/peer.key \
+--ca-file /etc/kubernetes/pki/etcd/ca.crt \
+--endpoints https://${HOST0}:2379 cluster-health
+echo " "
+echo "Faire entrée pour continuer ou contrôle C pour arréter."
+read tt && \
+vrai="0"
+nom="Etape ${numetape} - Vérification de l'état de santée du cluster ETCD."
+verif
 #################################################
 #
 # Création CA et certificats pour les liaisons TLS
@@ -1064,140 +1107,140 @@ fi
 #  Construction de l'ETCD dans chacun des trois noeuds.
 #
 #
-vrai="1"
-ETCD_VER=v3.3.25 && \
-GOOGLE_URL=https://storage.googleapis.com/etcd && \
-GITHUB_URL=https://github.com/coreos/etcd/releases/download && \
-DOWNLOAD_URL=${GOOGLE_URL} && \
-mkdir ~/etcd_${ETCD_VER} && \
-cd ~/etcd_${ETCD_VER} && \
-cat <<EOF>etcd_${ETCD_VER}-install.sh
-curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o etcd-${ETCD_VER}-linux-amd64.tar.gz
-tar xzvf etcd-${ETCD_VER}-linux-amd64.tar.gz -C .
-EOF
-chmod +x etcd_${ETCD_VER}-install.sh && \
-./etcd_${ETCD_VER}-install.sh && \
+#vrai="1"
+#ETCD_VER=v3.3.25 && \
+#GOOGLE_URL=https://storage.googleapis.com/etcd && \
+#GITHUB_URL=https://github.com/coreos/etcd/releases/download && \
+#DOWNLOAD_URL=${GOOGLE_URL} && \
+#mkdir ~/etcd_${ETCD_VER} && \
+#cd ~/etcd_${ETCD_VER} && \
+#cat <<EOF>etcd_${ETCD_VER}-install.sh
+#curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o etcd-${ETCD_VER}-linux-amd64.tar.gz
+#tar xzvf etcd-${ETCD_VER}-linux-amd64.tar.gz -C .
+#EOF
+#chmod +x etcd_${ETCD_VER}-install.sh && \
+#./etcd_${ETCD_VER}-install.sh && \
 
 
-cd ~
-for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
-cat <<EOF>~/etcd.service
-[Unit]
-Description=etcd
-Documentation=https://github.com/coreos
+#cd ~
+#for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
+#cat <<EOF>~/etcd.service
+#[Unit]
+#Description=etcd
+#Documentation=https://github.com/coreos
 
-[Service]
-ExecStart=/usr/local/bin/etcd \\
-  --name ${master} \\
-  --cert-file=/etc/etcd/pki/etcd.crt \\
-  --key-file=/etc/etcd/pki/etcd.key \\
-  --peer-cert-file=/etc/etcd/pki/etcd-peer.crt \\
-  --peer-key-file=/etc/etcd/pki/etcd-peer.key \\
-  --trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
-  --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
-  --peer-client-cert-auth \\
-  --client-cert-auth \\
-  --initial-advertise-peer-urls https://${master}:2380 \\
-  --listen-peer-urls https://${master}:2380 \\
-  --listen-client-urls https://${master}:2379,http://127.0.0.1:2379 \\
-  --advertise-client-urls https://${master}:2379 \\
-  --initial-cluster-token etcd-cluster-0 \\
-  --initial-cluster master1-k8s.mon.dom=https://master1-k8s.mon.dom:2380,master2-k8s.mon.dom=https://master2-k8s.mon.dom:2380,master3-k8s.mon.dom=https://master3-k8s.mon.dom:2380 \\
-  --data-dir=/var/lib/etcd
-  --initial-cluster-state=new
-Restart=on-failure
-RestartSec=5
+#[Service]
+#ExecStart=/usr/local/bin/etcd \\
+#  --name ${master} \\
+#  --cert-file=/etc/etcd/pki/etcd.crt \\
+#  --key-file=/etc/etcd/pki/etcd.key \\
+#  --peer-cert-file=/etc/etcd/pki/etcd-peer.crt \\
+#  --peer-key-file=/etc/etcd/pki/etcd-peer.key \\
+#  --trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
+#  --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.crt \\
+#  --peer-client-cert-auth \\
+#  --client-cert-auth \\
+#  --initial-advertise-peer-urls https://${master}:2380 \\
+#  --listen-peer-urls https://${master}:2380 \\
+#  --listen-client-urls https://${master}:2379,http://127.0.0.1:2379 \\
+#  --advertise-client-urls https://${master}:2379 \\
+#  --initial-cluster-token etcd-cluster-0 \\
+#  --initial-cluster master1-k8s.mon.dom=https://master1-k8s.mon.dom:2380,master2-k8s.mon.dom=https://master2-k8s.mon.dom:2380,master3-k8s.mon.dom=https://master3-k8s.mon.dom:2380 \\
+#  --data-dir=/var/lib/etcd
+#  --initial-cluster-state=new
+#Restart=on-failure
+#RestartSec=5
+#
+#[Install]
+#WantedBy=multi-user.target
+#EOF
+#ssh ${master} "test -d /etc/etcd/pki && rm -rf /etc/etcd/pki" ; \
+#ssh ${master} "test -d /var/lib/etcd && rm -rf /var/lib/etcd" ; \
+#ssh ${master} "mkdir -p /etc/etcd/pki ; mkdir -p /var/lib/etcd" ;  \
+#scp ~/k8s/crt/etcd* ~/k8s/key/etcd* ${master}:/etc/etcd/pki/;  \
+#scp etcd.service ${master}:/etc/systemd/system/etcd.service ; \
+#scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcd ${master}:/usr/local/bin; \
+#scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcdctl ${master}:/usr/local/bin;
+#done
 
-[Install]
-WantedBy=multi-user.target
-EOF
-ssh ${master} "test -d /etc/etcd/pki && rm -rf /etc/etcd/pki" ; \
-ssh ${master} "test -d /var/lib/etcd && rm -rf /var/lib/etcd" ; \
-ssh ${master} "mkdir -p /etc/etcd/pki ; mkdir -p /var/lib/etcd" ;  \
-scp ~/k8s/crt/etcd* ~/k8s/key/etcd* ${master}:/etc/etcd/pki/;  \
-scp etcd.service ${master}:/etc/systemd/system/etcd.service ; \
-scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcd ${master}:/usr/local/bin; \
-scp ~/etcd_${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64/etcdctl ${master}:/usr/local/bin;
-done
-
-for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
-ssh  ${master} "systemctl daemon-reload" ; \
-ssh ${master} "systemctl enable --now etcd" ; 
-done
-vrai="0"
-nom="Etape ${numetape} - Déploiement et démarrage du service ETCD sur chaque noeud master"
-verif
+#for master in master1-k8s.mon.dom master2-k8s.mon.dom master3-k8s.mon.dom; do \
+#ssh  ${master} "systemctl daemon-reload" ; \
+#ssh ${master} "systemctl enable --now etcd" ; 
+#done
+#vrai="0"
+#nom="Etape ${numetape} - Déploiement et démarrage du service ETCD sur chaque noeud master"
+#verif
 #################################################
 #
 # Vérification du fonctionnement des services ETCD
 #
 #
-clear
-echo "###################################################################################"
-echo " " ; echo " "
-echo "Affiche l'état des noeuds master du cluster"
-etcdctl --ca-file /etc/etcd/pki/etcd-ca.crt --cert-file /etc/etcd/pki/etcd.crt --key-file /etc/etcd/pki/etcd.key cluster-health
-echo " " ; echo " "
-echo "Affiche les membres master et le status <LEADER> pour un noeud"
-etcdctl --ca-file /etc/etcd/pki/etcd-ca.crt --cert-file /etc/etcd/pki/etcd.crt --key-file /etc/etcd/pki/etcd.key member list
-echo " "
-echo "Faire entrée pour continuer."
-read tt
+#clear
+#echo "###################################################################################"
+#echo " " ; echo " "
+#echo "Affiche l'état des noeuds master du cluster"
+#etcdctl --ca-file /etc/etcd/pki/etcd-ca.crt --cert-file /etc/etcd/pki/etcd.crt --key-file /etc/etcd/pki/etcd.key cluster-health
+#echo " " ; echo " "
+#echo "Affiche les membres master et le status <LEADER> pour un noeud"
+#etcdctl --ca-file /etc/etcd/pki/etcd-ca.crt --cert-file /etc/etcd/pki/etcd.crt --key-file /etc/etcd/pki/etcd.key member list
+#echo " "
+#echo "Faire entrée pour continuer."
+#read tt
 #################################################
 # 
 # deployement des masters
 #
 #
-vrai="1"
-if [ `hostname` = "master1-k8s.mon.dom" ]
-then
-cat <<EOF>~/kubeadm-init.yaml
-apiVersion: kubeadm.k8s.io/v1beta2
-kind: ClusterConfiguration
-kubernetesVersion: stable
-apiServer:
- CertSANs:
- - 10.0.0.100
- - 10.0.0.110
- - 10.0.0.111
- - 10.0.0.112
- - 10.0.0.113
- - 10.0.0.114
- - 10.0.0.115
- - master1-k8s.mon.dom
- - master2-k8s.mon.dom
- - master3-k8s.mon.dom
- - loadbalancer-k8s.mon.dom
- - minion1-k8s.mon.dom
- - minion2-k8s.mon.dom
- - minion3-k8s.mon.dom
-controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
-etcd:
-  external:
-    endpoints:
-    - https://master1-k8s.mon.dom:2379
-    - https://master2-k8s.mon.dom:2379
-    - https://master3-k8s.mon.dom:2379
-    caFile: /etc/etcd/pki/etcd-ca.crt
-    certFile: /etc/etcd/pki/etcd.crt
-    keyFile: /etc/etcd/pki/etcd.key
-networking:
-  podSubnet: 192.168.0.0/16
-apiServerExtraArgs:
-  apiserver-count: "3"
-EOF
-
-if [ -d /home/kubeadmin ]
-then
-userdel -r kubeadmin
-useradd -m -s /bin/bash -G wheel,docker kubeadmin
-else
-useradd -m -s /bin/bash -G wheel,docker kubeadmin
-fi
-kubeadm init --config=kubeadm-init.yaml
-vrai="0"
-nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
-verif
+#vrai="1"
+#if [ `hostname` = "master1-k8s.mon.dom" ]
+#then
+#cat <<EOF>~/kubeadm-init.yaml
+#apiVersion: kubeadm.k8s.io/v1beta2
+#kind: ClusterConfiguration
+#kubernetesVersion: stable
+#apiServer:
+# CertSANs:
+# - 10.0.0.100
+# - 10.0.0.110
+# - 10.0.0.111
+# - 10.0.0.112
+# - 10.0.0.113
+# - 10.0.0.114
+# - 10.0.0.115
+# - master1-k8s.mon.dom
+# - master2-k8s.mon.dom
+# - master3-k8s.mon.dom
+# - loadbalancer-k8s.mon.dom
+# - minion1-k8s.mon.dom
+# - minion2-k8s.mon.dom
+# - minion3-k8s.mon.dom
+#controlPlaneEndpoint: "loadbalancer-k8s.mon.dom:6443"
+#etcd:
+#  external:
+#    endpoints:
+#    - https://master1-k8s.mon.dom:2379
+#    - https://master2-k8s.mon.dom:2379
+#    - https://master3-k8s.mon.dom:2379
+#    caFile: /etc/etcd/pki/etcd-ca.crt
+#    certFile: /etc/etcd/pki/etcd.crt
+#    keyFile: /etc/etcd/pki/etcd.key
+#networking:
+#  podSubnet: 192.168.0.0/16
+#apiServerExtraArgs:
+#  apiserver-count: "3"
+#EOF
+#
+#if [ -d /home/kubeadmin ]
+#then
+#userdel -r kubeadmin
+#useradd -m -s /bin/bash -G wheel,docker kubeadmin
+#else
+#useradd -m -s /bin/bash -G wheel,docker kubeadmin
+#fi
+#kubeadm init --config=kubeadm-init.yaml
+#vrai="0"
+#nom="Etape ${numetape} - Deploiement du cluster K8S sur le premier master"
+#verif
 #################################################
 # 
 # permettre à root de temporairement gérer le cluster kubernetes
