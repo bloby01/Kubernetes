@@ -114,14 +114,13 @@ numetape=`expr ${numetape} + 1 `
   if [ "${vrai}" -eq "0" ]; then
     echo "Machine: ${HOST} - ${nom} - OK"
   else
-    echo "Erreur sur Machine: ${node}${x}-k8s.mon.dom - ${nom} - ERREUR"
+    echo "Erreur sur Machine: ${HOST} - ${nom} - ERREUR"
     exit 0
   fi
 }
 
 # Fonction d'installation de docker-CE en derniere version
 docker(){
-vrai="1"
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 yum-config-manager --enable docker-ce-stable
@@ -129,9 +128,6 @@ yum-config-manager --enable docker-ce-stable
 yum  install  -y containerd.io && \
 yum  install  -y docker-ce && \
 systemctl enable  --now docker.service && \
-vrai="0"
-nom="Déploiement de docker sur le noeud"
-verif
 }
 
 # Fonction de configuration des parametres communs du dhcp
@@ -486,6 +482,7 @@ if [ "${noeud}" = "loadbalancer" ]
 then
 vrai="1"
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
+export HOST="${noeud}${x}-k8s.mon.dom" && \
 export node="${noeud}" && \
 cat <<EOF > /etc/resolv.conf
 options ndots:15 timeout:1 attempts:5
