@@ -666,13 +666,13 @@ nom="Etape ${numetape} - Installation du module de brige"
 verif
 #################################################
 #
-# installation de docker
+# Installation du service docker-ce
 #
 #
 vrai="1"
 docker && \
 vrai="0"
-nom="Etape ${numetape} - Configuration et installation du service docker-ce"
+nom="Etape ${numetape} - Installation du service docker-ce"
 verif
 #############################################################
 #                                                           #
