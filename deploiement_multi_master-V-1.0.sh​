@@ -1,9 +1,16 @@
 #!/bin/bash
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#   !!!									!!!
+#   !!!		           ATTENTION					!!!
+#   !!!									!!!
+#   !!!		   Déployement NON FONCTIONNEL EN L'ETAT		!!!
+#   !!!				+					!!!
+#   !!!		   Vérifier le proxy avec login et password		!!!
+#   !!!									!!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #   Version : 1.0
 #   Deploiement sur CentOS 8 minimum.
 #
-#   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
-#   !!!!!!!!!!!!!   vérifier le proxy avec login et password
 #
 # Script de déploiment kubernetes
 # By christophe@cmconsulting.online
