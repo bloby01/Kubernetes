@@ -111,12 +111,18 @@ systemctl enable --now nfs-server
 #Fonction de vérification des étapes
 verif(){
 numetape=`expr ${numetape} + 1 `
-  if [ "${vrai}" -eq "0" ]; then
+echo " "
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo " "
+if [ "${vrai}" -eq "0" ]; then
     echo "Machine: ${HOST} - ${nom} - OK"
   else
     echo "Erreur sur Machine: ${HOST} - ${nom} - ERREUR"
     exit 0
   fi
+echo " "
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo " "
 }
 
 # Fonction d'installation de docker-CE en derniere version
@@ -918,8 +924,9 @@ verif
 #
 #
 vrai="1"
-	if [ `hostname` = "master1-k8s.mon.dom" ]
+	if [ `hostname` = "${HOST0}" ]
 	then
+	HOST=${HOST0}
 	#################################################
 	#
 	# Création du fichier de démarrage de service ETCD
