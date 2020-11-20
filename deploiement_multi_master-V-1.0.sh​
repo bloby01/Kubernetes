@@ -785,13 +785,13 @@ echo "#                    de passer à l'étape suivante."
 echo " "
 	until [ "${aa}" = "y" -o "${aa}" = "Y" ]
 	do
-	clear
 	ping -c1 ${HOST0}
 	ping -c1 ${HOST1}
 	ping -c1 ${HOST2}
 	echo " "
 	echo -n "Vous confirmez voir la réponse au ping des trois noeuds? y/n: "
 	read aa
+	clear
 	done
 #################################################
 #
