@@ -726,11 +726,26 @@ cat <<EOF > Dockerfile
 FROM nginx
 add nginx.conf /etc/nginx/nginx.conf
 EOF
-su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/'
+#################################################
+#
+# Build de l'image bloby01/nginx-lb-multimaster:v1
+#
+#
+vrai="1"
+su -lc 'docker build -t bloby01/nginx-lb-multimaster:v1 /root/nginx/' && \
+vrai="0"
+nom="Etape ${numetape} - Build de l'image bloby01/nginx-lb-multimaster:v1"
+verif
+	if [ ${vrai} = "0" ]
+	then
+	echo " "
+	echo " Fin de la première partie de déploiement du loadbalancer"
+	echo " Déployez maintenant les noeuds masters"
+	fi
 ############################################################################################
 #                                                                                          #
-#	                 Fin deu Déploiement loadbalancer                                        #
-#	                                                                                         #
+#	                 Fin du Déploiement loadbalancer                                   #
+#	                                                                                   #
 ############################################################################################
 fi
 if [ "${noeud}" = "master" ]
