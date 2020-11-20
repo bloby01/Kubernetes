@@ -1031,30 +1031,46 @@ EOF
 	#
 	#vrai="1"
 	kubeadm init phase certs etcd-ca && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-server --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-peer --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST2}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	cp -R /etc/kubernetes/pki /tmp/${HOST2}/ && \
 	# cleanup non-reusable certificates
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
-
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-server --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-peer --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST1}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	cp -R /etc/kubernetes/pki /tmp/${HOST1}/ && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	find /etc/kubernetes/pki -not -name ca.crt -not -name ca.key -type f -delete && \
-
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-server --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-peer --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs etcd-healthcheck-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	kubeadm init phase certs apiserver-etcd-client --config=/tmp/${HOST0}/kubeadmcfg.yaml && \
 	# No need to move the certs because they are for HOST0
-
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	# clean up certs that should not be copied off this host
 	find /tmp/${HOST2} -name ca.key -type f -delete && \
+echo " " ; echo "Faire Entree pour continuer" ;read tt
 	find /tmp/${HOST1} -name ca.key -type f -delete && \
+echo " " ; echo "Derniere étape de verification" ; echo "Faire Entree pour continuer" ;read tt
 	vrai="0"
 	nom="Etape ${numetape} - Création CA et certificats pour ETCD."
 	verif
