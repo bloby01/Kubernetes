@@ -9,11 +9,11 @@ dnf install -y certbot
 certbot certonly --rsa-key-size 4096 --standalone --agree-tos --no-eff-email --email root@gitlab.mon.dom -d gitlab.mon.dom
 openssl dhparam -out /etc/gitlab/dhparams.pem 4096
 chmod 600 /etc/gitlab/dhparams.pem
-sed -i -e  "s|external_url 'http://gitlab.example.com'|external_url 'https://gitlab.mon.dom'|g" /etc/gitlab/gitlab.rb
-sed -i -e  "s|\# nginx['redirect_http_to_https'] = false|nginx['redirect_http_to_https'] = true|g" /etc/gitlab/gitlab.rb
-sed -i -e  "s|\# nginx['ssl_certificate'] = "/etc/gitlab/ssl/\#{node['fqdn']}.crt"|nginx['ssl_certificate'] = "/etc/letsencrypt/live/gitlab.mon.dom/fullchain.pem"|g" /etc/gitlab/gitlab.rb
-sed -i -e  "s|\# nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/\#{node['fqdn']}.key"|nginx['ssl_certificate_key'] = "/etc/letsencrypt/live/gitlab.mon.dom/privkey.pem"|g" /etc/gitlab/gitlab.rb
-sed -i -e  "s|\# nginx['ssl_dhparam'] = nil # Path to dhparams.pem, eg. /etc/gitlab/ssl/dhparams.pem|nginx['ssl_dhparam'] = "/etc/gitlab/dhparams.pem"|g" /etc/gitlab/gitlab.rb
+sed -i 's/external_url 'http://gitlab.example.com'/external_url 'https://gitlab.mon.dom'/g' /etc/gitlab/gitlab.rb
+echo "nginx['redirect_http_to_https'] = true" >> /etc/gitlab/gitlab.rb
+echo "nginx['ssl_certificate'] = "/etc/letsencrypt/live/gitlab.mon.dom/fullchain.pem" " >> /etc/gitlab/gitlab.rb
+echo "nginx['ssl_certificate_key'] = "/etc/letsencrypt/live/gitlab.mon.dom/privkey.pem" " >> /etc/gitlab/gitlab.rb
+echo "nginx['ssl_dhparam'] = "/etc/gitlab/dhparams.pem" " >> /etc/gitlab/gitlab.rb
 gitlab-ctl reconfigure
 firewall-cmd --add-service=ssh --permanent
 firewall-cmd --add-service=http --permanent
