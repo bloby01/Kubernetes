@@ -196,7 +196,6 @@ master-k8s   A       172.21.0.100
 traefik     CNAME   master-k8s.mon.dom.
 w1          CNAME   worker1-k8s.mon.dom.
 w2          CNAME   worker2-k8s.mon.dom.
-gitlab      CNAME   master-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone mondom.db"
