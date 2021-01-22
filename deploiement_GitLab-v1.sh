@@ -1,4 +1,6 @@
 #!/bin/sh
+hostnamectl set-hostname gitlab.mon.dom
+systemctl restart NetworkManager
 unknown_os ()
 {
   echo "Unfortunately, your operating system distribution and version are not supported by this script."
