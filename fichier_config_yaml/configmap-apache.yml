@@ -6,7 +6,7 @@ spec:
  containers:
  - image: bloby01/web:v1
    env:
-   - name: my-config
+   - name: autre
      valueFrom:
       configMapKeyRef:
        name: my-config
