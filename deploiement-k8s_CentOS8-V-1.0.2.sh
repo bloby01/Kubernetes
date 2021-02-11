@@ -1,5 +1,5 @@
 #!/bin/sh
-#   Version : 1.0.1
+#   Version : 1.0.2
 #   Deploiement sur CentOS 8 minimum.
 #   
 #   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
@@ -62,8 +62,8 @@
 
 numetape=0
 NBR=0
-appmaster="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
-appworker="nfs-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
+appmaster="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server  kubelet  kubeadm-1.19.x-0  kubectl  --disableexcludes=kubernetes"
+appworker="nfs-utils yum-utils iproute-tc kubelet kubeadm-1.19.x-0 --disableexcludes=kubernetes"
 
 #                                                                               #
 #################################################################################
