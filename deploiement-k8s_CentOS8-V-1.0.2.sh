@@ -62,8 +62,8 @@
 
 numetape=0
 NBR=0
-appmaster="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server  kubelet  kubeadm-1.19.0-0  kubectl  --disableexcludes=kubernetes"
-appworker="nfs-utils yum-utils iproute-tc kubelet kubeadm-1.19.0-0 --disableexcludes=kubernetes"
+appmaster="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server  kubelet-1.19.0-0  kubeadm-1.19.0-0  kubectl-1.19.0-0  --disableexcludes=kubernetes"
+appworker="nfs-utils yum-utils iproute-tc kubelet-1.19.0-0 kubeadm-1.19.0-0 --disableexcludes=kubernetes"
 
 #                                                                               #
 #################################################################################
