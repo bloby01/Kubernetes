@@ -1,4 +1,3 @@
-#extensions/v1beta1
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -11,20 +10,31 @@ spec:
  - host: "traefik.mon.dom"
    http:
      paths:
-     - backend:
-         serviceName: traefik-web-ui
-         servicePort: 80 
+     - path: /
+       pathType: Prefix
+       backend:
+         service:
+           name: traefik-web-ui
+           port:
+             number: 80
  - host: "w1.mon.dom"
    http:
      paths:
      - path: /
+       pathType: Prefix
        backend:
-         serviceName: w1
-         servicePort: 80
+         service:
+           name: w1
+           port:
+             number: 80
+
 # - host: "w2.mon.dom"
 #   http:
 #     paths:
 #     - path: /
+#       pathType: Prefix
 #       backend:
-#         serviceName: w2
-#         servicePort: 80
+#         service:
+#           name: w2
+#           port:
+#             number: 80
