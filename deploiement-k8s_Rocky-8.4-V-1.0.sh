@@ -264,7 +264,8 @@ nom="Configuration du module br_netfilter"
 # Fonction de serveur de temps
 temps() {
 vrai="1"
-timedatectl set-timezone Europe/paris && \
+timedatectl set-timezone "Europe/Paris" && \
+#timedatectl set-timezone Europe/paris && \
 timedatectl set-ntp true && \
 vrai="0"
 nom="Configuration du serveur de temps"
