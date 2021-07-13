@@ -717,14 +717,14 @@ verif
 # Installation de bash-completion pour faciliter les saisies
 #
 #
-#vrai="1"
-#yum install -y bash-completion && \
-#cat <<EOF >> /home/stagiaire/.bashrc
-#source <(kubectl completion bash)
-#EOF
-#vrai="0"
-#nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
-#verif
+vrai="1"
+yum install -y bash-completion && \
+cat <<EOF >> /home/stagiaire/.bashrc
+source <(kubectl completion bash)
+EOF
+vrai="0"
+nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
+verif
 ################################################
 #
 # Intégration du compte stagiaire au groupe docker
