@@ -1,5 +1,5 @@
 #!/bin/sh
-#   Version : 1.0.2
+#   Version : 1.0
 #   Deploiement sur Rocky Linux 8.4 minimum.
 #   
 #   !!!!!!!!!!!!!  pas fini !!!!!!!!!!!!!!!!!!!!
@@ -718,7 +718,6 @@ verif
 #
 #
 vrai="1"
-yum install -y bash-completion && \
 cat <<EOF >> /home/stagiaire/.bashrc
 source <(kubectl completion bash)
 EOF
