@@ -73,25 +73,25 @@ appworker="nfs-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kube
 #################################################################################
 
 # Fonction de récupération des outils pour le cours helm
-githelm() {
-git clone  https://github.com/bloby01/helm
-cp -r helm /home/stagiaire
-chown -R stagiaire:stagiaire helm
-kubectl  create -f helm/nfs-client/deploy/
-echo "---------------------------------------------------------------"
-echo "le volumeClaim à utiliser sur NFS porte le nom: mon-volume-pvc"
-echo "---------------------------------------------------------------"
-}
+#githelm() {
+#git clone  https://github.com/bloby01/helm
+#cp -r helm /home/stagiaire
+#chown -R stagiaire:stagiaire helm
+#kubectl  create -f helm/nfs-client/deploy/
+#echo "---------------------------------------------------------------"
+#echo "le volumeClaim à utiliser sur NFS porte le nom: mon-volume-pvc"
+#echo "---------------------------------------------------------------"
+#}
 
 # Fonction de configuration du serveur nfs
-nfsconfigserver(){
-mkdir -p /srv/nfs/kubedata
-chown nobody: /srv/nfs/kubedata
-cat <<EOF > /etc/exports
-/srv/nfs/kubedata *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)
-EOF
-systemctl enable --now nfs-server
-}
+#nfsconfigserver(){
+#mkdir -p /srv/nfs/kubedata
+#chown nobody: /srv/nfs/kubedata
+#cat <<EOF > /etc/exports
+#/srv/nfs/kubedata *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)
+#EOF
+#systemctl enable --now nfs-server
+#}
 #Fonction de vérification des étapes
 verif(){
 numetape=`expr ${numetape} + 1 `
@@ -428,14 +428,14 @@ then
 vrai="1"
 hostnamectl  set-hostname  ${noeud}-k8s.mon.dom && \
 export node="master" && \
-cat <<EOF > /etc/resolv.conf
-options ndots:15 timeout:1 attempts:5
-domain mon.dom
-nameserver 172.21.0.100
-nameserver 8.8.8.8
-EOF
+#cat <<EOF > /etc/resolv.conf
+#options ndots:15 timeout:1 attempts:5
+#domain mon.dom
+#nameserver 172.21.0.100
+#nameserver 8.8.8.8
+#EOF
 vrai="0"
-nom="Etape ${numetape} - Construction du nom d hote et du fichier resolv.conf"
+nom="Etape ${numetape} - Construction du nom d hote"
 verif
 fi
 vrai="1"
