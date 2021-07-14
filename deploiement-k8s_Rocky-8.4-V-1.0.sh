@@ -623,7 +623,7 @@ verif
 # configuration du NAT sur le premier master
 #
 vrai="1"
-firewall-cmd --permanent --add-masquerade --zone=trusted && \
+firewall-cmd --permanent --add-masquerade --zone=work && \
 firewall-cmd --reload && \
 vrai="0"
 nom="Etape ${numetape} - Mise en place du NAT"
