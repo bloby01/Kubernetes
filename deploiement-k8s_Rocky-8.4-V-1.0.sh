@@ -14,50 +14,50 @@
 #
 #
 #
-#################################################################################
-#                                                                               #
-#                       LABS  Kubernetes                                        #
-#                                                                               #
-#                                                                               #
-#               Internet                                                        #
-#                   |                                                           #
-#                  master1 (VM) DHCPD NAMED NAT                                 #
-#                       |                                                       #
-#                      -------------------                                      #
-#                      |  switch  interne|--(VM) Client linux                   #
-#                      |-----------------|                                      #
-#                        |     |      |                                         #
-#                        |     |      |                                         #
-#                 (vm)worker1  |      |                                         #
-#                      (vm)worker2    |                                         #
-#                            (vm) worker3                                       #
-#                                                                               #
-#                                                                               #
-#                                                                               #
-#################################################################################
-#                                                                               #
-#                          Features                                             #
-#                                                                               #
-#################################################################################
-#                                                                               #
-# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 8.4      #
-# - Le compte root doit etre utilisé pour exécuter ce Script                    #
-# - Le script requière que la machine master soit correctement configuré sur IP #
-#   master-k8s.mon.dom carte interne enp0s8 -> 172.21.0.100/24 (pré-configurée) #
-#   master-k8s.mon.dom carte externe enp0s3 -> XXX.XXX.XXX.XXX/YY               #
-# - Le réseau sous-jacent du cluster est basé Calico                            #
-# - Les systèmes sont synchronisés sur les temps avec timedatectl               #
-# - Les noeuds worker sont automatiquements adressé sur IP par le master        #
-# - La résolution de nom est réaliser par un serveur BIND9 sur le master        #
-# - Le LABS est établie avec un maximum de trois noeuds worker                  #
-# - Le compte d'exploitation du cluster est "stagiaire avec MDP: Azerty01"      #
-#                                                                               #
-#                                                                               #
-#################################################################################
-#                                                                               #
-#                      Déclaration des variables                                #
-#                                                                               #
-#################################################################################
+###########################################################################################
+#                                                                               	  #
+#                       LABS  Kubernetes                                        	  #
+#                                                                               	  #
+#                                                                               	  #
+#               Internet                                                        	  #
+#                   |                                                           	  #
+#                  master1 (VM) DHCPD NAMED NAT                                 	  #
+#                       |                                                       	  #
+#                      -------------------                                      	  #
+#                      |  switch  interne|--(VM) Client linux                   	  #
+#                      |-----------------|                                      	  #
+#                        |     |      |                                         	  #
+#                        |     |      |                                         	  #
+#                 (vm)worker1  |      |                                         	  #
+#                      (vm)worker2    |                                         	  #
+#                            (vm) worker3                                       	  #
+#                                                                               	  #
+#                                                                               	  #
+#                                                                               	  #
+###########################################################################################
+#                                                                               	  #
+#                          Features                                             	  #
+#                                                                               	  #
+###########################################################################################
+#                                                                               	  #
+# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 8.4      	  #
+# - Le compte root doit etre utilisé pour exécuter ce Script                    	  #
+# - Le script requière que la machine master soit correctement configuré sur IP 	  #
+#   master-k8s.mon.dom carte interne enp0s8 -> 172.21.0.100/24 (pré-configurée) 	  #
+#   master-k8s.mon.dom carte externe enp0s3 -> DHCP ou IP publique fixe         	  #
+# - Le réseau sous-jacent du cluster est basé Calico                            	  #
+# - Les systèmes sont synchronisés sur les temps avec timedatectl               	  #
+# - Les noeuds worker sont automatiquements adressés sur IP par le service DHCP du master #
+# - La résolution de nom est réaliser par un serveur BIND9 sur le master        	  #
+# - Le LABS est établie avec un maximum de trois noeuds worker                  	  #
+# - Le compte d'exploitation du cluster est "stagiaire avec MDP: Azerty01"      	  #
+#                                                                               	  #
+#                                                                               	  #
+###########################################################################################
+#                                                                               	  #
+#                      Déclaration des variables                                	  #
+#                                                                               	  #
+###########################################################################################
 #
 
 numetape=0
@@ -65,33 +65,13 @@ NBR=0
 appmaster="nfs-utils bind bind-utils iproute-tc yum-utils dhcp-server  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
 appworker="nfs-utils yum-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 
-#                                                                               #
-#################################################################################
-#                                                                               #
-#                      Déclaration des fonctions                                #
-#                                                                               #
-#################################################################################
+#                                                                               	  #
+###########################################################################################
+#                                                                               	  #
+#                      Déclaration des fonctions                                	  #
+#                                                                               	  #
+###########################################################################################
 
-# Fonction de récupération des outils pour le cours helm
-#githelm() {
-#git clone  https://github.com/bloby01/helm
-#cp -r helm /home/stagiaire
-#chown -R stagiaire:stagiaire helm
-#kubectl  create -f helm/nfs-client/deploy/
-#echo "---------------------------------------------------------------"
-#echo "le volumeClaim à utiliser sur NFS porte le nom: mon-volume-pvc"
-#echo "---------------------------------------------------------------"
-#}
-
-# Fonction de configuration du serveur nfs
-#nfsconfigserver(){
-#mkdir -p /srv/nfs/kubedata
-#chown nobody: /srv/nfs/kubedata
-#cat <<EOF > /etc/exports
-#/srv/nfs/kubedata *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)
-#EOF
-#systemctl enable --now nfs-server
-#}
 #Fonction de vérification des étapes
 verif(){
 numetape=`expr ${numetape} + 1 `
@@ -111,6 +91,12 @@ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce
 yum-config-manager --enable docker-ce-stable
 yum  install  -y containerd.io && \
 yum  install  -y docker-ce && \
+mkdir -p /etc/docker
+cat <<EOF > /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
 systemctl enable  --now docker.service && \
 vrai="0"
 nom="Déploiement de docker sur le noeud"
@@ -409,9 +395,6 @@ nom="Configuration du client docker avec proxy"
 #                                                                                          #
 ############################################################################################
 clear
-#rm -f /etc/localtime
-#ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
-
 until [ "${noeud}" = "worker" -o "${noeud}" = "master" ]
 do
 echo -n 'Indiquez si cette machine doit être "master" ou "worker", mettre en toutes lettres votre réponse: '
@@ -428,12 +411,6 @@ then
 vrai="1"
 hostnamectl  set-hostname  ${noeud}-k8s.mon.dom && \
 export node="master" && \
-#cat <<EOF > /etc/resolv.conf
-#options ndots:15 timeout:1 attempts:5
-#domain mon.dom
-#nameserver 172.21.0.100
-#nameserver 8.8.8.8
-#EOF
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote"
 verif
@@ -466,8 +443,14 @@ verif
 #
 #
 vrai="1"
-firewall-cmd  --set-default-zone trusted && \
-firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+#firewall-cmd  --set-default-zone trusted && \
+#firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+#firewall-cmd --reload && \
+firewall-cmd  --set-default-zone work && \
+firewall-cmd --add-port=6443/tcp --permanent && \
+firewall-cmd --add-port=2379-2380/tcp --permanent && \
+firewall-cmd --add-port=10250-10252/tcp --permanent && \
+firewall-cmd --add-port=30000-32767/tcp --permanent && \
 firewall-cmd --reload && \
 vrai="0"
 nom="Etape ${numetape} - Regles de firewall à trusted"
@@ -479,10 +462,14 @@ verif
 #
 #
 vrai="1"
-cat <<EOF > /etc/hosts
+f="/etc/hosts"
+cat <<EOF > ${f}
 127.0.0.1 localhost
 EOF
+if [ -f "${f}" ]
+then
 vrai="0"
+fi
 nom="Etape ${numetape} - Contruction du fichier hosts"
 verif
 ############################################################################################
