@@ -448,6 +448,9 @@ vrai="1"
 #firewall-cmd --reload && \
 firewall-cmd  --set-default-zone work && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+firewall-cmd --add-port=8080/tcp --permanent && \
+firewall-cmd --add-port=80/tcp --permanent && \
+firewall-cmd --add-port=443/tcp --permanent && \
 firewall-cmd --add-port=6443/tcp --permanent && \
 firewall-cmd --add-port=2379-2380/tcp --permanent && \
 firewall-cmd --add-port=10250-10252/tcp --permanent && \
