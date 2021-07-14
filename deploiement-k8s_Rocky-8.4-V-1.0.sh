@@ -45,7 +45,7 @@
 # - Le script requière que la machine master soit correctement configuré sur IP 	  #
 #   master-k8s.mon.dom carte interne enp0s8 -> 172.21.0.100/24 (pré-configurée) 	  #
 #   master-k8s.mon.dom carte externe enp0s3 -> DHCP ou IP publique fixe         	  #
-# - Le réseau sous-jacent du cluster est basé Calico                            	  #
+# - Les pods du cluster sont basés sur le CNI flannel 10.244.0.0/16 et les VXLAN       	  #
 # - Les systèmes sont synchronisés sur les temps avec timedatectl               	  #
 # - Les noeuds worker sont automatiquements adressés sur IP par le service DHCP du master #
 # - La résolution de nom est réaliser par un serveur BIND9 sur le master        	  #
@@ -439,7 +439,7 @@ verif
 
 #################################################
 # 
-# Libre passage des flux in et out sur les interfaces réseaux
+# Ouverture du passage des flux IN sur les interfaces réseaux
 #
 #
 vrai="1"
@@ -447,10 +447,12 @@ vrai="1"
 #firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 #firewall-cmd --reload && \
 firewall-cmd  --set-default-zone work && \
+firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 firewall-cmd --add-port=6443/tcp --permanent && \
 firewall-cmd --add-port=2379-2380/tcp --permanent && \
 firewall-cmd --add-port=10250-10252/tcp --permanent && \
 firewall-cmd --add-port=30000-32767/tcp --permanent && \
+firewall-cmd --add-port=4789/udp --permanent && \
 firewall-cmd --reload && \
 vrai="0"
 nom="Etape ${numetape} - Regles de firewall à trusted"
