@@ -663,7 +663,10 @@ nom="Etape ${numetape} - Configuration et installation du service docker-ee-stab
 #
 #
 vrai="1"
-kubeadm init --apiserver-advertise-address=172.21.0.100 --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr=192.168.0.0/16  && \
+#deploiement avec calico
+#kubeadm init --apiserver-advertise-address=172.21.0.100 --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr=192.168.0.0/16  && \
+#deploiement avec flannel
+kubeadm init --apiserver-advertise-address=172.21.0.100 --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr=10.244.0.0/16  && \
 vrai="0"
 nom="Etape ${numetape} - Deploiement du cluster K8S"
 verif
@@ -695,12 +698,23 @@ verif
 # Construire le réseau calico pour k8s
 #
 #
+#vrai="1"
+#kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml && \
+#vrai="0"
+#nom="Etape ${numetape} - Deployement calico"
+#verif
+#################################################
+# 
+# Construire le réseau flannel pour k8s
+#
+#
 vrai="1"
-kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml && \
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml && \
 vrai="0"
 nom="Etape ${numetape} - Deployement calico"
 verif
 #################################################
+
 # 
 # Installation de bash-completion pour faciliter les saisies
 #
