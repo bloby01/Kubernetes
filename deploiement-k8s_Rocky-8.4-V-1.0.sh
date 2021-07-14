@@ -443,20 +443,20 @@ verif
 #
 #
 vrai="1"
-#firewall-cmd  --set-default-zone trusted && \
-#firewall-cmd --add-interface=lo --zone=trusted --permanent && \
-#firewall-cmd --reload && \
-firewall-cmd  --set-default-zone work && \
+firewall-cmd  --set-default-zone trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
-firewall-cmd --add-port=8080/tcp --permanent && \
-firewall-cmd --add-port=80/tcp --permanent && \
-firewall-cmd --add-port=443/tcp --permanent && \
-firewall-cmd --add-port=6443/tcp --permanent && \
-firewall-cmd --add-port=2379-2380/tcp --permanent && \
-firewall-cmd --add-port=10250-10252/tcp --permanent && \
-firewall-cmd --add-port=30000-32767/tcp --permanent && \
-firewall-cmd --add-port=4789/udp --permanent && \
 firewall-cmd --reload && \
+#firewall-cmd  --set-default-zone work && \
+#firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+#firewall-cmd --add-port=8080/tcp --permanent && \
+#firewall-cmd --add-port=80/tcp --permanent && \
+#firewall-cmd --add-port=443/tcp --permanent && \
+#firewall-cmd --add-port=6443/tcp --permanent && \
+#firewall-cmd --add-port=2379-2380/tcp --permanent && \
+#firewall-cmd --add-port=10250-10252/tcp --permanent && \
+#firewall-cmd --add-port=30000-32767/tcp --permanent && \
+#firewall-cmd --add-port=4789/udp --permanent && \
+#firewall-cmd --reload && \
 vrai="0"
 nom="Etape ${numetape} - Regles de firewall à trusted"
 verif
@@ -626,9 +626,9 @@ verif
 # configuration du NAT sur le premier master
 #
 vrai="1"
-firewall-cmd --add-port=53/tcp --permanent && \
-firewall-cmd --add-port=53/udp --permanent && \
-firewall-cmd --add-port=67/udp --permanent && \
+#firewall-cmd --add-port=53/tcp --permanent && \
+#firewall-cmd --add-port=53/udp --permanent && \
+#firewall-cmd --add-port=67/udp --permanent && \
 firewall-cmd --permanent --add-masquerade --zone=work && \
 firewall-cmd --reload && \
 vrai="0"
