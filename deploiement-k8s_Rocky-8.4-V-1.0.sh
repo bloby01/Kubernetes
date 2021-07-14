@@ -623,6 +623,9 @@ verif
 # configuration du NAT sur le premier master
 #
 vrai="1"
+firewall-cmd --add-port=53/tcp --permanent && \
+firewall-cmd --add-port=53/udp --permanent && \
+firewall-cmd --add-port=67/udp --permanent && \
 firewall-cmd --permanent --add-masquerade --zone=work && \
 firewall-cmd --reload && \
 vrai="0"
