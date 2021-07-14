@@ -444,8 +444,8 @@ verif
 #
 vrai="1"
 firewall-cmd  --set-default-zone trusted && \
+firewall-cmd --add-interface=lo --zone=trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
-firewall-cmd --reload && \
 #firewall-cmd  --set-default-zone work && \
 #firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 #firewall-cmd --add-port=8080/tcp --permanent && \
@@ -629,7 +629,7 @@ vrai="1"
 #firewall-cmd --add-port=53/tcp --permanent && \
 #firewall-cmd --add-port=53/udp --permanent && \
 #firewall-cmd --add-port=67/udp --permanent && \
-firewall-cmd --permanent --add-masquerade --zone=work && \
+firewall-cmd --permanent --add-masquerade && \
 firewall-cmd --reload && \
 vrai="0"
 nom="Etape ${numetape} - Mise en place du NAT"
