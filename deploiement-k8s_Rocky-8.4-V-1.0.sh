@@ -444,8 +444,8 @@ verif
 #
 vrai="1"
 firewall-cmd  --set-default-zone trusted && \
-firewall-cmd --add-interface=lo --zone=trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+firewall-cmd --reload && \
 #firewall-cmd  --set-default-zone work && \
 #firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 #firewall-cmd --add-port=8080/tcp --permanent && \
@@ -718,8 +718,10 @@ verif
 #
 vrai="1"
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml && \
+firewall-cmd --add-interface=flannel.1 --zone=trusted --permanent && \
+firewall-cmd --reload && \
 vrai="0"
-nom="Etape ${numetape} - Deployement calico"
+nom="Etape ${numetape} - Deployement flannel"
 verif
 #################################################
 
