@@ -61,7 +61,7 @@
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
 # - Les noeuds Master & Minions sont automatiquements adressé sur IP par le LB  #
 # - La résolution de nom est réaliser par un serveur BIND9 sur le LB            #
-# - Le LABS est établie avec un maximum de 3 noeuds masters & 3 trois workers   #
+# - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
 # - Le compte d'exploitation du cluster est "stagiaire avec MDP: Azerty01"      #
 #                                                                               #
 #                                                                               #
@@ -76,9 +76,11 @@
 #
 numetape=0
 NBR=0
-appmaster="nfs-utils bind bind-utils iproute-tc dhcp-server  kubelet  kubeadm  kubectl  --disableexcludes=kubernetes"
-appworker="nfs-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
-
+appmaster="nfs-utils kubelet kubeadm kubectl  --disableexcludes=kubernetes"
+appworker="nfs-utils kubelet kubeadm --disableexcludes=kubernetes"
+#appworker="nfs-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
+appHAProxy="haproxy bind bind-utils iproute-tc dhcp-server"
+NoProxyAdd=".mon.dom,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
@@ -100,10 +102,8 @@ numetape=`expr ${numetape} + 1 `
 # Fonction d'installation de docker-CE en derniere version stable
 docker(){
 vrai="1"
-yum install -y yum-utils
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-yum-config-manager --enable docker-ce-stable
-yum  install  -y docker-ce && \
+curl -o /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo
+dnf  install -y docker-ce && \
 mkdir -p /etc/docker
 cat <<EOF > /etc/docker/daemon.json
 {
@@ -140,7 +140,7 @@ default-lease-time 600;
 max-lease-time 7200;
 authoritative;
 subnet 172.21.0.0 netmask 255.255.255.0 {
-  range 172.21.0.110 172.21.0.150;
+  range 172.21.0.101 172.21.0.115;
   option routers 172.21.0.100;
   option broadcast-address 172.21.0.255;
   ddns-domainname "mon.dom.";
@@ -180,17 +180,17 @@ namedMonDom () {
 vrai="1"
 cat <<EOF > /var/named/mon.dom.db
 \$TTL 300
-@       IN SOA  master-k8s.mon.dom. root.master-k8s.mon.dom. (
+@       IN SOA  haproxy-k8s.mon.dom. root.haproxy-k8s.mon.dom. (
               1       ; serial
               600      ; refresh
               900      ; retry
               3600      ; expire
               300 )    ; minimum
-@             NS      master-k8s.mon.dom.
-master-k8s   A       172.21.0.100
-traefik     CNAME   master-k8s.mon.dom.
-w1          CNAME   worker1-k8s.mon.dom.
-w2          CNAME   worker2-k8s.mon.dom.
+@             NS      haproxy-k8s.mon.dom.
+haproxy-k8s   A       172.21.0.100
+traefik     CNAME   worker1-k8s.mon.dom.
+w1          CNAME   worker2-k8s.mon.dom.
+w2          CNAME   worker3-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone mondom.db"
@@ -201,14 +201,14 @@ namedRevers () {
 vrai="1"
 cat <<EOF > /var/named/172.21.0.db
 \$TTL 300
-@       IN SOA  master-k8s.mon.dom. root.master-k8s.mon.dom. (
+@       IN SOA  haproxy-k8s.mon.dom. root.haproxy-k8s.mon.dom. (
               1       ; serial
               600      ; refresh
               900      ; retry
               3600      ; expire
               300 )    ; minimum
-@             NS      master-k8s.mon.dom.
-100           PTR     master-k8s.mon.dom.
+@             NS      haproxy-k8s.mon.dom.
+100           PTR     haproxy-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
@@ -276,17 +276,17 @@ export HTTP_PROXY="http://${proxLogin}:${proxyPassword}@${proxyUrl}"
 export HTTPS_PROXY="${HTTP_PROXY}"
 export http_proxy="${HTTP_PROXY}"
 export https_proxy="${HTTP_PROXY}"
-export no_proxy=".mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
-export NO_PROXY="${no_proxy}"
+export no_proxy="${NoProxyAdd}"
+export NO_PROXY="${NoProxyAdd}"
 EOF
 vrai="0"
 nom="Configuration du fichier /etc/profil avec proxy auth"
 }
 
 # Fonction de configuration de yum avec proxy auth
-yumproxyauth() {
+dnfproxyauth() {
 vrai="1"
-cat <<EOF >> /etc/yum.conf
+cat <<EOF >> /etc/dnf/dnf.conf
 proxy=http://${proxyUrl}
 proxy_username=${proxLogin}
 proxy_password=${proxyPassword}
@@ -300,11 +300,11 @@ dockerproxyauth() {
 vrai="1"
 cat <<EOF >> /etc/systemd/system/docker.service.d/http-proxy.conf
 [Service]
-Environment="HTTP_PROXY=http://${proxLogin}:${proxyPassword}@${proxyUrl}" "NO_PROXY=.mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
+Environment="HTTP_PROXY=http://${proxLogin}:${proxyPassword}@${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
 EOF
 cat <<EOF >> /etc/systemd/system/docker.service.d/https-proxy.conf
 [Service]
-Environment="HTTPS_PROXY=http://${proxLogin}:${proxyPassword}@${proxyUrl}" "NO_PROXY=.mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
+Environment="HTTPS_PROXY=http://${proxLogin}:${proxyPassword}@${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
 EOF
 systemctl daemon-reload
 vrai="0"
@@ -322,7 +322,7 @@ cat <<EOF >> /home/stagiaire/.docker/config.json
     {
       "httpProxy": "http://${proxLogin}:${proxyPassword}@${proxyUrl}"
       "httpsProxy": "http://${proxLogin}:${proxyPassword}@${proxyUrl}"
-      "noProxy": ".mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
+      "noProxy": "${NoProxyAdd}"
     }
   }
 }
@@ -339,8 +339,8 @@ export HTTP_PROXY="http://${proxyUrl}"
 export HTTPS_PROXY="${HTTP_PROXY}"
 export http_proxy="${HTTP_PROXY}"
 export https_proxy="${HTTP_PROXY}"
-export no_proxy=".mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
-export NO_PROXY="${no_proxy}"
+export no_proxy="${NoProxyAdd}"
+export NO_PROXY="${NoProxyAdd}"
 EOF
 vrai="0"
 nom="Configuration du fichier /etc/profil avec proxy"
@@ -361,11 +361,11 @@ dockerproxy() {
 vrai="1"
 cat <<EOF >> /etc/systemd/system/docker.service.d/http-proxy.conf
 [Service]
-Environment="HTTP_PROXY=http://${proxyUrl}" "NO_PROXY=.mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
+Environment="HTTP_PROXY=http://${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
 EOF
 cat <<EOF >> /etc/systemd/system/docker.service.d/https-proxy.conf
 [Service]
-Environment="HTTPS_PROXY=http://${proxyUrl}" "NO_PROXY=.mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
+Environment="HTTPS_PROXY=http://${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
 EOF
 systemctl daemon-reload
 vrai="0"
@@ -383,7 +383,7 @@ cat <<EOF >> /home/stagiaire/.docker/config.json
     {
       "httpProxy": "http://${proxyUrl}"
       "httpsProxy": "http://${proxyUrl}"
-      "noProxy": ".mon.dom,192.168.56.1,10.0.2.15,172.21.0.100,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
+      "noProxy": "${NoProxyAdd}"
     }
   }
 }
@@ -391,6 +391,23 @@ EOF
 vrai="0"
 nom="Configuration du client docker avec proxy"
 }
+# Fonction de création des clés pour ssh-copy-id
+#
+CopyIdRoot () {
+#
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.21.0.100 && \
+}
+# Fonction de récupération du token et sha253 de cacert
+#
+RecupToken () {
+alias master1="ssh root@master1-k8s.mon.dom" && \
+export token=`master1 kubeadm token list | tail -1 | cut -f 1,2 -d " "` && \
+tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
+export tokenca=sha256:${tokensha} && \
+CertsKey=`kubeadm certs certificate-key`
+}
+
 ###################################################################################################
 #                                                                                                 #
 #                             Debut de la séquence d'Installation                                 #
@@ -414,14 +431,21 @@ done
 if [ "${noeud}" = "worker" ]
 then
 vrai="1"
-x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2 ou 3, pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
+x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2, 3, ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
 export node="worker"
 elif [ ${noeud} = "master" ]
 then
 vrai="1"
-hostnamectl  set-hostname  ${noeud}-k8s.mon.dom && \
+x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2, 3, ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
+hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
 export node="master" && \
+if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
+then 
+first="yes"
+else
+first="no"
+fi
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote"
 verif
@@ -479,7 +503,119 @@ nom="Etape ${numetape} - Contruction du fichier hosts"
 verif
 ############################################################################################
 #                                                                                          #
-#                       Déploiement du master Kubernetes                                   #
+#                       Déploiement du LB  HA Proxy                                        #
+#                                                                                          #
+############################################################################################
+vrai="1"
+clear
+#################################################
+# 
+# Présentation des interfaces réseaux disponibles
+#
+#
+echo ""
+echo "liste des interfaces réseaux disponibles:"
+echo ""
+echo "-----------------------------------------"
+echo "`ip link`"
+echo ""
+echo "-----------------------------------------"
+echo ""
+echo -n "Mettre le nom de l'interface réseaux Interne: "
+read eth1 && \
+repok8s && \
+Swap && \
+vrai="0"
+nom="Etape ${numetape} - Choix de l'interface interne. "
+verif
+#################################################
+# 
+# installation des applications.
+#
+#
+vrai="1"
+dnf  install -y ${appHAProxy} && \
+vrai="0"
+nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy. "
+verif
+#################################################
+# 
+# Configuration et démarrage du serveur BIND9.
+#
+#
+vrai="1"
+dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
+cat <<EOF > /etc/named/ddns.key
+key DDNS_UPDATE {
+	algorithm HMAC-MD5.SIG-ALG.REG.INT;
+  secret "bad" ;
+};
+EOF
+secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
+sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
+chown named:dhcpd /etc/named/ddns.key && \
+chmod 640 /etc/named/ddns.key && \
+sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
+sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;172.21.0.0/24; };|g" /etc/named.conf && \
+echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
+named && \
+namedMonDom && \
+chown root:named /var/named/mon.dom.db && \
+chmod 660 /var/named/mon.dom.db && \
+namedRevers && \
+chown root:named /var/named/172.21.0.db && \
+chmod 660 /var/named/172.21.0.db && \
+systemctl enable --now named.service && \
+vrai="0"
+nom="Etape ${numetape} - Configuration et demarrage de bind"
+verif
+#################################################
+# 
+# Configuration du temps.
+#
+#
+vrai="1"
+temps && \
+vrai="0"
+nom="Etape ${numetape} - Synchronisation de l'horloge"
+verif
+#################################################
+# 
+# configuration du NAT sur LB HA proxy
+#
+vrai="1"
+firewall-cmd --permanent --add-masquerade && \
+firewall-cmd --reload && \
+vrai="0"
+nom="Etape ${numetape} - Mise en place du NAT"
+verif
+#################################################
+# 
+# configuration du dhcp avec inscription dans le DNS
+#
+#
+vrai="1"
+dhcp && \
+sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du service dhcp"
+verif
+################################################
+#
+# modification des droits SELINUX sur dhcpd et start du service
+#
+#
+vrai="1"
+semanage permissive -a dhcpd_t && \
+systemctl enable  --now  dhcpd.service && \
+vrai="0"
+nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
+verif
+
+
+############################################################################################
+#                                                                                          #
+#                       Déploiement des masters Kubernetes                                 #
 #                                                                                          #
 ############################################################################################
 # 
@@ -493,7 +629,7 @@ then
     if [ "$auth" = "y" -o "$auth" = "Y" ]
     then
     profilproxyauth
-    yumproxyauth
+    dnfproxyauth
       if [ -d /etc/systemd/system/docker.service.d/ ]
       then
       dockerproxyauth
@@ -543,63 +679,15 @@ then
       fi
     fi
   fi
-vrai="1"
-clear
-echo ""
-echo "liste des interfaces réseaux disponibles:"
-echo ""
-echo "-----------------------------------------"
-echo "`ip link`"
-echo ""
-echo "-----------------------------------------"
-echo ""
-echo -n "Mettre le nom de l'interface réseaux Interne: "
-read eth1 && \
-repok8s && \
-Swap && \
-vrai="0"
-nom="Etape ${numetape} - Parametrage de base du master"
-verif
 #################################################
 # 
 # installation des applications.
 #
 #
 vrai="1"
-yum  install -y ${appmaster} && \
+dnf  install -y ${appmaster} && \
 vrai="0"
 nom="Etape ${numetape} - Installation des outils et services sur le master"
-verif
-#################################################
-# 
-# Configuration et démarrage du serveur BIND9 selon le rôle de chacuns.
-#
-#
-vrai="1"
-dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
-cat <<EOF > /etc/named/ddns.key
-key DDNS_UPDATE {
-	algorithm HMAC-MD5.SIG-ALG.REG.INT;
-  secret "bad" ;
-};
-EOF
-secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
-sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
-chown named:dhcpd /etc/named/ddns.key && \
-chmod 640 /etc/named/ddns.key && \
-sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
-sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;172.21.0.0/24; };|g" /etc/named.conf && \
-echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
-named && \
-namedMonDom && \
-chown root:named /var/named/mon.dom.db && \
-chmod 660 /var/named/mon.dom.db && \
-namedRevers && \
-chown root:named /var/named/172.21.0.db && \
-chmod 660 /var/named/172.21.0.db && \
-systemctl enable --now named.service && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et demarrage de bind"
 verif
 #################################################
 # 
@@ -623,16 +711,6 @@ nom="Etape ${numetape} - Installation du module de brige"
 verif
 #################################################
 # 
-# configuration du NAT sur le premier master
-#
-vrai="1"
-firewall-cmd --permanent --add-masquerade && \
-firewall-cmd --reload && \
-vrai="0"
-nom="Etape ${numetape} - Mise en place du NAT"
-verif
-#################################################
-# 
 # Démarrage du service kubelet
 #
 #
@@ -640,18 +718,6 @@ vrai="1"
 systemctl enable --now kubelet && \
 vrai="0"
 nom="Etape ${numetape} - Démarrage du service kubelet"
-verif
-#################################################
-# 
-# configuration du dhcp avec inscription dans le DNS
-#
-#
-vrai="1"
-dhcp && \
-sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
-systemctl enable  --now  dhcpd.service && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et start du service dhcp"
 verif
 #################################################
 # 
@@ -668,11 +734,12 @@ nom="Etape ${numetape} - Configuration et installation du service docker-ee-stab
 #
 #
 vrai="1"
-#deploiement avec calico
-kubeadm init --apiserver-advertise-address=172.21.0.100 --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr=192.168.0.0/16  && \
-vrai="0"
-nom="Etape ${numetape} - Deploiement du cluster K8S"
-verif
+if [ "$first" = "yes" ]
+then
+clear
+echo "Est ce que le noeuds est bien : master1-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
+read tt
+kubeadm init --control-plane-endpoint="172.21.0.100:6443" --apiserver-advertise-address="${node}${x}-k8s.mon.dom" --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr="192.168.0.0/16"  && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -728,20 +795,37 @@ usermod  -aG docker stagiaire && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du compte stagiaire au groupe docker"
 verif
-################################################
-#
-# modification des droits SELINUX sur dhcpd
-#
+elif [ "$first" = "no" ]
+then
+#################################################
+# 
+# Echange de clés ssh avec master1.k8s.mon.dom
 #
 vrai="1"
-semanage permissive -a dhcpd_t && \
-systemctl restart dhcpd && \
+CopyIdRoot
 vrai="0"
-nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
+nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
-
-
-
+#################################################
+# 
+# Récupération du token sur master1.k8s.mon.dom
+#
+vrai=1
+RecupToken
+vrai="0"
+nom="Etape ${numetape} - Recuperation du token sur le master pour l'intégration au cluster"
+verif
+#################################################
+# 
+# Intégration d'un noeud master au cluster
+#
+echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
+read tt
+kubeadm join 172.21.0.100:6443 --control-plane --token ${token} --apiserver-advertise-address="${node}${x}-k8s.mon.dom"  --discovery-token-ca-cert-hash ${tokenca} --certificate-key ${CertsKey} && \
+vrai="0"
+nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
+verif
+fi
 
 fi
 ############################################################################################
@@ -756,7 +840,7 @@ then
     if [ "$auth" = "y" -o "$auth" = "Y" ]
     then
     profilproxyauth
-    yumproxyauth
+    dnfproxyauth
       if [ -d /etc/systemd/system/docker.service.d/ ]
       then
       dockerproxyauth
@@ -806,35 +890,6 @@ then
       fi
     fi
   fi
-vrai="1"
-systemctl restart NetworkManager && \
-vrai="0"
-nom="Etape ${numetape} - Restart de la pile réseau du worker"
-verif
-#################################################
-#
-# Création des clés pour ssh-copy-id
-#
-#
-vrai="1"
-ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.21.0.100 && \
-vrai="0"
-nom="Etape ${numetape} - Configuration du ssh agent"
-verif
-#################################################
-# 
-# Récupération du token et sha253 de cacert
-#
-#
-vrai="1"
-alias master="ssh root@master-k8s.mon.dom" && \
-export token=`master kubeadm token list | tail -1 | cut -f 1,2 -d " "` && \
-tokensha=`master openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
-export tokenca=sha256:${tokensha} && \
-vrai="0"
-nom="Etape ${numetape} - Recuperation des clés sur le master pour l'intégration au cluster"
-verif
 #################################################
 # 
 # Constuction du fichier de configuration du repository de kubernetes
@@ -847,7 +902,7 @@ nom="Etape ${numetape} - Construction du repository de K8S"
 verif
 #################################################
 # 
-# Gestion du SELinux et suppression du swap
+# Suppression du swap
 #
 #
 vrai="1"
@@ -867,7 +922,7 @@ nom="Etape ${numetape} - Installation de outils sur le worker"
 verif
 #################################################
 #
-# synchronisation de temps sur 0.fr.pool.ntp.org
+# synchronisation de temps
 #
 #
 vrai="1"
@@ -906,12 +961,31 @@ vrai="0"
 nom="Etape ${numetape} - Installation du service docker-ce-stable sur le worker"
 verif
 #################################################
+#
+# Echange des clés ssh avec master1-k8s.mon.dom
+#
+vrai="1"
+CopyIdRoot
+vrai="0"
+nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
+verif
+#################################################
+#
+# Recuperation du token sur le master pour l'intégration au cluster
+#
+vrai="1"
+RecupToken
+vrai="0"
+nom="Etape ${numetape} - Recuperation du token sur le master pour l'intégration au cluster"
+verif
+
+#################################################
 # 
 # Jonction de l'hôte au cluster
 #
 #
 vrai="1"
-kubeadm join master-k8s.mon.dom:6443 --token ${token}  --discovery-token-ca-cert-hash ${tokenca} && \
+kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash ${tokenca} && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
