@@ -440,18 +440,17 @@ vrai="1"
 x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2, 3, ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 export node="master"
-if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
-then 
-first="yes"
-else
-first="no"
-fi
+	if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
+	then 
+	first="yes"
+	else
+	first="no"
+	fi
 elif [ ${noeud} = "ha" ]
 then
 vrai="1"
 hostnamectl  set-hostname  haproxy-k8s.mon.dom
 export node="haproxy"
-fi
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote"
 verif
@@ -512,6 +511,21 @@ verif
 #                       Déploiement du LB  HA Proxy                                        #
 #                                                                                          #
 ############################################################################################
+if [ ${node} = "haproxy" ]
+then
+  if [ "$prox" = "yes" ]
+  then
+    if [ "$auth" = "y" -o "$auth" = "Y" ]
+    then
+    profilproxyauth
+    dnfproxyauth
+    ###############  fin de la conf proxy avec auth
+    elif [ "$auth" = "n" -o "$auth" = "N" ]
+    then
+    profilproxy
+    dnfproxy
+    fi
+  fi
 vrai="1"
 clear
 #################################################
@@ -644,7 +658,7 @@ systemctl enable  --now  dhcpd.service && \
 vrai="0"
 nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
 verif
-
+fi
 
 ############################################################################################
 #                                                                                          #
