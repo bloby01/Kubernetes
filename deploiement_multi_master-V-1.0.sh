@@ -540,6 +540,33 @@ nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy.
 verif
 #################################################
 # 
+# Configuration du LB HA Proxy
+#
+#
+vrai="1"
+cat <<EOF > /etc/haproxy/haproxy.cfg
+frontend kubernetes-frontend
+    bind haproxy-k8s.mon.dom:6443
+    mode tcp
+    option tcplog
+    default_backend kubernetes-backend
+
+backend kubernetes-backend
+    mode tcp
+    option tcp-check
+    balance roundrobin
+    server master1-k8s.mon.dom 172.21.0.101:6443 check fall 3 rise 2
+    server master2-k8s.mon.dom 172.21.0.102:6443 check fall 3 rise 2
+EOF
+systemctl enable --now haproxy && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du LB HA Proxy. "
+verif
+
+
+
+#################################################
+# 
 # Configuration et démarrage du serveur BIND9.
 #
 #
@@ -739,7 +766,7 @@ then
 clear
 echo "Est ce que le noeuds est bien : master1-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
 read tt
-kubeadm init --control-plane-endpoint="172.21.0.100:6443" --apiserver-advertise-address="${node}${x}-k8s.mon.dom" --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr="192.168.0.0/16"  && \
+kubeadm init --control-plane-endpoint="haproxy-k8s.mon.dom:6443" --apiserver-advertise-address="${node}${x}-k8s.mon.dom" --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr="192.168.0.0/16"  && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -821,7 +848,7 @@ verif
 #
 echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
 read tt
-kubeadm join 172.21.0.100:6443 --control-plane --token ${token} --apiserver-advertise-address="${node}${x}-k8s.mon.dom"  --discovery-token-ca-cert-hash ${tokenca} --certificate-key ${CertsKey} && \
+kubeadm join haproxy-k8s.mon.dom:6443 --control-plane --token ${token} --apiserver-advertise-address="${node}${x}-k8s.mon.dom"  --discovery-token-ca-cert-hash ${tokenca} --certificate-key ${CertsKey} && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
