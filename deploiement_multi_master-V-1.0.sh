@@ -419,32 +419,38 @@ CertsKey=`kubeadm certs certificate-key`
 
 ############################################################################################
 #                                                                                          #
-#                       Paramètres communs master et worker                                #
+#                       Paramètres communs HA Proxy, master et worker                      #
 #                                                                                          #
 ############################################################################################
 clear
-until [ "${noeud}" = "worker" -o "${noeud}" = "master" ]
+until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "ha" ]
 do
-echo -n 'Indiquez si cette machine doit être "master" ou "worker", mettre en toutes lettres votre réponse: '
+echo -n 'Indiquez si cette machine doit être "ha ou master" ou "worker", mettre en toutes lettres votre réponse: '
 read noeud
 done
 if [ "${noeud}" = "worker" ]
 then
 vrai="1"
 x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2, 3, ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
-hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
+hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 export node="worker"
 elif [ ${noeud} = "master" ]
 then
 vrai="1"
 x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2, 3, ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
-hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom && \
-export node="master" && \
+hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
+export node="master"
 if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
 then 
 first="yes"
 else
 first="no"
+elif [ ${noeud} = "ha" ]
+then
+vrai="1"
+hostnamectl  set-hostname  haproxy-k8s.mon.dom
+export node="haproxy"
+
 fi
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote"
