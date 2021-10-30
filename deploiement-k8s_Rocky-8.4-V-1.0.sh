@@ -89,7 +89,7 @@ vrai="1"
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 yum-config-manager --enable docker-ce-stable
-yum  install  -y containerd.io && \
+#yum  install  -y containerd.io && \
 yum  install  -y docker-ce && \
 mkdir -p /etc/docker
 cat <<EOF > /etc/docker/daemon.json
@@ -221,12 +221,13 @@ nom="Configuration du repository yum pour kubernetes"
 # Fonction  de configuration du SElinux et du swap à off
 selinuxSwap () {
 vrai="1"
-setenforce 0 && \
-sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
+#setenforce 0 && \
+#sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
 swapoff   -a && \
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab && \
 vrai="0"
-nom="Désactivation du selinux et du Swap"
+nom="Désactivation du Swap"
+#nom="Désactivation du selinux et du Swap"
 }
 
 # Fonction de configuration du module bridge
@@ -446,17 +447,6 @@ vrai="1"
 firewall-cmd  --set-default-zone trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 firewall-cmd --reload && \
-#firewall-cmd  --set-default-zone work && \
-#firewall-cmd --add-interface=lo --zone=trusted --permanent && \
-#firewall-cmd --add-port=8080/tcp --permanent && \
-#firewall-cmd --add-port=80/tcp --permanent && \
-#firewall-cmd --add-port=443/tcp --permanent && \
-#firewall-cmd --add-port=6443/tcp --permanent && \
-#firewall-cmd --add-port=2379-2380/tcp --permanent && \
-#firewall-cmd --add-port=10250-10252/tcp --permanent && \
-#firewall-cmd --add-port=30000-32767/tcp --permanent && \
-#firewall-cmd --add-port=4789/udp --permanent && \
-#firewall-cmd --reload && \
 vrai="0"
 nom="Etape ${numetape} - Regles de firewall à trusted"
 verif
@@ -626,9 +616,6 @@ verif
 # configuration du NAT sur le premier master
 #
 vrai="1"
-#firewall-cmd --add-port=53/tcp --permanent && \
-#firewall-cmd --add-port=53/udp --permanent && \
-#firewall-cmd --add-port=67/udp --permanent && \
 firewall-cmd --permanent --add-masquerade && \
 firewall-cmd --reload && \
 vrai="0"
@@ -673,8 +660,6 @@ nom="Etape ${numetape} - Configuration et installation du service docker-ee-stab
 vrai="1"
 #deploiement avec calico
 kubeadm init --apiserver-advertise-address=172.21.0.100 --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr=192.168.0.0/16  && \
-#deploiement avec flannel
-#kubeadm init --apiserver-advertise-address=172.21.0.100 --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr=10.244.0.0/16  && \
 vrai="0"
 nom="Etape ${numetape} - Deploiement du cluster K8S"
 verif
@@ -712,17 +697,6 @@ vrai="0"
 nom="Etape ${numetape} - Deploiement calico"
 verif
 #################################################
-# 
-# Construire le réseau flannel pour k8s
-#
-#
-#vrai="1"
-#kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml && \
-#vrai="0"
-#nom="Etape ${numetape} - Deploiement flannel"
-#verif
-#################################################
-
 # 
 # Installation de bash-completion pour faciliter les saisies
 #
@@ -825,7 +799,7 @@ nom="Etape ${numetape} - Configuration du ssh agent"
 verif
 #################################################
 # 
-# Création des clés pour ssh-copy-id
+# Récupération du token et sha253 de cacert
 #
 #
 vrai="1"
@@ -854,7 +828,7 @@ verif
 vrai="1"
 selinuxSwap && \
 vrai="0"
-nom="Etape ${numetape} - Configuration du SELINUX"
+nom="Etape ${numetape} - Configuration du Swap à off"
 verif
 #################################################
 # 
@@ -883,10 +857,6 @@ verif
 #
 vrai="1"
 moduleBr && \
-#sysctl   -w net/ipv4/ip_forward=1 && \
-#cat <<EOF >> /etc/sysctl.conf
-#net/ipv4/ip_forward=1
-#EOF
 vrai="0"
 nom="Etape ${numetape} - Installation du module bridge sur le worker"
 verif
