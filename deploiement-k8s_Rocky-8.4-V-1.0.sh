@@ -576,7 +576,6 @@ EOF
 secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
 sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
 chown named:dhcpd /etc/named/ddns.key && \
-semanage permissive -a dhcpd_t
 chmod 640 /etc/named/ddns.key && \
 sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
 sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;172.21.0.0/24; };|g" /etc/named.conf && \
@@ -640,6 +639,7 @@ verif
 vrai="1"
 dhcp && \
 sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
+semanage permissive -a dhcpd_t && \
 systemctl enable  --now  dhcpd.service && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et start du service dhcp"
