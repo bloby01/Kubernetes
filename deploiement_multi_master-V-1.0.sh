@@ -395,8 +395,8 @@ nom="Configuration du client docker avec proxy"
 #
 CopyIdRoot () {
 #
-ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.21.0.100 && \
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.21.0.100
 }
 # Fonction de récupération du token et sha253 de cacert
 #
