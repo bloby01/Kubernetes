@@ -575,7 +575,8 @@ key DDNS_UPDATE {
 EOF
 secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
 sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
-chown root:named /etc/named/ddns.key && \
+chown named:dhcpd /etc/named/ddns.key && \
+semanage permissive -a dhcpd_t
 chmod 640 /etc/named/ddns.key && \
 sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
 sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;172.21.0.0/24; };|g" /etc/named.conf && \
