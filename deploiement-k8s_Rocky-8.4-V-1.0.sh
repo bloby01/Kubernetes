@@ -639,7 +639,6 @@ verif
 vrai="1"
 dhcp && \
 sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
-semanage permissive -a dhcpd_t && \
 systemctl enable  --now  dhcpd.service && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et start du service dhcp"
@@ -719,6 +718,21 @@ usermod  -aG docker stagiaire && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du compte stagiaire au groupe docker"
 verif
+################################################
+#
+# modification des droits SELINUX sur dhcpd
+#
+#
+vrai="1"
+semanage permissive -a dhcpd_t && \
+systemctl restart dhcpd && \
+vrai="0"
+nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
+verif
+
+
+
+
 fi
 ############################################################################################
 #                                                                                          #
