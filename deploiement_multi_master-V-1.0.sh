@@ -445,12 +445,12 @@ then
 first="yes"
 else
 first="no"
+fi
 elif [ ${noeud} = "ha" ]
 then
 vrai="1"
 hostnamectl  set-hostname  haproxy-k8s.mon.dom
 export node="haproxy"
-
 fi
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote"
