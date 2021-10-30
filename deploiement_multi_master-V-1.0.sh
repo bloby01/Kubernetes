@@ -564,7 +564,7 @@ verif
 #
 #
 vrai="1"
-cat <<EOF > /etc/haproxy/haproxy.cfg
+cat <<EOF >> /etc/haproxy/haproxy.cfg
 frontend kubernetes-frontend
     bind haproxy-k8s.mon.dom:6443
     mode tcp
