@@ -599,6 +599,7 @@ chmod 660 /var/named/mon.dom.db && \
 namedRevers && \
 chown root:named /var/named/172.21.0.db && \
 chmod 660 /var/named/172.21.0.db && \
+semanage permissive -a named_t
 systemctl enable --now named.service && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et demarrage de bind"
@@ -820,9 +821,9 @@ vrai="1"
 if [ "$first" = "yes" ]
 then
 clear
-echo "Est ce que le noeuds est bien : master1-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
+echo "Est ce que le noeuds est bien : master1-k8s.mon.dom : $(hostname)"
 read tt
-kubeadm init --control-plane-endpoint="haproxy-k8s.mon.dom:6443" --apiserver-advertise-address="`host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`" --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr="192.168.0.0/16"  && \
+kubeadm init --control-plane-endpoint="`host haproxy-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs --apiserver-advertise-address="`host $(hostname) | cut -f 4 -d " "`"  --pod-network-cidr="192.168.0.0/16"  && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
