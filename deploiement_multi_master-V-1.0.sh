@@ -402,12 +402,20 @@ nom="Configuration du client docker avec proxy"
 CopyIdRoot () {
 #
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@172.21.0.100
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
 # Fonction de récupération du token et sha253 de cacert
 #
 RecupToken () {
 alias master1="ssh root@master1-k8s.mon.dom"
+if [ -d ~/.kube ]
+then
+scp master1:/etc/kubernetes/admin.conf ~/.kube/config
+else
+mkdir ~/.kube
+scp master1:/etc/kubernetes/admin.conf ~/.kube/config
+fi
+export KUBECONFIG=~/.kube/config
 export token=`master1 kubeadm token list | tail -1 | cut -f 1,2 -d " "`
 tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 export tokenca=sha256:${tokensha}
