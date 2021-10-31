@@ -804,7 +804,7 @@ then
 clear
 echo "Est ce que le noeuds est bien : master1-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
 read tt
-kubeadm init --control-plane-endpoint="haproxy-k8s.mon.dom:6443" --apiserver-advertise-address="${node}${x}-k8s.mon.dom" --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr="192.168.0.0/16"  && \
+kubeadm init --control-plane-endpoint="haproxy-k8s.mon.dom:6443" --apiserver-advertise-address="`host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`" --apiserver-cert-extra-sans="*.mon.dom" --pod-network-cidr="192.168.0.0/16"  && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -886,7 +886,7 @@ verif
 #
 echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
 read tt
-kubeadm join haproxy-k8s.mon.dom:6443 --control-plane --token ${token} --apiserver-advertise-address="${node}${x}-k8s.mon.dom"  --discovery-token-ca-cert-hash ${tokenca} --certificate-key ${CertsKey} && \
+kubeadm join haproxy-k8s.mon.dom:6443 --control-plane --token ${token} --apiserver-advertise-address="`host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`"  --discovery-token-ca-cert-hash ${tokenca} --certificate-key ${CertsKey} && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
