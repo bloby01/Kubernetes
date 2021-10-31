@@ -735,6 +735,16 @@ then
   fi
 #################################################
 # 
+# Suppression du swap
+#
+#
+vrai="1"
+Swap && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du Swap à off"
+verif
+#################################################
+# 
 # Configuration du repo k8s.
 #
 #
