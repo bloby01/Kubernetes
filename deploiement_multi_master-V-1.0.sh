@@ -410,10 +410,10 @@ RecupToken () {
 alias master1="ssh root@master1-k8s.mon.dom"
 if [ -d ~/.kube ]
 then
-scp master1:/etc/kubernetes/admin.conf ~/.kube/config
+scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
 else
 mkdir ~/.kube
-scp master1:/etc/kubernetes/admin.conf ~/.kube/config
+scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
 fi
 export KUBECONFIG=~/.kube/config
 export token=`master1 kubeadm token list | tail -1 | cut -f 1,2 -d " "`
@@ -882,7 +882,7 @@ elif [ "$first" = "no" ]
 then
 #################################################
 # 
-# Echange de clés ssh avec master1.k8s.mon.dom
+# Echange de clés ssh avec master1-k8s.mon.dom
 #
 vrai="1"
 CopyIdRoot
@@ -891,7 +891,7 @@ nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
 #################################################
 # 
-# Récupération du token sur master1.k8s.mon.dom
+# Récupération du token sur master1-k8s.mon.dom
 #
 vrai=1
 RecupToken
