@@ -978,6 +978,15 @@ then
     fi
   fi
 #################################################
+#
+# Echange des clés ssh avec master1-k8s.mon.dom
+#
+vrai="1"
+CopyIdRoot
+vrai="0"
+nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
+verif
+#################################################
 # 
 # Configuration du repo k8s.
 #
@@ -1047,15 +1056,7 @@ docker && \
 vrai="0"
 nom="Etape ${numetape} - Installation du service docker-ce-stable sur le worker"
 verif
-#################################################
-#
-# Echange des clés ssh avec master1-k8s.mon.dom
-#
-vrai="1"
-CopyIdRoot
-vrai="0"
-nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
-verif
+
 #################################################
 #
 # Recuperation du token sur le master pour l'intégration au cluster
