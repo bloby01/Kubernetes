@@ -188,6 +188,9 @@ cat <<EOF > /var/named/mon.dom.db
               300 )    ; minimum
 @             NS      haproxy-k8s.mon.dom.
 haproxy-k8s   A       172.21.0.100
+master1-k8s   A       172.21.0.101
+master2-k8s   A       172.21.0.102
+master3-k8s   A       172.21.0.103
 traefik     CNAME   worker1-k8s.mon.dom.
 w1          CNAME   worker2-k8s.mon.dom.
 w2          CNAME   worker3-k8s.mon.dom.
@@ -209,6 +212,9 @@ cat <<EOF > /var/named/172.21.0.db
               300 )    ; minimum
 @             NS      haproxy-k8s.mon.dom.
 100           PTR     haproxy-k8s.mon.dom.
+101           PTR     master1-k8s.mon.dom.
+102           PTR     master2-k8s.mon.dom.
+103           PTR     master3-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
@@ -557,34 +563,6 @@ dnf  install -y ${appHAProxy} && \
 vrai="0"
 nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy. "
 verif
-#################################################
-# 
-# Configuration du LB HA Proxy
-#
-#
-vrai="1"
-cat <<EOF >> /etc/haproxy/haproxy.cfg
-frontend kubernetes-frontend
-    bind haproxy-k8s.mon.dom:6443
-    mode tcp
-    option tcplog
-    default_backend kubernetes-backend
-
-backend kubernetes-backend
-    mode tcp
-    option tcp-check
-    balance roundrobin
-    server master1-k8s.mon.dom master1-k8s.mon.dom:6443 check fall 3 rise 2
-    server master2-k8s.mon.dom master2-k8s.mon.dom:6443 check fall 3 rise 2
-    server master2-k8s.mon.dom master3-k8s.mon.dom:6443 check fall 3 rise 2
-EOF
-setsebool -P haproxy_connect_any on && \
-systemctl enable --now haproxy && \
-vrai="0"
-nom="Etape ${numetape} - Configuration du LB HA Proxy. "
-verif
-
-
 
 #################################################
 # 
@@ -617,6 +595,34 @@ systemctl enable --now named.service && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et demarrage de bind"
 verif
+
+#################################################
+# 
+# Configuration du LB HA Proxy
+#
+#
+vrai="1"
+cat <<EOF >> /etc/haproxy/haproxy.cfg
+frontend kubernetes-frontend
+    bind haproxy-k8s.mon.dom:6443
+    mode tcp
+    option tcplog
+    default_backend kubernetes-backend
+
+backend kubernetes-backend
+    mode tcp
+    option tcp-check
+    balance roundrobin
+    server master1-k8s.mon.dom master1-k8s.mon.dom:6443 check fall 3 rise 2
+    server master2-k8s.mon.dom master2-k8s.mon.dom:6443 check fall 3 rise 2
+    server master2-k8s.mon.dom master3-k8s.mon.dom:6443 check fall 3 rise 2
+EOF
+setsebool -P haproxy_connect_any on && \
+systemctl enable --now haproxy && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du LB HA Proxy. "
+verif
+
 #################################################
 # 
 # Configuration du temps.
