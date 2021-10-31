@@ -1071,7 +1071,7 @@ verif
 #
 #
 vrai="1"
-kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokenca} && \
+kubeadm join "master1-k8s.mon.dom:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokenca} && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
