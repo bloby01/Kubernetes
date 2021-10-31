@@ -543,7 +543,6 @@ echo "-----------------------------------------"
 echo ""
 echo -n "Mettre le nom de l'interface réseaux Interne: "
 read eth1 && \
-repok8s && \
 Swap && \
 vrai="0"
 nom="Etape ${numetape} - Choix de l'interface interne. "
@@ -575,9 +574,11 @@ backend kubernetes-backend
     mode tcp
     option tcp-check
     balance roundrobin
-    server master1-k8s.mon.dom 172.21.0.101:6443 check fall 3 rise 2
-    server master2-k8s.mon.dom 172.21.0.102:6443 check fall 3 rise 2
+    server master1-k8s.mon.dom master1-k8s.mon.dom:6443 check fall 3 rise 2
+    server master2-k8s.mon.dom master2-k8s.mon.dom:6443 check fall 3 rise 2
+    server master2-k8s.mon.dom master3-k8s.mon.dom:6443 check fall 3 rise 2
 EOF
+setsebool -P haproxy_connect_any on && \
 systemctl enable --now haproxy && \
 vrai="0"
 nom="Etape ${numetape} - Configuration du LB HA Proxy. "
