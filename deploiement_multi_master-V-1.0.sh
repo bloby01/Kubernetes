@@ -821,8 +821,6 @@ vrai="1"
 if [ "$first" = "yes" ]
 then
 clear
-echo "Est ce que le noeuds est bien : master1-k8s.mon.dom : $(hostname)"
-read tt
 kubeadm init --control-plane-endpoint="`host haproxy-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs --apiserver-advertise-address="`host $(hostname) | cut -f 4 -d " "`"  --pod-network-cidr="192.168.0.0/16"  && \
 #################################################
 # 
