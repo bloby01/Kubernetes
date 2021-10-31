@@ -79,7 +79,7 @@ NBR=0
 appmaster="nfs-utils kubelet kubeadm kubectl  --disableexcludes=kubernetes"
 appworker="nfs-utils kubelet kubeadm --disableexcludes=kubernetes"
 #appworker="nfs-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
-appHAProxy="haproxy bind bind-utils iproute-tc dhcp-server"
+appHAProxy="haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
 NoProxyAdd=".mon.dom,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
 #                                                                               	  #
 ###########################################################################################
