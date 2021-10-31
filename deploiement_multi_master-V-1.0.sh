@@ -462,8 +462,8 @@ nom="Etape ${numetape} - Construction du nom d hote"
 verif
 fi
 vrai="1"
-x=0 ; until [ "${x}" = "y" -o "${x}" = "Y" -o "${x}" = "n" -o "${x}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read x ; done
-if [ "$x" = "y" -o "$x" = "Y" ]
+t=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
+if [ "$t" = "y" -o "$t" = "Y" ]
 then
 prox="yes"
 echo -n "Mettre l'url d'acces au format suivant <IP:PORT/>  : "
