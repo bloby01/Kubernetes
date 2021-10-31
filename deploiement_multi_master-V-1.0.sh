@@ -735,6 +735,17 @@ then
   fi
 #################################################
 # 
+# Configuration du repo k8s.
+#
+#
+vrai="1"
+repok8s && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du repo kubernetes"
+verif
+
+#################################################
+# 
 # installation des applications.
 #
 #
@@ -946,13 +957,13 @@ then
   fi
 #################################################
 # 
-# Constuction du fichier de configuration du repository de kubernetes
+# Configuration du repo k8s.
 #
 #
 vrai="1"
 repok8s && \
 vrai="0"
-nom="Etape ${numetape} - Construction du repository de K8S"
+nom="Etape ${numetape} - Configuration du repo kubernetes"
 verif
 #################################################
 # 
