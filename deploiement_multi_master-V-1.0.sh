@@ -424,11 +424,11 @@ scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
 fi
 export KUBECONFIG=~/.kube/config
 export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ")
-export tokensha=$(grep sha256 ~/noeudsupplementaires.txt | tail -1)
+#export tokensha=$(grep sha256 ~/noeudsupplementaires.txt | tail -1)
 export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1)
 export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 #export token=`master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
-#tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 #export tokenca="${tokensha}"
 #export CertsKey=`master1 kubeadm certs certificate-key` 
 }
@@ -915,10 +915,10 @@ verif
 clear
 echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
 echo "token est egale à : ${token}"
-echo "le sha256 est egale à : ${tokenca}"
+echo "le sha256 est egale à : ${tokensha}"
 echo " --certificate-key est egale à : ${CertsKey}"
 read tt
-kubeadm join loadBalancer-k8s.mon.dom:6443 --token ${token} ${tokenca} ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
+kubeadm join loadBalancer-k8s.mon.dom:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
