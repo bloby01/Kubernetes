@@ -413,7 +413,8 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 # Fonction de récupération du token et sha253 de cacert
 #
 RecupToken () {
-alias master1="ssh root@master1-k8s.mon.dom"
+alias master1="root@master1-k8s.mon.dom"
+scp master1:noeudsupplementaires.txt ~/.
 if [ -d ~/.kube ]
 then
 scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
@@ -422,10 +423,14 @@ mkdir ~/.kube
 scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
 fi
 export KUBECONFIG=~/.kube/config
-export token=`master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
-tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
-export tokenca="${tokensha}"
-export CertsKey=`master1 kubeadm certs certificate-key` 
+export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ")
+export tokensha=$(grep sha256 ~/noeudsupplementaires.txt | tail -1)
+export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1)
+export tokencaworker=`ssh master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+#export token=`ssh master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
+#tokensha=`ssh master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+#export tokenca="${tokensha}"
+#export CertsKey=`ssh master1 kubeadm certs certificate-key` 
 }
 
 ###################################################################################################
@@ -907,12 +912,12 @@ verif
 # 
 # Intégration d'un noeud master au cluster
 #
-echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
-echo "token est egale à : ${token}"
-echo "le sha256 est egale à : ${tokenca}"
-echo " --certificate-key est egale à : ${CertsKey}"
-read tt
-kubeadm join loadBalancer-k8s.mon.dom:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokenca} --control-plane --certificate-key ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
+#echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
+#echo "token est egale à : ${token}"
+#echo "le sha256 est egale à : ${tokenca}"
+#echo " --certificate-key est egale à : ${CertsKey}"
+#read tt
+kubeadm join loadBalancer-k8s.mon.dom:6443 --token ${token} ${tokenca} ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
@@ -1077,7 +1082,8 @@ verif
 #
 #
 vrai="1"
-kubeadm join "loadBalancer-k8s.mon.dom:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokenca} --apiserver-advertise-address `host master-k8s.mon.dom | cut -f 4 -d " "` && \
+kubeadm join "loadBalancer-k8s.mon.dom:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
+#  --apiserver-advertise-address `host master-k8s.mon.dom | cut -f 4 -d " "`
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
