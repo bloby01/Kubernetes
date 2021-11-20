@@ -606,20 +606,62 @@ verif
 #
 #
 vrai="1"
-cat <<EOF >> /etc/haproxy/haproxy.cfg
+cat <<EOF > /etc/haproxy/haproxy.cfg
+global
+    log         127.0.0.1 local2
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+    stats socket /var/lib/haproxy/stats
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+frontend main
+    bind *:5000
+    acl url_static       path_beg       -i /static /images /javascript /stylesheets
+    acl url_static       path_end       -i .jpg .gif .png .css .js
+    use_backend static          if url_static
+    default_backend             app
+backend static
+    balance     roundrobin
+    server      static 127.0.0.1:4331 check
+backend app
+    balance     roundrobin
+    server  app1 127.0.0.1:5001 check
+    server  app2 127.0.0.1:5002 check
+    server  app3 127.0.0.1:5003 check
+    server  app4 127.0.0.1:5004 check
 frontend kubernetes-frontend
     bind loadBalancer-k8s.mon.dom:6443
     mode tcp
     option tcplog
     default_backend kubernetes-backend
-
 backend kubernetes-backend
     mode tcp
     option tcp-check
     balance roundrobin
-    server noeud1 master1-k8s.mon.dom:6443 check fall 3 rise 2
-    server noeud2 master2-k8s.mon.dom:6443 check fall 3 rise 2
-    server noeud3 master3-k8s.mon.dom:6443 check fall 3 rise 2
+#    server noeud1 master1-k8s.mon.dom:6443 check fall 3 rise 2
+#    server noeud2 master2-k8s.mon.dom:6443 check fall 3 rise 2
+#    server noeud3 master3-k8s.mon.dom:6443 check fall 3 rise 2
 EOF
 setsebool -P haproxy_connect_any on && \
 systemctl enable --now haproxy && \
@@ -816,6 +858,8 @@ vrai="1"
 if [ "$first" = "yes" ]
 then
 clear
+sed -i 's/#    server noeud1/    server noeud1/g' /etc/haproxy/haproxy.cfg
+ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -900,6 +944,9 @@ verif
 # Intégration d'un noeud master au cluster
 #
 clear
+sed -i 's/#    server noeud2/    server noeud2/g' /etc/haproxy/haproxy.cfg
+sed -i 's/#    server noeud3/    server noeud3/g' /etc/haproxy/haproxy.cfg
+ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
