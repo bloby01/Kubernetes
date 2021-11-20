@@ -955,9 +955,15 @@ verif
 # Intégration d'un noeud master au cluster
 #
 clear
+if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" ]
+then 
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud2|    server noeud2|g" /etc/haproxy/haproxy.cfg'
+ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
+elif [ "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
+then 
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud3|    server noeud3|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
+fi
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
