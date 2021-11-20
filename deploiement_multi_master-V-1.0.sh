@@ -437,7 +437,7 @@ export CertsKey=`kubeadm certs certificate-key`
 #                                                                                          #
 ############################################################################################
 clear
-until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "ha" ]
+until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "loadBalancer" ]
 do
 echo -n 'Indiquez si cette machine doit être "loadBalancer ou master" ou "worker", mettre en toutes lettres votre réponse: '
 read noeud
