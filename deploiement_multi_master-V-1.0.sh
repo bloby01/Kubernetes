@@ -395,7 +395,7 @@ nom="Configuration du client docker avec proxy"
 #
 CopyIdRoot () {
 #
-ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
+#ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
 CopyIdLB () {
@@ -727,6 +727,8 @@ fi
 #                       Déploiement des masters Kubernetes                                 #
 #                                                                                          #
 ############################################################################################
+#  echange des clés ssh avec le LB
+CopyIdLB
 # 
 # installation du repo kubernetes et des paramètres.
 #
@@ -867,7 +869,6 @@ vrai="1"
 if [ "$first" = "yes" ]
 then
 clear
-CopyIdLB
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
