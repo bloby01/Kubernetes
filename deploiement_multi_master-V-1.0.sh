@@ -912,11 +912,12 @@ verif
 # 
 # Intégration d'un noeud master au cluster
 #
-#echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
-#echo "token est egale à : ${token}"
-#echo "le sha256 est egale à : ${tokenca}"
-#echo " --certificate-key est egale à : ${CertsKey}"
-#read tt
+clear
+echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
+echo "token est egale à : ${token}"
+echo "le sha256 est egale à : ${tokenca}"
+echo " --certificate-key est egale à : ${CertsKey}"
+read tt
 kubeadm join loadBalancer-k8s.mon.dom:6443 --token ${token} ${tokenca} ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
