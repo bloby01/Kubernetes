@@ -449,12 +449,14 @@ then
 vrai="1"
 x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
+systemctl restart NetworkManager
 export node="worker"
 elif [ ${noeud} = "master" ]
 then
 vrai="1"
 x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
+systemctl restart NetworkManager
 export node="master"
 	if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
 	then 
