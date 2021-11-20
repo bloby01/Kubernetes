@@ -425,7 +425,7 @@ export KUBECONFIG=~/.kube/config
 export token=`master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
 tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 export tokenca="${tokensha}"
-export CertsKey=`kubeadm certs certificate-key` 
+export CertsKey=`master1 kubeadm certs certificate-key` 
 }
 
 ###################################################################################################
