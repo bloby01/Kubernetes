@@ -914,7 +914,7 @@ echo "token est egale à : ${token}"
 echo "le sha256 est egale à : ${tokensha}"
 echo " --certificate-key est egale à : ${CertsKey}"
 read tt
-kubeadm join loadBalancer-k8s.mon.dom:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
+kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
