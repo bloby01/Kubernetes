@@ -424,13 +424,9 @@ scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
 fi
 export KUBECONFIG=~/.kube/config
 export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ")
-#export tokensha=$(grep sha256 ~/noeudsupplementaires.txt | tail -1)
 export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1)
 export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
-#export token=`master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
 export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
-#export tokenca="${tokensha}"
-#export CertsKey=`master1 kubeadm certs certificate-key` 
 }
 
 ###################################################################################################
@@ -1083,7 +1079,7 @@ verif
 #
 #
 vrai="1"
-kubeadm join "loadBalancer-k8s.mon.dom:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
+kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
 #  --apiserver-advertise-address `host master-k8s.mon.dom | cut -f 4 -d " "`
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
