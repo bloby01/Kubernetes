@@ -433,25 +433,25 @@ export CertsKey=`kubeadm certs certificate-key`
 
 ############################################################################################
 #                                                                                          #
-#                       Paramètres communs HA Proxy, master et worker                      #
+#                       Paramètres communs LB HAProxy, master et worker                    #
 #                                                                                          #
 ############################################################################################
 clear
 until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "ha" ]
 do
-echo -n 'Indiquez si cette machine doit être "ha ou master" ou "worker", mettre en toutes lettres votre réponse: '
+echo -n 'Indiquez si cette machine doit être "loadBalancer ou master" ou "worker", mettre en toutes lettres votre réponse: '
 read noeud
 done
 if [ "${noeud}" = "worker" ]
 then
 vrai="1"
-x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2, 3, ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
+x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 export node="worker"
 elif [ ${noeud} = "master" ]
 then
 vrai="1"
-x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1, 2, 3, ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
+x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 export node="master"
 	if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
@@ -460,11 +460,11 @@ export node="master"
 	else
 	first="no"
 	fi
-elif [ ${noeud} = "ha" ]
+elif [ ${noeud} = "loadBalancer" ]
 then
 vrai="1"
-hostnamectl  set-hostname  haproxy-k8s.mon.dom
-export node="haproxy"
+hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
+export node="loadBalancer"
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote"
 verif
@@ -522,10 +522,10 @@ nom="Etape ${numetape} - Contruction du fichier hosts"
 verif
 ############################################################################################
 #                                                                                          #
-#                       Déploiement du LB  HA Proxy                                        #
+#                       Déploiement du LB  HAProxy                                         #
 #                                                                                          #
 ############################################################################################
-if [ ${node} = "haproxy" ]
+if [ ${node} = "loadBalancer" ]
 then
   if [ "$prox" = "yes" ]
   then
@@ -607,13 +607,13 @@ verif
 
 #################################################
 # 
-# Configuration du LB HA Proxy
+# Configuration du LB HAProxy
 #
 #
 vrai="1"
 cat <<EOF >> /etc/haproxy/haproxy.cfg
 frontend kubernetes-frontend
-    bind haproxy-k8s.mon.dom:6443
+    bind loadBalancer-k8s.mon.dom:6443
     mode tcp
     option tcplog
     default_backend kubernetes-backend
@@ -629,7 +629,7 @@ EOF
 setsebool -P haproxy_connect_any on && \
 systemctl enable --now haproxy && \
 vrai="0"
-nom="Etape ${numetape} - Configuration du LB HA Proxy. "
+nom="Etape ${numetape} - Configuration du LB HAProxy. "
 verif
 
 #################################################
@@ -644,7 +644,7 @@ nom="Etape ${numetape} - Synchronisation de l'horloge"
 verif
 #################################################
 # 
-# configuration du NAT sur LB HA proxy
+# configuration du NAT sur LB HAproxy
 #
 vrai="1"
 firewall-cmd --permanent --add-masquerade && \
