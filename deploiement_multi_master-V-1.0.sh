@@ -413,8 +413,8 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 # Fonction de récupération du token et sha253 de cacert
 #
 RecupToken () {
-alias master1="root@master1-k8s.mon.dom"
-scp master1:noeudsupplementaires.txt ~/.
+alias master1="ssh root@master1-k8s.mon.dom"
+scp root@master1-k8s.mon.dom:noeudsupplementaires.txt ~/.
 if [ -d ~/.kube ]
 then
 scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
@@ -427,10 +427,10 @@ export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " "
 export tokensha=$(grep sha256 ~/noeudsupplementaires.txt | tail -1)
 export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1)
 export tokencaworker=`ssh master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
-#export token=`ssh master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
-#tokensha=`ssh master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+#export token=`master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
+#tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 #export tokenca="${tokensha}"
-#export CertsKey=`ssh master1 kubeadm certs certificate-key` 
+#export CertsKey=`master1 kubeadm certs certificate-key` 
 }
 
 ###################################################################################################
