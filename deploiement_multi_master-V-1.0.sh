@@ -15,7 +15,7 @@
 # Script de déploiment kubernetes
 # By christophe@cmconsulting.online
 #
-# Script destiné à faciliter le déploiement de cluster kubernetes
+# Script destiné à faciliter le déploiement de cluster kubernetes en multi-master
 # Il est à exécuter dans le cadre d'une formation.
 # Il ne doit pas être exploité pour un déploiement en production.
 #
@@ -54,16 +54,18 @@
 #                                                                               #
 # - Le système sur lequel s'exécute ce script doit être un Rocky Linux 8.4      #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
-# - Le script requière que la machine master soit correctement configuré sur IP #
-#   master-k8s.mon.dom carte interne enp0s8 -> 172.21.0.100/24 (pré-configurée) #
-#   master-k8s.mon.dom carte externe enp0s3 -> XXX.XXX.XXX.XXX/YY               #
+# - Le script requière :							#
+#	*  L'outil vitualbox (le cluster fonctionne dans un réseau privé)	#
+#	*  Le loadBalancer à deux interface réseaux :				#
+#		- La première en bridge/dhcp					#
+#       	- La seconde dnas le réseau privé est attendu à 172.21.0.100/24	#
+#   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
 # - Le réseau overlay est gérer par IPIP à l'aide de Calico                     #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
-# - Les noeuds Master & Minions sont automatiquements adressé sur IP par le LB  #
-# - La résolution de nom est réaliser par un serveur BIND9 sur le LB            #
+# - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
-# - Le compte d'exploitation du cluster est "stagiaire avec MDP: Azerty01"      #
-#                                                                               #
+# - Le compte d'exploitation du cluster est "stagiaire" en passant par l'API	#
+# - L'API est joignable par le loadBalancer sur l'adresse 172.21.0.100:6443     #
 #                                                                               #
 #################################################################################
 #
@@ -197,6 +199,9 @@ w2          CNAME   worker3-k8s.mon.dom.
 worker1-k8s   A       172.21.0.110
 worker2-k8s   A       172.21.0.111
 worker3-k8s   A       172.21.0.112
+worker4-k8s   A       172.21.0.113
+worker5-k8s   A       172.21.0.114
+worker6-k8s   A       172.21.0.115
 EOF
 vrai="0"
 nom="Configuration du fichier de zone mondom.db"
@@ -221,6 +226,9 @@ cat <<EOF > /var/named/172.21.0.db
 110           PTR     worker1-k8s.mon.dom.
 111           PTR     worker2-k8s.mon.dom.
 112           PTR     worker3-k8s.mon.dom.
+113           PTR     worker4-k8s.mon.dom.
+114           PTR     worker5-k8s.mon.dom.
+115           PTR     worker6-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
@@ -832,7 +840,6 @@ echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt && \
-# --apiserver-advertise-address="`host $(hostname) | cut -f 4 -d " "`" --apiserver-cert-extra-sans="*.mon.dom"
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -913,12 +920,10 @@ verif
 # Intégration d'un noeud master au cluster
 #
 clear
-echo "Est ce que le noeuds est bien : master2-k8s.mon.dom  ou master3-k8s.mon.dom : ${node}${x}-k8s.mon.dom"
-echo "token est egale à : ${token}"
-echo "le sha256 est egale à : ${tokensha}"
-echo " --certificate-key est egale à : ${CertsKey}"
-read tt
-kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \ # --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "`
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "      Déploiement d'un nouveau master en cours "
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
@@ -1066,7 +1071,6 @@ docker && \
 vrai="0"
 nom="Etape ${numetape} - Installation du service docker-ce-stable sur le worker"
 verif
-
 #################################################
 #
 # Recuperation du token sur le master pour l'intégration au cluster
@@ -1076,15 +1080,17 @@ RecupToken
 vrai="0"
 nom="Etape ${numetape} - Recuperation du token sur le master pour l'intégration au cluster"
 verif
-
 #################################################
 # 
 # Jonction de l'hôte au cluster
 #
 #
 vrai="1"
+clear
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "      Déploiement d'un nouveau worker en cours "
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
-#  --apiserver-advertise-address `host master-k8s.mon.dom | cut -f 4 -d " "`
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
