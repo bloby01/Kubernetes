@@ -398,6 +398,13 @@ CopyIdRoot () {
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
+CopyIdLB () {
+#
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom
+}
+
+
 # Fonction de récupération du token et sha253 de cacert
 #
 RecupToken () {
@@ -858,7 +865,8 @@ vrai="1"
 if [ "$first" = "yes" ]
 then
 clear
-sed -i 's/#    server noeud1/    server noeud1/g' /etc/haproxy/haproxy.cfg
+CopyIdLB
+ssh root@loadBalancer-k8s.mon.dom sed -i 's/#    server noeud1/    server noeud1/g' /etc/haproxy/haproxy.cfg
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
@@ -926,7 +934,8 @@ then
 # Echange de clés ssh avec master1-k8s.mon.dom
 #
 vrai="1"
-CopyIdRoot
+CopyIdRoot && \
+CopyIdLB
 vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
@@ -944,8 +953,8 @@ verif
 # Intégration d'un noeud master au cluster
 #
 clear
-sed -i 's/#    server noeud2/    server noeud2/g' /etc/haproxy/haproxy.cfg
-sed -i 's/#    server noeud3/    server noeud3/g' /etc/haproxy/haproxy.cfg
+ssh root@loadBalancer-k8s.mon.dom sed -i 's/#    server noeud2/    server noeud2/g' /etc/haproxy/haproxy.cfg
+ssh root@loadBalancer-k8s.mon.dom sed -i 's/#    server noeud3/    server noeud3/g' /etc/haproxy/haproxy.cfg
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
