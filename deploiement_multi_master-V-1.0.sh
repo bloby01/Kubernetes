@@ -422,7 +422,7 @@ mkdir ~/.kube
 scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
 fi
 export KUBECONFIG=~/.kube/config
-export token=`master1 kubeadm token list | tail -1 | cut -f 1,2 -d " "`
+export token=`master1 kubeadm token list | head -2 | tail -1 | cut -f 1,2 -d " "`
 tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 export tokenca="${tokensha}"
 export CertsKey=`kubeadm certs certificate-key` 
