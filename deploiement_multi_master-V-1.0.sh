@@ -827,7 +827,7 @@ vrai="1"
 if [ "$first" = "yes" ]
 then
 clear
-kubeadm init --control-plane-endpoint="`host haproxy-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs --apiserver-cert-extra-sans="*.mon.dom" --apiserver-advertise-address="`host $(hostname) | cut -f 4 -d " "`"  --pod-network-cidr="192.168.0.0/16"  && \
+kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs --apiserver-cert-extra-sans="*.mon.dom" --apiserver-advertise-address="`host $(hostname) | cut -f 4 -d " "`"  --pod-network-cidr="192.168.0.0/16"  && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -912,7 +912,7 @@ echo "token est egale à : ${token}"
 echo "le sha256 est egale à : ${tokenca}"
 echo " --certificate-key est egale à : ${CertsKey}"
 read tt
-kubeadm join haproxy-k8s.mon.dom:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokenca} --control-plane --certificate-key ${CertsKey} --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "` && \
+kubeadm join loadBalancer-k8s.mon.dom:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokenca} --control-plane --certificate-key ${CertsKey} --apiserver-advertise-address `host ${node}${x}-k8s.mon.dom | cut -f 4 -d " "` && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
@@ -1077,7 +1077,7 @@ verif
 #
 #
 vrai="1"
-kubeadm join "master1-k8s.mon.dom:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokenca} && \
+kubeadm join "loadBalancer-k8s.mon.dom:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokenca} --apiserver-advertise-address `host master-k8s.mon.dom | cut -f 4 -d " "` && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
