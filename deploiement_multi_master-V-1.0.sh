@@ -188,18 +188,9 @@ cat <<EOF > /var/named/mon.dom.db
               300 )    ; minimum
 @             NS      loadBalancer-k8s.mon.dom.
 loadBalancer-k8s   A       172.21.0.100
-master1-k8s   A       172.21.0.101
-master2-k8s   A       172.21.0.102
-master3-k8s   A       172.21.0.103
 traefik     CNAME   worker1-k8s.mon.dom.
 w1          CNAME   worker2-k8s.mon.dom.
 w2          CNAME   worker3-k8s.mon.dom.
-worker1-k8s   A       172.21.0.110
-worker2-k8s   A       172.21.0.111
-worker3-k8s   A       172.21.0.112
-worker4-k8s   A       172.21.0.113
-worker5-k8s   A       172.21.0.114
-worker6-k8s   A       172.21.0.115
 EOF
 vrai="0"
 nom="Configuration du fichier de zone mondom.db"
@@ -218,15 +209,6 @@ cat <<EOF > /var/named/172.21.0.db
               300 )    ; minimum
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
-101           PTR     master1-k8s.mon.dom.
-102           PTR     master2-k8s.mon.dom.
-103           PTR     master3-k8s.mon.dom.
-110           PTR     worker1-k8s.mon.dom.
-111           PTR     worker2-k8s.mon.dom.
-112           PTR     worker3-k8s.mon.dom.
-113           PTR     worker4-k8s.mon.dom.
-114           PTR     worker5-k8s.mon.dom.
-115           PTR     worker6-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
