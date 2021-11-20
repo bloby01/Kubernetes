@@ -828,6 +828,9 @@ vrai="1"
 if [ "$first" = "yes" ]
 then
 clear
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "      Déploiement Kubernetes en cours "
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt && \
 # --apiserver-advertise-address="`host $(hostname) | cut -f 4 -d " "`" --apiserver-cert-extra-sans="*.mon.dom"
 #################################################
