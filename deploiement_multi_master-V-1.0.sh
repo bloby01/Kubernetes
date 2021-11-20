@@ -3,9 +3,7 @@
 #   !!!									!!!
 #   !!!		           ATTENTION					!!!
 #   !!!									!!!
-#   !!!		   Déployement NON FONCTIONNEL EN L'ETAT		!!!
-#   !!!				+					!!!
-#   !!!		   Vérifier le proxy avec login et password		!!!
+#   !!!		   Vérifier le proxy avec login et password (non testé) !!!
 #   !!!									!!!
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #   Version : 1.0
