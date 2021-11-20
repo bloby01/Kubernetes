@@ -180,20 +180,23 @@ namedMonDom () {
 vrai="1"
 cat <<EOF > /var/named/mon.dom.db
 \$TTL 300
-@       IN SOA  haproxy-k8s.mon.dom. root.haproxy-k8s.mon.dom. (
+@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
               1       ; serial
               600      ; refresh
               900      ; retry
               3600      ; expire
               300 )    ; minimum
-@             NS      haproxy-k8s.mon.dom.
-haproxy-k8s   A       172.21.0.100
+@             NS      loadBalancer-k8s.mon.dom.
+loadBalancer-k8s   A       172.21.0.100
 master1-k8s   A       172.21.0.101
 master2-k8s   A       172.21.0.102
 master3-k8s   A       172.21.0.103
 traefik     CNAME   worker1-k8s.mon.dom.
 w1          CNAME   worker2-k8s.mon.dom.
 w2          CNAME   worker3-k8s.mon.dom.
+worker1-k8s   A       172.21.0.110
+worker2-k8s   A       172.21.0.111
+worker3-k8s   A       172.21.0.112
 EOF
 vrai="0"
 nom="Configuration du fichier de zone mondom.db"
@@ -204,17 +207,20 @@ namedRevers () {
 vrai="1"
 cat <<EOF > /var/named/172.21.0.db
 \$TTL 300
-@       IN SOA  haproxy-k8s.mon.dom. root.haproxy-k8s.mon.dom. (
+@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
               1       ; serial
               600      ; refresh
               900      ; retry
               3600      ; expire
               300 )    ; minimum
-@             NS      haproxy-k8s.mon.dom.
-100           PTR     haproxy-k8s.mon.dom.
+@             NS      loadBalancer-k8s.mon.dom.
+100           PTR     loadBalancer-k8s.mon.dom.
 101           PTR     master1-k8s.mon.dom.
 102           PTR     master2-k8s.mon.dom.
 103           PTR     master3-k8s.mon.dom.
+110           PTR     worker1-k8s.mon.dom.
+111           PTR     worker2-k8s.mon.dom.
+112           PTR     worker3-k8s.mon.dom.
 EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
