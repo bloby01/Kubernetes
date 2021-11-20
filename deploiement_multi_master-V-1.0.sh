@@ -866,7 +866,7 @@ if [ "$first" = "yes" ]
 then
 clear
 CopyIdLB
-ssh root@loadBalancer-k8s.mon.dom sed -i 's/#    server noeud1/    server noeud1/g' /etc/haproxy/haproxy.cfg
+ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
@@ -953,8 +953,8 @@ verif
 # Intégration d'un noeud master au cluster
 #
 clear
-ssh root@loadBalancer-k8s.mon.dom sed -i 's/#    server noeud2/    server noeud2/g' /etc/haproxy/haproxy.cfg
-ssh root@loadBalancer-k8s.mon.dom sed -i 's/#    server noeud3/    server noeud3/g' /etc/haproxy/haproxy.cfg
+ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud2|    server noeud2|g" /etc/haproxy/haproxy.cfg'
+ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud3|    server noeud3|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
