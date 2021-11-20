@@ -938,7 +938,6 @@ then
 #
 vrai="1"
 CopyIdRoot && \
-CopyIdLB
 vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
