@@ -736,6 +736,18 @@ then
 #  echange des clés ssh avec le LB
 CopyIdLB
 # 
+if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
+then 
+#################################################
+# 
+# Echange de clés ssh avec master1-k8s.mon.dom
+#
+vrai="1"
+CopyIdRoot && \
+vrai="0"
+nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
+verif
+fi
   if [ "$prox" = "yes" ]
   then
     if [ "$auth" = "y" -o "$auth" = "Y" ]
@@ -933,15 +945,7 @@ nom="Etape ${numetape} - Intégration du compte stagiaire au groupe docker"
 verif
 elif [ "$first" = "no" ]
 then
-#################################################
-# 
-# Echange de clés ssh avec master1-k8s.mon.dom
-#
-vrai="1"
-CopyIdRoot && \
-vrai="0"
-nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
-verif
+
 #################################################
 # 
 # Récupération du token sur master1-k8s.mon.dom
