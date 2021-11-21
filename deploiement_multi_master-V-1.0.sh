@@ -727,14 +727,15 @@ fi
 #                       Déploiement des masters Kubernetes                                 #
 #                                                                                          #
 ############################################################################################
-#  echange des clés ssh avec le LB
-CopyIdLB
-# 
+
 # installation du repo kubernetes et des paramètres.
 #
 #
 if [ "${node}" = "master" ]
 then
+#  echange des clés ssh avec le LB
+CopyIdLB
+# 
   if [ "$prox" = "yes" ]
   then
     if [ "$auth" = "y" -o "$auth" = "Y" ]
@@ -981,6 +982,9 @@ fi
 ############################################################################################
 if [ "${node}" = "worker" ]
 then
+#  echange des clés ssh avec le LB
+CopyIdLB
+# 
   if [ "$prox" = "yes" ]
   then
     if [ "$auth" = "y" -o "$auth" = "Y" ]
