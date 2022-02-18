@@ -104,19 +104,24 @@ spec:
       paths:
       - path: /
         backend:
-          serviceName: traefik-ingress-service
-          servicePort: admin
+          service:
+            name: traefik-ingress-service
+            port: admin
   - host: w1.mon.dom
     http:
       paths:
       - path: /
         backend:
-          serviceName: w1
-          servicePort: http
+          service:
+            name: w1
+            port:
+              number: 80
   - host: w2.mon.dom
     http:
       paths:
       - path: /
         backend:
-          serviceName: w2
-          servicePort: http
+          service:
+            name: w2
+            port:
+              number: 80
