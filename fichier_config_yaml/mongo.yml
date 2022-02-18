@@ -18,12 +18,11 @@ spec:
           image: mongo:3.4.1
           command:
           - mongod
-          - --dbpath /var/lib/mongodb
           - --replSet
           - rs0
           volumeMounts:
             - name: mongodb
-              mountPath: /var/lib/mongodb
+              mountPath: /data/db
           ports:
           - containerPort: 27017
             name: peer
