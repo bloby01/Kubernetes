@@ -22,7 +22,7 @@ spec:
           - rs0
           volumeMounts:
             - name: mongodb
-              mountPath: /var/lib/mongo
+              mountPath: /var/lib/mongodb
           ports:
           - containerPort: 27017
             name: peer
