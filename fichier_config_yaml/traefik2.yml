@@ -1595,10 +1595,11 @@ status:
   conditions: []
   storedVersions: []
 ---
+
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: {{deploy_name}}
+  name: traefik-ingress-controller
 rules:
   - apiGroups:
       - ""
@@ -1656,14 +1657,16 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: traefik-ingress-controller
-    namespace: default
-    
+    namespace: default    
 ---
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
  name: traefik-ingress-controller
  namespace: default
+---
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -1732,6 +1735,8 @@ spec:
  - port: 80
    targetPort: 80
    name: web
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -1754,6 +1759,8 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 80
+---
+
 kind: Service
 apiVersion: v1
 metadata:
@@ -1766,6 +1773,7 @@ spec:
   selector:
     app: whoami
 ---
+
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
@@ -1775,11 +1783,12 @@ spec:
     - web
   routes:
   - kind: Rule
-    match: Host(`mydomain.com`) && PathPrefix(`/`)
+    match: Host(`w1.mon.dom`) && PathPrefix(`/`)
     services:
     - name: whoami
       port: 80
 ---
+
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
@@ -1789,7 +1798,7 @@ spec:
     - websecure
   routes:
   - kind: Rule
-    match: Host(`mydomain.com`) && PathPrefix(`/`)
+    match: Host(`w1.mon.dom`) && PathPrefix(`/`)
     services:
     - name: whoami
       port: 80
