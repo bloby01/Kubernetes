@@ -52,7 +52,7 @@ data:
  
  [entryPoints]
    [entryPoints.http]
-   address = ':80'
+   address = "80"
 ---
 kind: DaemonSet
 apiVersion: apps/v1
