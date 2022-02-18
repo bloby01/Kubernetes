@@ -1712,9 +1712,11 @@ spec:
        - --certificatesResolvers.le.acme.httpChallenge.entryPoint=web
      volumes:
      - name: cert
-       hostPath:
-         path: /home/kube/traefik/certs
-         type: Directory
+       persistentVolumeClaim:
+         claimName: mon-volume-pvc
+#       hostPath:
+#         path: /home/kube/traefik/certs
+#         type: Directory
 ---
 
 apiVersion: v1
