@@ -1,0 +1,200 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: {{deploy_name}}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - traefik.containo.us
+    resources:
+      - middlewares
+      - middlewaretcps
+      - ingressroutes
+      - traefikservices
+      - ingressroutetcps
+      - ingressrouteudps
+      - tlsoptions
+      - tlsstores
+      - serverstransports
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: traefik-ingress-controller
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: traefik-ingress-controller
+    namespace: default
+    
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+ name: traefik-ingress-controller
+ namespace: default
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+ name: traefik-ingress-controller 
+ labels:
+   k8s-app: traefik-ingress-lb
+   kubernetes.io/cluster-service: "true"
+spec:
+ selector:
+   matchLabels:
+      k8s-app: traefik-ingress-lb
+ template:
+   metadata:
+     labels:
+       k8s-app: traefik-ingress-lb
+       name: traefik-ingress-lb
+   spec:
+     hostNetwork: true
+     dnsPolicy: ClusterFirstWithHostNet
+     serviceAccountName: traefik-ingress-controller
+     terminationGracePeriodSeconds: 60
+     tolerations:
+     - key: node-role.kubernetes.io/master
+       effect: NoSchedule
+     containers:
+     - image: traefik:v2.5.5
+       name: traefik-ingress-lb
+       imagePullPolicy: Always
+       volumeMounts:
+         - mountPath: "/cert/"
+           name: cert
+       resources:
+         requests:
+           cpu: 100m
+           memory: 20Mi
+       args:
+       - --providers.kubernetescrd
+       - --entrypoints.web.address=:80
+       - --entrypoints.websecure.address=:443
+       - --api.insecure
+       - --certificatesresolvers.le.acme.email=masuperadresse@monmail.com
+       - --certificatesresolvers.le.acme.storage=/cert/acme.json
+       - --certificatesResolvers.le.acme.httpChallenge.entryPoint=web
+     volumes:
+     - name: cert
+       hostPath:
+         path: /home/kube/traefik/certs/
+         type: Directory
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+ name: traefik-web-ui
+spec:
+ selector:
+   k8s-app: traefik-ingress-lb
+   app: traefik-ingress-lb
+ ports:
+ - port: 8080
+   targetPort: 8080
+   name: api
+ - port: 443
+   targetPort: 443
+   name: websecure
+ - port: 80
+   targetPort: 80
+   name: web
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami
+  labels:
+    app: whoami
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      containers:
+      - name: whoami
+        image: whoami:v1.4.0
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+kind: Service
+apiVersion: v1
+metadata:
+  name: whoami
+spec:
+  ports:
+  - port: 80
+    name: web
+    protocol: TCP
+  selector:
+    app: whoami
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoami-web
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    match: Host(`mydomain.com`) && PathPrefix(`/`)
+    services:
+    - name: whoami
+      port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoami-web-tls
+spec:
+  entryPoints:
+    - websecure
+  routes:
+  - kind: Rule
+    match: Host(`mydomain.com`) && PathPrefix(`/`)
+    services:
+    - name: whoami
+      port: 80
+  tls:
+    certResolver: le
