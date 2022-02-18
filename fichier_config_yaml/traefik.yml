@@ -41,6 +41,17 @@ subjects:
   name: traefik-ingress-user
   namespace: kube-system
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+ name: traefik-conf
+ namespace: traefik
+data:
+ traefik.toml: |-
+   defaultEntryPoints = ["http","https"]
+   [web]
+   address = ":8080"
+---
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
@@ -72,6 +83,20 @@ spec:
         - --api
         - --kubernetes
         - --logLevel=INFO
+        volumeMounts:
+        - mountPath: "/config"
+          name: "config"
+         resources:
+          requests:
+           cpu: 100m
+           memory: 20Mi
+        args:
+        - --kubernetes
+        - --configfile=/config/traefik.toml
+      volumes:
+      - name: config
+        configMap:
+         name: traefik-conf
 ---
 kind: Service
 apiVersion: v1
