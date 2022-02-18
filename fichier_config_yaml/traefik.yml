@@ -5,7 +5,7 @@ metadata:
   namespace: kube-system
 ---
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io
 metadata:
   name: traefik-ingress-clusterRole
 rules:
@@ -29,7 +29,7 @@ rules:
       - watch
 ---
 kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io
 metadata:
   name: traefik-ingress-ClusterRoleBinding
 roleRef:
@@ -42,7 +42,7 @@ subjects:
   namespace: kube-system
 ---
 kind: Deployment
-apiVersion: extensions/v1beta1
+apiVersion: extensions
 metadata:
   name: traefik-ingress-deploiement
   namespace: kube-system
@@ -91,7 +91,7 @@ spec:
       name: admin
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: extensions
 kind: Ingress
 metadata:
   name: traefik-ingress
