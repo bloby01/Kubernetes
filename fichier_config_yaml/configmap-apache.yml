@@ -6,11 +6,11 @@ spec:
  containers:
  - image: bloby01/web:v1
    env:
-   - name: autre
+   - name: MaVariable
      valueFrom:
       configMapKeyRef:
        name: my-config
-       key: autre
+       key: cle1
    name: web-apache
    livenessProbe:
     httpGet:
