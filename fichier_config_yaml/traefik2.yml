@@ -1755,7 +1755,7 @@ spec:
     spec:
       containers:
       - name: whoami
-        image: whoami:v1.4.0
+        image: bloby01/web:v1
         imagePullPolicy: Always
         ports:
         - containerPort: 80
