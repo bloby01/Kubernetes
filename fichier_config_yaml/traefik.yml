@@ -83,7 +83,7 @@ spec:
           memory: 20Mi
         args:
         - --api
-        - --logLevel=INFO
+        - --logLevel=DEBUG
         - --kubernetes
         - --configfile=/config/traefik.toml
         ports:
