@@ -20,6 +20,13 @@ spec:
           - mongod
           - --replSet
           - rs0
+          volumeMounts:
+            - name: mongodb
+              mountPath: /var/lib/mongo
           ports:
           - containerPort: 27017
             name: peer
+      volumes:
+        - name: mongodb
+          persistentVolumeClaim:
+            claimName: mon-volume-pvc
