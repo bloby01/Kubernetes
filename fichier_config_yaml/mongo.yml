@@ -32,8 +32,10 @@ spec:
           image: mongo:3.4.1
           command:
           - mongod
-          - --replSet
+          - "--replSet"
           - rs0
+          - "--smallfiles"
+          - "--noprealloc"
           volumeMounts:
             - name: mongodb
               mountPath: /data/db
