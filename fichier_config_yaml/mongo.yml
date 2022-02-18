@@ -18,8 +18,7 @@ spec:
           image: mongo:3.4.1
           command:
           - mongod
-          - --replSet
-          - rs0
+          - --dbpath /var/lib/mongodb
           volumeMounts:
             - name: mongodb
               mountPath: /var/lib/mongodb
