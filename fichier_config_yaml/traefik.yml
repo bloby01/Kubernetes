@@ -41,7 +41,7 @@ subjects:
   name: traefik-ingress-user
   namespace: kube-system
 ---
-kind: Deployment
+kind: DaemonSet
 apiVersion: apps/v1
 metadata:
   name: traefik-ingress-deploiement
