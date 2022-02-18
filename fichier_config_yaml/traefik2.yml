@@ -1696,7 +1696,7 @@ spec:
        name: traefik-ingress-lb
        imagePullPolicy: Always
        volumeMounts:
-         - mountPath: "/cert/"
+         - mountPath: "/cert"
            name: cert
        resources:
          requests:
@@ -1713,7 +1713,7 @@ spec:
      volumes:
      - name: cert
        hostPath:
-         path: /home/kube/traefik/certs/
+         path: /home/kube/traefik/certs
          type: Directory
 ---
 
