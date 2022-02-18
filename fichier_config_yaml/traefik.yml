@@ -88,13 +88,13 @@ spec:
       - --configfile=/config/traefik.toml
       volumes:
       - name: config
-       configMap:
-        name: traefik-conf
-       ports:
-       - name: http
-         containerPort: 80
-       - name: admin
-         containerPort: 8080
+        configMap:
+         name: traefik-conf
+      ports:
+      - name: http
+        containerPort: 80
+      - name: admin
+        containerPort: 8080
 ---
 kind: Service
 apiVersion: v1
