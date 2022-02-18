@@ -74,29 +74,27 @@ spec:
       containers:
       - image: traefik
         name: traefik-ingress-lb
-        ports:
-        - name: http
-          containerPort: 80
-        - name: admin
-          containerPort: 8080
-        args:
-        - --api
-        - --kubernetes
-        - --logLevel=INFO
         volumeMounts:
         - mountPath: "/config"
-          name: "config"
-         resources:
-          requests:
-           cpu: 100m
-           memory: 20Mi
-        args:
-        - --kubernetes
-        - --configfile=/config/traefik.toml
+           name: "config"
+        resources:
+         requests:
+          cpu: 100m
+          memory: 20Mi
+      args:
+      - --api
+      - --logLevel=INFO
+      - --kubernetes
+      - --configfile=/config/traefik.toml
       volumes:
       - name: config
-        configMap:
-         name: traefik-conf
+       configMap:
+        name: traefik-conf
+       ports:
+       - name: http
+         containerPort: 80
+       - name: admin
+         containerPort: 8080
 ---
 kind: Service
 apiVersion: v1
