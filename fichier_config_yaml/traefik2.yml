@@ -1739,6 +1739,21 @@ spec:
    name: web
 ---
 
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-web-ui
+spec:
+  entryPoints:
+    - api
+  routes:
+  - kind: Rule
+    match: Host(`traefik.mon.dom`) && PathPrefix(`/`)
+    services:
+    - name: traefik-web-ui
+      port: 8080
+---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
