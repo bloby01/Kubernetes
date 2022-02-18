@@ -107,7 +107,8 @@ spec:
         backend:
           service:
             name: traefik-ingress-service
-            port: admin
+            port:
+              number: 8080
   - host: w1.mon.dom
     http:
       paths:
