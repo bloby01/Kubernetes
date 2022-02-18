@@ -19,7 +19,7 @@ spec:
           command:
           - mongod
           - --replSet
-          - rs0
+          #- rs0
           volumeMounts:
             - name: mongodb
               mountPath: /data/db
