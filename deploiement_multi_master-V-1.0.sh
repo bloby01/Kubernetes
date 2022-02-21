@@ -191,6 +191,9 @@ loadBalancer-k8s   A       172.21.0.100
 traefik     CNAME   worker1-k8s.mon.dom.
 w1          CNAME   worker2-k8s.mon.dom.
 w2          CNAME   worker3-k8s.mon.dom.
+w3          CNAME   worker1-k8s.mon.dom.
+w4          CNAME   worker2-k8s.mon.dom.
+
 EOF
 vrai="0"
 nom="Configuration du fichier de zone mondom.db"
