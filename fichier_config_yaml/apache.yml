@@ -5,7 +5,7 @@ metadata:
  labels:
   app: weby
 spec:
- replicas: 1
+ replicas: 7
  selector:
   matchLabels:
    app: weby
