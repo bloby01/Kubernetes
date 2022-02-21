@@ -45,3 +45,17 @@ spec:
   selector:
     app: w2
   sessionAffinity: None
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: web2
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    match: Host(`w2.mon.dom`) && PathPrefix(`/`)
+    services:
+    - name: whoami
+      port: 80
