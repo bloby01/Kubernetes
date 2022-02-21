@@ -57,5 +57,5 @@ spec:
   - kind: Rule
     match: Host(`w4.mon.dom`) && PathPrefix(`/`)
     services:
-    - name: web4
+    - name: w4
       port: 80
