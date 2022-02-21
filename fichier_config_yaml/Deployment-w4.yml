@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
  name: w4
- namespace: traefik
 spec:
  replicas: 3
  selector:
@@ -14,7 +13,7 @@ spec:
     app: w4
   spec:
    containers:
-   - image: bloby01/web:4.1.2
+   - image: bloby01/web:v1
      name: w4
      livenessProbe:
       httpGet:
@@ -28,7 +27,6 @@ spec:
      - containerPort: 80
        name: http
        protocol: TCP
-
 ---
 
 apiVersion: v1
@@ -37,9 +35,8 @@ metadata:
   labels:
     app: w4
   name: w4
-  namespace: traefik
 spec:
-  externalTrafficPolicy: Cluster
+#  externalTrafficPolicy: Cluster
   ports:
   - name: "80"
     port: 80
@@ -48,6 +45,17 @@ spec:
   selector:
     app: w4
   sessionAffinity: None
-  type: LoadBalancer
-status:
-  loadBalancer: {}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: web4
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    match: Host(`w4.mon.dom`) && PathPrefix(`/`)
+    services:
+    - name: web4
+      port: 80
