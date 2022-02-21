@@ -57,5 +57,5 @@ spec:
   - kind: Rule
     match: Host(`w3.mon.dom`) && PathPrefix(`/`)
     services:
-    - name: web3
+    - name: w3
       port: 80
