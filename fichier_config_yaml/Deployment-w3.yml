@@ -45,5 +45,3 @@ spec:
   selector:
     app: w2
   sessionAffinity: None
-  status:
-    loadBalancer: {}
