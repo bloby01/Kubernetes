@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
  name: w2
- namespace: traefik
 spec:
  replicas: 3
  selector:
@@ -28,7 +27,6 @@ spec:
      - containerPort: 80
        name: http
        protocol: TCP
-
 ---
 
 apiVersion: v1
@@ -37,21 +35,27 @@ metadata:
   labels:
     app: w2
   name: w2
-  namespace: traefik
-#  selfLink: /api/v1/namespaces/traefik/services/w1
-#  uid: afec7dca-e89f-476b-abc2-cc1d3af1f405
 spec:
-#  clusterIP: 10.104.95.148
 #  externalTrafficPolicy: Cluster
   ports:
   - name: "80"
-#    nodePort: 31814
     port: 80
     protocol: TCP
     targetPort: 80
   selector:
     app: w2
   sessionAffinity: None
-  type: NodePort
-status:
-  loadBalancer: {}
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: web2
+spec:
+  entryPoints:
+    - web
+  routes:
+  - kind: Rule
+    match: Host(`w2.mon.dom`) && PathPrefix(`/`)
+    services:
+    - name: web2
+      port: 80
