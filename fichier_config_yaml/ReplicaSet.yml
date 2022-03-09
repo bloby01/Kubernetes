@@ -35,6 +35,8 @@ kind: Service
 metadata:
   name: web-apache
 spec:
+  selector:
+    app: web-apache
   ports:
     - protocol: TCP
       port: 80
