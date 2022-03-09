@@ -6,11 +6,11 @@ spec:
  replicas: 3
  selector:
   matchLabels:
-   app: web-apache
+   toto: web1
  template:
   metadata:
    labels:
-    app: web-apache
+    toto: web1
   spec:
    containers:
    - image: bloby01/web:v1
@@ -36,7 +36,7 @@ metadata:
   name: web-apache
 spec:
   selector:
-    app: web-apache
+    toto: web1
   ports:
     - protocol: TCP
       port: 80
