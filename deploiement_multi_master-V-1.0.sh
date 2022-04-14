@@ -11,7 +11,7 @@
 #
 #
 # Script de déploiment kubernetes
-# By christophe@cmconsulting.online
+# By christophe.merle@gmail.com
 #
 # Script destiné à faciliter le déploiement de cluster kubernetes en multi-master
 # Il est à exécuter dans le cadre d'une formation.
