@@ -1,5 +1,5 @@
 FROM centos:7
-LABEL MAINTAINER christophe@cmconsulting.online
+LABEL MAINTAINER christophe.merle@gmail.com
 LABEL DESCRIPTION "Serveur web apache2 sur centos7 + php"
 LABEL VERSION 3.0
 RUN yum install -y httpd php
