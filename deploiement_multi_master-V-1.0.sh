@@ -6,10 +6,10 @@
 #   !!!		   Vérifier le proxy avec login et password (non testé) !!!
 #   !!!									!!!
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   Version : 1.0
+#   Version script: 2.0
 #   Deploiement sur Rocky Linux 8.4 minimum
-#
-#
+#   Version kubelet: 1.23.5-0
+#   Version Docker : 20.10.14-3
 # Script de déploiment kubernetes
 # By christophe.merle@gmail.com
 #
@@ -56,7 +56,7 @@
 #	*  L'outil vitualbox (le cluster fonctionne dans un réseau privé)	#
 #	*  Le loadBalancer à deux interface réseaux :				#
 #		- La première en bridge/dhcp					#
-#       	- La seconde dnas le réseau privé est attendu à 172.21.0.100/24	#
+#       	- La seconde dans le réseau privé est attendu à 172.21.0.100/24	#
 #   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
 # - Le réseau overlay est gérer par IPIP à l'aide de Calico                     #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
