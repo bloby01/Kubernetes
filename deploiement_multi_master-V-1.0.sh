@@ -78,8 +78,8 @@ numetape=0
 NBR=0
 #appmaster="nfs-utils kubelet iproute-tc kubeadm kubectl  --disableexcludes=kubernetes"
 #appworker="nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
-appmaster="nfs-utils kubelet-1.23.4.0 iproute-tc kubeadm-1.23.4.0 kubectl-1.23.4.0  --disableexcludes=kubernetes"
-appworker="nfs-utils kubelet-1.23.4.0 iproute-tc kubeadm-1.23.4.0 --disableexcludes=kubernetes"
+appmaster="nfs-utils kubelet-1.23.5-0 iproute-tc kubeadm-1.23.5-0 kubectl-1.23.5-0  --disableexcludes=kubernetes"
+appworker="nfs-utils kubelet-1.23.5-0 iproute-tc kubeadm-1.23.5-0 --disableexcludes=kubernetes"
 
 #appworker="nfs-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 appHAProxy="haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
