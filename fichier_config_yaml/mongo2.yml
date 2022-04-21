@@ -1,32 +1,60 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mon-volume-mongo
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Mi
+    limits:
+      storage: 1500Mi
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: mongo2
+  name: mongo
 spec:
   selector:
     matchLabels:
-      app: mongo2
-  serviceName: "mongo2"
-  replicas: 1
+      app: mongo
+  serviceName: "mongo"
+  replicas: 3
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: nfs-client
+      resources:
+        requests:
+          storage: 1Gi
   template:
     metadata:
       labels:
-        app: mongo2
+        app: mongo
     spec:
       containers:
-        - image: mongo:3.4.1
-          name: mongodb2
+        - name: mongodb
+          image: mongo:3.4.1
           command:
           - mongod
-          - --replSet
+          - "--replSet"
           - rs0
+          - "--smallfiles"
+          - "--noprealloc"
+          volumeMounts:
+            - name: mongodb
+              mountPath: /data/mongodb
           ports:
           - containerPort: 27017
             name: peer
           volumeMounts:
-          - mountPath: /data/db
-            name: database
+          - name: www
+            mountPath: /var/www/html
       volumes:
-        - name: database
+        - name: mongodb
           persistentVolumeClaim:
-            claimName: mybase
+            claimName: mon-volume-mongo
