@@ -993,7 +993,7 @@ fi
 if [ "${node}" = "worker" ]
 then
 #  echange des clés ssh avec le LB
-CopyIdLB
+#CopyIdLB
 # 
   if [ "$prox" = "yes" ]
   then
