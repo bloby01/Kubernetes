@@ -24,7 +24,7 @@ spec:
   replicas: 3
   volumeClaimTemplates:
   - metadata:
-      name: run
+      name: mes-secrets
     spec:
       accessModes: [ "ReadWriteOnce" ]
       storageClassName: nfs-client
