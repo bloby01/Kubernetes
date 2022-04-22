@@ -47,7 +47,7 @@ spec:
           - "--noprealloc"
           volumeMounts:
           - name: mongodb
-            mountPath: /data/db
+            mountPath: /var/lib/mongodb
           - name: run
             mountPath: /run
           ports:
