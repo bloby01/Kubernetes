@@ -1,0 +1,52 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mon-volume-web
+spec:
+  storageClassName: nfs-client
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Mi
+    limits:
+      storage: 1500Mi
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: web
+spec:
+  selector:
+    matchLabels:
+      app: web
+  serviceName: "web"
+  replicas: 3
+  volumeClaimTemplates:
+  - metadata:
+      name: run
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: nfs-client
+      resources:
+        requests:
+          storage: 1Gi
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: bloby01/web:v1
+          volumeMounts:
+          - name: mes-sites
+            mountPath: /var/www/
+          - name: mes-secrets
+            mountPath: /run
+          ports:
+          - containerPort: 80
+      volumes:
+        - name: mes-sites
+          persistentVolumeClaim:
+            claimName: mon-volume-web
