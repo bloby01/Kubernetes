@@ -1055,6 +1055,7 @@ then
 # Echange des clés ssh avec master1-k8s.mon.dom
 #
 vrai="1"
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 CopyIdRoot
 vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
