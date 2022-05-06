@@ -1,11 +1,10 @@
 #!/bin/bash
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#   !!!								                                                	!!!
-#   !!!		           ATTENTION		                                			!!!
-#   !!!								                                                	!!!
-#   !!!		   Vérifier le proxy avec login et password (non testé)       !!!
-#   !!!									                                                !!!
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!								                                                	!!!
+#   !!!		           ATTENTION		                           !!!
+#   !!!									   !!!
+#   !!!		   Vérifier le proxy avec login et password (non testé)    !!!
+#   !!!			                                                   !!!
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #   Version script: 2.0
 #   Deploiement sur Rocky Linux 8.4 minimum
 #   Version kubelet: latest
@@ -52,15 +51,15 @@
 #                                                                               #
 # - Le système sur lequel s'exécute ce script doit être un Rocky Linux 8.4 & +  #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
-# - Le script requière :			                                          				#
-#	*  L'outil vitualbox (le cluster fonctionne dans un réseau privé)	            #
-#	*  Le loadBalancer à deux interface réseaux :				                          #
-#		- La première en bridge/dhcp					                                      #
-#       	- La seconde dans le réseau privé est attendu à 172.21.0.100/24	      #
-#   	*  Les adresses/noms des noeuds sont automatiquement attribuées		        #
+# - Le script requière :		        				#
+#	*  L'outil vitualbox (le cluster fonctionne dans un réseau privé)       #
+#	*  Le loadBalancer à deux interface réseaux :			        #
+#		- La première en bridge/dhcp				        #
+#       	- La seconde dans le réseau privé est attendu à 172.21.0.100/24 #
+#   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
 # - Le réseau overlay est gérer par IPIP à l'aide de Calico                     #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
-# - Les services NAMED et DHCPD sont installés sur le loadBalancer		          #
+# - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
 # - L'API est joignable par le loadBalancer sur l'adresse 172.21.0.100:6443     #
 #                                                                               #
