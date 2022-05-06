@@ -102,7 +102,7 @@ numetape=`expr ${numetape} + 1 `
 # Fonction d'installation de containerd en derniere version stable
 containerd(){
 vrai="1"
-dnf install -f containerd
+dnf install -y containerd
 systemctl enable --now containerd
 nom="Déploiement de containerd sur le noeud"
 verif
