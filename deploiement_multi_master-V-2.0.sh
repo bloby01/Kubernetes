@@ -156,6 +156,7 @@ wget https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni
 mkdir -p /opt/cni/bin && \
 tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v1.1.1.tgz && \
 nom="Déploiement de containerd, RUNC et CNI plugin sur le noeud"
+vrai="0"
 verif
 }
 
