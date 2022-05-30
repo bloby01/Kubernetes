@@ -74,8 +74,8 @@
 #
 numetape=0
 NBR=0
-appmaster="nfs-utils kubelet iproute-tc kubeadm kubectl  --disableexcludes=kubernetes"
-appworker="nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
+appmaster="wget nfs-utils kubelet iproute-tc kubeadm kubectl  --disableexcludes=kubernetes"
+appworker="wget nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
 #appmaster="nfs-utils kubelet-1.23.5-0 iproute-tc kubeadm-1.23.5-0 kubectl-1.23.5-0  --disableexcludes=kubernetes"
 #appworker="nfs-utils kubelet-1.23.5-0 iproute-tc kubeadm-1.23.5-0 --disableexcludes=kubernetes"
 
@@ -102,9 +102,60 @@ numetape=`expr ${numetape} + 1 `
 # Fonction d'installation de containerd en derniere version stable
 containerd(){
 vrai="1"
-dnf install -y containerd
-systemctl enable --now containerd
-nom="Déploiement de containerd sur le noeud"
+wget  https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz && \
+tar Cxzf /usr/local/ containerd-1.6.4-linux-amd64.tar.gz && \
+mkdir -p /usr/local/lib/systemd/system/
+cat <<EOF > /usr/local/lib/systemd/system/containerd.service
+# Copyright The containerd Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[Unit]
+Description=containerd container runtime
+Documentation=https://containerd.io
+After=network.target local-fs.target
+
+[Service]
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/local/bin/containerd
+
+Type=notify
+Delegate=yes
+KillMode=process
+Restart=always
+RestartSec=5
+# Having non-zero Limit*s causes performance problems due to accounting overhead
+# in the kernel. We recommend using cgroups to do container-local accounting.
+LimitNPROC=infinity
+LimitCORE=infinity
+LimitNOFILE=infinity
+# Comment TasksMax if your systemd version does not supports it.
+# Only systemd 226 and above support this version.
+TasksMax=infinity
+OOMScoreAdjust=-999
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload && \
+systemctl enable --now containerd && \
+wget https://github.com/opencontainers/runc/releases/download/v1.1.2/runc.amd64 && \
+install -m  755 runc.amd64  /usr/local/bin/runc && \
+wget https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz && \
+mkdir -p /opt/cni/bin && \
+tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v1.1.1.tgz && \
+nom="Déploiement de containerd, RUNC et CNI plugin sur le noeud"
 verif
 }
 
@@ -799,23 +850,31 @@ nom="Etape ${numetape} - Installation du module de brige"
 verif
 #################################################
 # 
-# Démarrage du service kubelet
-#
-#
-vrai="1"
-systemctl enable --now kubelet && \
-vrai="0"
-nom="Etape ${numetape} - Démarrage du service kubelet"
-verif
-#################################################
-# 
 # installation de containerd
 #
 #
 vrai="1"
 containerd && \
 vrai="0"
-nom="Etape ${numetape} - Configuration et installation du service containerd"
+nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
+#################################################
+# 
+# Démarrage du service kubelet
+#
+#
+vrai="1"
+mkdir -p /var/lib/kubelet/ && \
+cat <<EOF > /var/lib/kubelet/config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+EOF
+systemctl daemon-reload && \
+systemctl enable --now kubelet && \
+vrai="0"
+nom="Etape ${numetape} - Démarrage du service kubelet"
+verif
+
 #################################################
 # 
 # deployement du master
@@ -830,7 +889,7 @@ ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt && \
+kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" --config=/var/lib/kubelet/config.yaml &> /root/noeudsupplementaires.txt && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -875,16 +934,6 @@ source <(kubectl completion bash)
 EOF
 vrai="0"
 nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
-verif
-################################################
-#
-# Intégration du compte stagiaire au groupe docker
-#
-#
-vrai="1"
-usermod  -aG docker stagiaire && \
-vrai="0"
-nom="Etape ${numetape} - Intégration du compte stagiaire au groupe docker"
 verif
 elif [ "$first" = "no" ]
 then
@@ -1021,25 +1070,31 @@ nom="Etape ${numetape} - Installation du module bridge sur le worker"
 verif
 #################################################
 # 
-# Démarrage du service kubelet
-#
-#
-vrai="1"
-systemctl enable --now kubelet && \
-vrai="0"
-nom="Etape ${numetape} - Demarrage du service kubelet sur le worker"
-verif
-#################################################
-#
-# Installation du moteur du runtime containerd
+# installation de containerd
 #
 #
 vrai="1"
 containerd && \
 vrai="0"
-nom="Etape ${numetape} - Installation du service containerd sur le worker"
-verif
+nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
 #################################################
+# 
+# Démarrage du service kubelet
+#
+#
+vrai="1"
+mkdir -p /var/lib/kubelet/ && \
+cat <<EOF > /var/lib/kubelet/config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+EOF
+systemctl daemon-reload && \
+systemctl enable --now kubelet && \
+vrai="0"
+nom="Etape ${numetape} - Demarrage du service kubelet sur le worker"
+verif
+##############################################
 #
 # Recuperation du token sur le master pour l'intégration au cluster
 #
