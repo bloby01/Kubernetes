@@ -8,7 +8,9 @@
 #   Version script: 2.0
 #   Deploiement sur Rocky Linux 8.4 minimum
 #   Version kubelet: latest
-#   Version Containerd : latest
+#   Version Containerd : 1.6.4
+#   Version RunC 	: 1.1.2
+#   Version  CNI-Plugin	: 1.1.1
 #   Script de déploiment kubernetes
 #   By christophe.merle@gmail.com
 #
@@ -76,10 +78,6 @@ numetape=0
 NBR=0
 appmaster="wget nfs-utils kubelet iproute-tc kubeadm kubectl  --disableexcludes=kubernetes"
 appworker="wget nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
-#appmaster="nfs-utils kubelet-1.23.5-0 iproute-tc kubeadm-1.23.5-0 kubectl-1.23.5-0  --disableexcludes=kubernetes"
-#appworker="nfs-utils kubelet-1.23.5-0 iproute-tc kubeadm-1.23.5-0 --disableexcludes=kubernetes"
-
-#appworker="nfs-utils iproute-tc kubelet kubeadm --disableexcludes=kubernetes"
 appHAProxy="haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
 NoProxyAdd=".mon.dom,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
 #                                                                               	  #
@@ -159,23 +157,6 @@ nom="Déploiement de containerd, RUNC et CNI plugin sur le noeud"
 vrai="0"
 verif
 }
-
-# Fonction d'installation de docker-CE en derniere version stable
-#docker(){
-#vrai="1"
-#curl -o /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo
-#dnf  install -y docker-ce && \
-#mkdir -p /etc/docker
-#cat <<EOF > /etc/docker/daemon.json
-#{
-#  "exec-opts": ["native.cgroupdriver=systemd"]
-#}
-#EOF
-#systemctl enable  --now docker.service && \
-#vrai="0"
-#nom="Déploiement de docker sur le noeud"
-#verif
-#}
 
 # Fonction de configuration des parametres communs du dhcp
 dhcp () {
@@ -886,7 +867,7 @@ verif
 vrai="1"
 if [ "$first" = "yes" ]
 then
-#clear
+clear
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
