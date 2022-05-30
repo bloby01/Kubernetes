@@ -314,12 +314,14 @@ EOF
 chmod  +x  /etc/rc.modules && \
 sysctl   -w net.bridge.bridge-nf-call-iptables=1 && \
 sysctl   -w net.bridge.bridge-nf-call-ip6tables=1 && \
+sysctl -a net/ipv4/ip_forward=1
 cat <<EOF > /etc/sysctl.conf
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
+net/ipv4/ip_forward=1
 EOF
 vrai="0"
-nom="Configuration du module br_netfilter"
+nom="Configuration du module br_netfilter et routage IP"
 }
 
 # Fonction de serveur de temps
