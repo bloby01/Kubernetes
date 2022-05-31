@@ -7,7 +7,7 @@
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #   Version script: 2.0
 #   Deploiement sur Rocky Linux 8.4 minimum
-#   Version kubelet: latest
+#   Version kubelet: 1.24 +
 #   Version Containerd : 1.6.4
 #   Version RunC 	: 1.1.2
 #   Version  CNI-Plugin	: 1.1.1
