@@ -8,15 +8,16 @@
 #   Version script: 2.0
 #   Deploiement sur Rocky Linux 8.4 minimum
 #   Version kubelet: 1.24 +
-#   Version Containerd : 1.6.4
+#   Version Containerd	: 1.6.4
 #   Version RunC 	: 1.1.2
-#   Version  CNI-Plugin	: 1.1.1
-#   Script de déploiment kubernetes
+#   Version CNI-Plugin	: 1.1.1
+#   Version calico	: 3.24.0
+#   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
 # Script destiné à faciliter le déploiement de cluster kubernetes en multi-master
 # Il est à exécuter dans le cadre d'une formation.
-# Il ne doit pas être exploité pour un déploiement en production.
+# Il ne doit pas être exploité en l'état pour un déploiement en production.
 #
 #
 #
@@ -903,7 +904,8 @@ verif
 #
 #
 vrai="1"
-kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml && \
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.0/manifests/tigera-operator.yaml && \
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.24.0/manifests/custom-resources.yaml && \
 vrai="0"
 nom="Etape ${numetape} - Deploiement calico"
 verif
