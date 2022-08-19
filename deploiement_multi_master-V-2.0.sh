@@ -868,7 +868,6 @@ verif
 vrai="1"
 if [ "$first" = "yes" ]
 then
-clear
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -937,7 +936,6 @@ verif
 # 
 # Intégration d'un noeud master au cluster
 #
-clear
 if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" ]
 then 
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud2|    server noeud2|g" /etc/haproxy/haproxy.cfg'
@@ -1095,7 +1093,6 @@ verif
 #
 #
 vrai="1"
-clear
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau worker en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
