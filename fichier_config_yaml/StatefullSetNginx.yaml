@@ -42,7 +42,16 @@ spec:
       name: www
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: "my-storage-class"
+      storageClassName: nfs-client
       resources:
         requests:
           storage: 100Mi
+#  volumeClaimTemplates:
+#  - metadata:
+#      name: www
+#    spec:
+#      accessModes: [ "ReadWriteOnce" ]
+#      storageClassName: "my-storage-class"
+#      resources:
+#        requests:
+#          storage: 100Mi
