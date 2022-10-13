@@ -60,7 +60,7 @@
 #		- La première en bridge/dhcp				        #
 #       	- La seconde dans le réseau privé est attendu à 172.21.0.100/24 #
 #   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
-# - Le réseau overlay est gérer par IPIP à l'aide de Calico                     #
+# - Le réseau overlay est gérer par VxLAN à l'aide de Calico                     #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
 # - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
@@ -602,7 +602,7 @@ sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
 chown named:dhcpd /etc/named/ddns.key && \
 chmod 640 /etc/named/ddns.key && \
 sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
-sed -i -e "s|allow-query     { localhost; };|allow-query     { localhost;172.21.0.0/24; };|g" /etc/named.conf && \
+sed -i -e "s|allow-query     { localhost; };|allow-query     { any; };|g" /etc/named.conf && \
 echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
 named && \
 namedMonDom && \
