@@ -606,10 +606,10 @@ sed -i -e "s|allow-query     { localhost; };|allow-query     { any; };|g" /etc/n
 echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
 named && \
 namedMonDom && \
-chown root:named /var/named/mon.dom.db && \
+chown named:named /var/named/mon.dom.db && \
 chmod 660 /var/named/mon.dom.db && \
 namedRevers && \
-chown root:named /var/named/172.21.0.db && \
+chown named:named /var/named/172.21.0.db && \
 chmod 660 /var/named/172.21.0.db && \
 semanage permissive -a named_t && \
 named-compilezone -f text -F raw -o 172.21.0.db.raw 0.21.172.in-addr.arpa /var/named/172.21.0.db && \
