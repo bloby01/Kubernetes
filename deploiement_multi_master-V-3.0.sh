@@ -611,7 +611,21 @@ verif
 #
 #
 vrai="1"
-
+docker run --name alpine alpine apk add openssl && \
+docker commit alpine alpine:ssl && \
+docker run -it --entrypoint openssl -v certs:/certs alpine:ssl req -newkey rsa:4096 -nodes -sha256 -keyout /certs/rootca.key -addext "subjectAltName = DNS:docker.mon.dom" -x509 -days 365 -out /certs/rootca.crt && \
+mkdir -p /etc/docker/certs.d/docker.mon.dom &&\
+cp /var/lib/docker/volumes/certs/_data/rootca.crt /etc/docker/certs.d/docker.mon.dom/ && \
+docker run -d --restart=always -v certs:/certs -e REGISTRY_HTTP_ADDR=0.0.0.0:443 -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/rootca.crt -e REGISTRY_HTTP_TLS_KEY=/certs/rootca.key -v registry:/var/lib/registry -p 443:443 registry:2 && \
+docker pull docker.io/calico/pod2daemon-flexvol:v${VersionCalico} && \
+docker pull docker.io/calico/cni:v${VersionCalico} && \
+docker pull docker.io/calico/node:v${VersionCalico} && \
+docker tag docker.io/calico/pod2daemon-flexvol:v${VersionCalico} docker.mon.dom/pod2daemon-flexvol:v${VersionCalico} && \
+docker tag docker.io/calico/cni:v${VersionCalico} docker.mon.dom/cni:v${VersionCalico} && \
+docker tag docker.io/calico/node:v${VersionCalico} docker.mon.dom/node:v${VersionCalico} && \
+docker push docker.mon.dom/pod2daemon-flexvol:v${VersionCalico} && \
+docker push docker.mon.dom/cni:v${VersionCalico} && \
+docker push docker.mon.dom/node:v${VersionCalico} && \
 
 #################################################
 # 
