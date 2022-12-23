@@ -1,9 +1,9 @@
 #!/bin/bash
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!								                                                	!!!
-#   !!!		           ATTENTION		                                         !!!
-#   !!!									                                                   !!!
-#   !!!		   Vérifier le proxy avec login et password (non testé)          !!!
-#   !!!			                                                               !!!
+#   !!!		           ATTENTION		                           !!!
+#   !!!			                                                   !!!
+#   !!!		   Vérifier le proxy avec login et password (non testé)    !!!
+#   !!!		                                                           !!!
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #   Version script: 3.0
 #   Deploiement sur Rocky Linux 9 minimum
@@ -587,6 +587,31 @@ dnf  install -y ${appHAProxy} && \
 vrai="0"
 nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy. "
 verif
+################################################
+#
+# Configuration et démarrage du service docker pour la registry
+#
+#
+vrai="1"
+curl -o /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo && \
+dnf  install  -y docker-ce && \
+mkdir -p /etc/docker && \
+cat <<EOF > /etc/docker/daemon.json
+{
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+EOF
+systemctl enable  --now docker.service && \
+vrai="0"
+nom="Déploiement de docker sur le noeud OK"
+verif
+################################################
+#
+# Configuration de la registry
+#
+#
+vrai="1"
+
 
 #################################################
 # 
