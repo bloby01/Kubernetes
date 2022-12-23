@@ -80,7 +80,7 @@ NBR=0
 appmaster="wget nfs-utils kubelet iproute-tc kubeadm kubectl  --disableexcludes=kubernetes"
 appworker="wget nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
 appHAProxy="haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-NoProxyAdd=".mon.dom,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,172.21.0.114,172.21.0.115,localhost,127.0.0.1"
+NoProxyAdd=".mon.dom,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.1,172.21.0.2,172.21.0.3,localhost,127.0.0.1"
 VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
