@@ -52,7 +52,7 @@
 #                                                                               #
 #################################################################################
 #                                                                               #
-# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 8.4 & +  #
+# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 9.0 & +  #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
 # - Le script requière :		        				#
 #	*  L'outil vitualbox (le cluster fonctionne dans un réseau privé)       #
@@ -65,6 +65,7 @@
 # - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
 # - L'API est joignable par le loadBalancer sur l'adresse 172.21.0.100:6443     #
+# - Un service de proxy cache est présent sur la machine loadbalancer		#
 #                                                                               #
 #################################################################################
 #
@@ -77,16 +78,16 @@
 #
 numetape=0
 NBR=0
-appmaster="wget nfs-utils kubelet iproute-tc kubeadm kubectl  --disableexcludes=kubernetes"
-appworker="wget nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
-appHAProxy="haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-NoProxyAdd=".mon.dom,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.1,172.21.0.2,172.21.0.3,localhost,127.0.0.1"
+appmaster="wget nfs-utils kubelet iproute-tc kubeadm kubectl"
+appworker="wget nfs-utils kubelet iproute-tc kubeadm"
+appHAProxy="haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server squid"
+NoProxyAdd=".mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,localhost,127.0.0.1"
 VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
 VersionCalico="3.24.5"
 proxy="loadbalancer.mon.dom:3128/"
-NoProxy="*.mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113"
+NoProxy="${NoProxyAdd}"
 
 #                                                                               	  #
 ###########################################################################################
@@ -326,7 +327,7 @@ nom="Configuration du serveur de temps"
 profilproxyauth() {
 vrai="1"
 cat <<EOF >> /etc/profile
-export HTTP_PROXY="http://${proxLogin}:${proxyPassword}@${proxyUrl}"
+export HTTP_PROXY="http://${proxyLogin}:${proxyPassword}@${proxyUrl}"
 export HTTPS_PROXY="${HTTP_PROXY}"
 export http_proxy="${HTTP_PROXY}"
 export https_proxy="${HTTP_PROXY}"
@@ -342,7 +343,7 @@ dnfproxyauth() {
 vrai="1"
 cat <<EOF >> /etc/dnf/dnf.conf
 proxy=http://${proxyUrl}
-proxy_username=${proxLogin}
+proxy_username=${proxyLogin}
 proxy_password=${proxyPassword}
 EOF
 vrai="0"
@@ -364,7 +365,7 @@ vrai="0"
 nom="Configuration du fichier /etc/profil avec proxy"
 }
 
-# Fonction de configuration de yum avec proxy auth
+# Fonction de configuration de dnf avec proxy
 dnfproxy() {
 vrai="1"
 cat <<EOF >> /etc/dnf/dnf.conf
@@ -472,10 +473,9 @@ auth=0 ; until [ "${auth}" = "y" -o "${auth}" = "Y" -o "${auth}" = "n" -o "${aut
   read proxyPassword
   clear
   fi
-fi
-
-vrai="0"
-nom="Etape ${numetape} - Serveur proxy"
+fi && \
+vrai="0" && \
+nom="Etape ${numetape} - Configuration liaison au proxy  ok"
 verif
 
 #################################################
@@ -514,6 +514,7 @@ verif
 ############################################################################################
 if [ ${node} = "loadBalancer" ]
 then
+vrai="1"
   if [ "$prox" = "yes" ]
   then
     if [ "$auth" = "y" -o "$auth" = "Y" ]
@@ -526,14 +527,17 @@ then
     profilproxy
     dnfproxy
     fi
-  fi
-vrai="1"
+  fi && \
+vrai="0" && \
+nom="Etape ${numetape} - Configuration de l'accès avec proxy ok"
+verif
 clear
 #################################################
 # 
 # Présentation des interfaces réseaux disponibles
 #
 #
+vrai="1"
 echo ""
 echo "liste des interfaces réseaux disponibles:"
 echo ""
@@ -546,7 +550,7 @@ echo -n "Mettre le nom de l'interface réseaux Interne: "
 read eth1 && \
 Swap && \
 vrai="0"
-nom="Etape ${numetape} - Choix de l'interface interne. "
+nom="Etape ${numetape} - Choix de l'interface interne ok "
 verif
 #################################################
 # 
@@ -560,32 +564,13 @@ nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy.
 verif
 ################################################
 #
-# Configuration et démarrage du service docker pour la registry
+# demarrage du service squid cache
 #
 #
 vrai="1"
-curl -o /etc/yum.repos.d/docker-ce.repo https://download.docker.com/linux/centos/docker-ce.repo && \
-dnf  install  -y docker-ce && \
-mkdir -p /etc/docker && \
-cat <<EOF > /etc/docker/daemon.json
-{
-  "exec-opts": ["native.cgroupdriver=systemd"]
-}
-EOF
-systemctl enable  --now docker.service && \
-vrai="0"
-nom="Déploiement de docker sur le noeud OK"
-verif
-################################################
-#
-# installation squid cache
-#
-#
-vrai="1"
-dnf install -y squid && \
 systemctl enable --now squid  && \
 vrai="0"
-nom="installation et demarrage de squid cache  OK"
+nom="Demarrage de squid cache  OK"
 verif
 
 #################################################
@@ -742,7 +727,7 @@ fi
 #                                                                                          #
 ############################################################################################
 
-# installation du repo kubernetes et des paramètres.
+# installation des paramètres sur les noeuds du cluster.
 #
 #
 if [ "${node}" = "master" ]
@@ -762,8 +747,19 @@ vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
 fi
-profilproxy
-dnfproxy
+#################################################
+# 
+# Configuration des noeuds pour acceder au proxy du loadbalancer
+#
+vrai="1"
+sed -i -e "s|#https_proxy = http://proxy.yoyodyne.com:18023/|https_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+sed -i -e "s|#http_proxy = http://proxy.yoyodyne.com:18023/|http_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+sed -i -e "s|#ftp_proxy = http://proxy.yoyodyne.com:18023/|ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+profilproxy && \
+dnfproxy && \
+vrai="0"
+nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
+verif
 #################################################
 # 
 # Suppression du swap
@@ -774,17 +770,6 @@ Swap && \
 vrai="0"
 nom="Etape ${numetape} - Configuration du Swap à off"
 verif
-#################################################
-# 
-# Configuration du repo k8s.
-#
-#
-vrai="1"
-repok8s && \
-vrai="0"
-nom="Etape ${numetape} - Configuration du repo kubernetes"
-verif
-
 #################################################
 # 
 # installation des applications.
@@ -884,8 +869,10 @@ verif
 #
 #
 vrai="1"
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
+wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
+wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
+kubectl create -f tigera-operator.yaml && \
+kubectl create -f custom-resources.yaml && \
 vrai="0"
 nom="Etape ${numetape} - Deploiement calico v${VersionCalico}"
 verif
@@ -946,33 +933,19 @@ then
 #  echange des clés ssh avec le LB
 #CopyIdLB
 # 
-  if [ "$prox" = "yes" ]
-  then
-    if [ "$auth" = "y" -o "$auth" = "Y" ]
-    then
-    profilproxyauth
-    dnfproxyauth
-      if [ -d /etc/systemd/system/containerd.service.d/ ]
-      then
-      containerdproxyauth
-      else
-      mkdir -p /etc/systemd/system/containerd.service.d/
-      containerdproxyauth
-      fi
-    ################  fin de la conf proxy avec auth
-    elif [ "$auth" = "n" -o "$auth" = "N" ]
-    then
-    profilproxy
-    dnfproxy
-      if [ -d /etc/systemd/system/containerd.service.d/ ]
-      then
-      containerdproxy
-      else
-      mkdir -p /etc/systemd/system/containerd.service.d/
-      containerdproxy
-      fi
-    fi
-  fi
+#################################################
+# 
+# Configuration des noeuds pour acceder au proxy du loadbalancer
+#
+vrai="1"
+sed -i -e "s|#https_proxy = http://proxy.yoyodyne.com:18023/|https_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+sed -i -e "s|#http_proxy = http://proxy.yoyodyne.com:18023/|http_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+sed -i -e "s|#ftp_proxy = http://proxy.yoyodyne.com:18023/|ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+profilproxy && \
+dnfproxy && \
+vrai="0"
+nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
+verif
 #################################################
 #
 # Echange des clés ssh avec master1-k8s.mon.dom
@@ -982,16 +955,6 @@ ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 CopyIdRoot
 vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
-verif
-#################################################
-# 
-# Configuration du repo k8s.
-#
-#
-vrai="1"
-repok8s && \
-vrai="0"
-nom="Etape ${numetape} - Configuration du repo kubernetes"
 verif
 #################################################
 # 
@@ -1009,7 +972,7 @@ verif
 #
 #
 vrai="1"
-yum install -y ${appworker} && \
+dnf install -y ${appworker} && \
 vrai="0"
 nom="Etape ${numetape} - Installation de outils sur le worker"
 verif
