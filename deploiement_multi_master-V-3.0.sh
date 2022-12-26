@@ -28,7 +28,7 @@
 #                                                                               #
 #               Internet                                                        #
 #                   |                                                           #
-#                 (VM) LB Nginx DHCPD NAMED NAT                                 #
+#                 (VM) LB Nginx DHCPD NAMED NAT SQUID cache                     #
 #                              |                                                #
 #                 (vm master1) |                                                #
 #                        |     | (vm master2)                                   #
@@ -85,6 +85,9 @@ VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
 VersionCalico="3.24.5"
+proxy="loadbalancer.mon.dom:3128/"
+NoProxy="*.mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113"
+
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
@@ -346,32 +349,16 @@ vrai="0"
 nom="Configuration de yum avec proxy auth"
 }
 
-# Fonction de configuration de proxy pour docker avec auth
-containerdproxyauth() {
-vrai="1"
-cat <<EOF >> /etc/systemd/system/containerd.service.d/http-proxy.conf
-[Service]
-Environment="HTTP_PROXY=http://${proxLogin}:${proxyPassword}@${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
-EOF
-cat <<EOF >> /etc/systemd/system/containerd.service.d/https-proxy.conf
-[Service]
-Environment="HTTPS_PROXY=http://${proxLogin}:${proxyPassword}@${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
-EOF
-systemctl daemon-reload
-vrai="0"
-nom="Configuration de containerd avec proxy auth"
-}
-
 # Fonction  de configuration de profil avec proxy
 profilproxy() {
 vrai="1"
 cat <<EOF >> /etc/profile
-export HTTP_PROXY="http://${proxyUrl}"
-export HTTPS_PROXY="${HTTP_PROXY}"
-export http_proxy="${HTTP_PROXY}"
-export https_proxy="${HTTP_PROXY}"
-export no_proxy="${NoProxyAdd}"
-export NO_PROXY="${NoProxyAdd}"
+export HTTP_PROXY="http://${proxy}"
+export HTTPS_PROXY="${proxy}"
+export http_proxy="${proxy}"
+export https_proxy="${proxy}"
+export no_proxy="${NoProxy}"
+export NO_PROXY="${NoProxy}"
 EOF
 vrai="0"
 nom="Configuration du fichier /etc/profil avec proxy"
@@ -381,26 +368,10 @@ nom="Configuration du fichier /etc/profil avec proxy"
 dnfproxy() {
 vrai="1"
 cat <<EOF >> /etc/dnf/dnf.conf
-proxy=http://${proxyUrl}
+proxy=http://${proxy}
 EOF
 vrai="0"
-nom="Configuration de yum avec proxy"
-}
-
-# Fonction de configuration de proxy pour docker
-containerdproxy() {
-vrai="1"
-cat <<EOF >> /etc/systemd/system/containerd.service.d/http-proxy.conf
-[Service]
-Environment="HTTP_PROXY=http://${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
-EOF
-cat <<EOF >> /etc/systemd/system/containerd.service.d/https-proxy.conf
-[Service]
-Environment="HTTPS_PROXY=http://${proxyUrl}" "NO_PROXY=${NoProxyAdd}"
-EOF
-systemctl daemon-reload
-vrai="0"
-nom="Configuration de containerd avec proxy"
+nom="Configuration de DNF avec proxy"
 }
 
 # Fonction de création des clés pour ssh-copy-id
@@ -607,25 +578,15 @@ nom="Déploiement de docker sur le noeud OK"
 verif
 ################################################
 #
-# Configuration de la registry
+# installation squid cache
 #
 #
 vrai="1"
-docker run --name alpine alpine apk add openssl && \
-docker commit alpine alpine:ssl && \
-docker run -it --entrypoint openssl -v certs:/certs alpine:ssl req -newkey rsa:4096 -nodes -sha256 -keyout /certs/rootca.key -addext "subjectAltName = DNS:docker.mon.dom" -x509 -days 365 -out /certs/rootca.crt && \
-mkdir -p /etc/docker/certs.d/docker.mon.dom &&\
-cp /var/lib/docker/volumes/certs/_data/rootca.crt /etc/docker/certs.d/docker.mon.dom/ && \
-docker run -d --restart=always -v certs:/certs -e REGISTRY_HTTP_ADDR=0.0.0.0:443 -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/rootca.crt -e REGISTRY_HTTP_TLS_KEY=/certs/rootca.key -v registry:/var/lib/registry -p 443:443 registry:2 && \
-docker pull docker.io/calico/pod2daemon-flexvol:v${VersionCalico} && \
-docker pull docker.io/calico/cni:v${VersionCalico} && \
-docker pull docker.io/calico/node:v${VersionCalico} && \
-docker tag docker.io/calico/pod2daemon-flexvol:v${VersionCalico} docker.mon.dom/pod2daemon-flexvol:v${VersionCalico} && \
-docker tag docker.io/calico/cni:v${VersionCalico} docker.mon.dom/cni:v${VersionCalico} && \
-docker tag docker.io/calico/node:v${VersionCalico} docker.mon.dom/node:v${VersionCalico} && \
-docker push docker.mon.dom/pod2daemon-flexvol:v${VersionCalico} && \
-docker push docker.mon.dom/cni:v${VersionCalico} && \
-docker push docker.mon.dom/node:v${VersionCalico} && \
+dnf install -y squid && \
+systemctl enable --now squid  && \
+vrai="0"
+nom="installation et demarrage de squid cache  OK"
+verif
 
 #################################################
 # 
@@ -801,33 +762,8 @@ vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
 fi
-  if [ "$prox" = "yes" ]
-  then
-    if [ "$auth" = "y" -o "$auth" = "Y" ]
-    then
-    profilproxyauth
-    dnfproxyauth
-      if [ -d /etc/systemd/system/containerd.service.d/ ]
-      then
-      containerdproxyauth
-      else
-      mkdir -p /etc/systemd/system/containerd.service.d/
-      containerdproxyauth
-      fi
-    ################  fin de la conf proxy avec auth
-    elif [ "$auth" = "n" -o "$auth" = "N" ]
-    then
-    profilproxy
-    dnfproxy
-      if [ -d /etc/systemd/system/containerd.service.d/ ]
-      then
-      dockerproxy
-      else
-      mkdir -p /etc/systemd/system/containerd.service.d/
-      containerdproxy
-      fi
-    fi
-  fi
+profilproxy
+dnfproxy
 #################################################
 # 
 # Suppression du swap
