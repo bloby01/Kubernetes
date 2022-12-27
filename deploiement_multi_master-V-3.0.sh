@@ -754,6 +754,7 @@ fi
 #
 vrai="1"
 cat <<EOF > /etc/wgetrc
+
 ###
 ### Sample Wget initialization file .wgetrc
 ###
@@ -867,6 +868,7 @@ ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/
 # Tune HTTPS security (auto, SSLv2, SSLv3, TLSv1, PFS)
 #secureprotocol = auto
 EOF
+
 #sed -i -e "s|#https_proxy = http://proxy.yoyodyne.com:18023/|https_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
 #sed -i -e "s|#http_proxy = http://proxy.yoyodyne.com:18023/|http_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
 #sed -i -e "s|#ftp_proxy = http://proxy.yoyodyne.com:18023/|ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
