@@ -580,10 +580,10 @@ verif
 #
 vrai="1"
 #dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
-dnssec-keygen -a HMAC-MD5 -b 128 -n USER DDNS_UPDATE && \
+dnssec-keygen -a RSASHA512 -b 2048 -n USER DDNS_UPDATE && \
 cat <<EOF > /etc/named/ddns.key
 key DDNS_UPDATE {
-	algorithm HMAC-MD5.SIG-ALG.REG.INT;
+	algorithm RSASHA512.SIG-ALG.REG.INT;
   secret "bad" ;
 };
 EOF
