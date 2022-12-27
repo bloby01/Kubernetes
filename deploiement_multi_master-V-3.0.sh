@@ -587,7 +587,7 @@ key DDNS_UPDATE {
   secret "bad" ;
 };
 EOF
-secret=`grep Key: ./*.private | cut -f 2 -d " "` && \
+secret=`grep PrivateExponent: ./*.private | cut -f 2 -d " "` && \
 sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
 chown named:dhcpd /etc/named/ddns.key && \
 chmod 640 /etc/named/ddns.key && \
