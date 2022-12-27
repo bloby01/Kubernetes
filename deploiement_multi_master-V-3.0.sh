@@ -86,7 +86,7 @@ VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
 VersionCalico="3.24.5"
-proxy="loadbalancer-k8s.mon.dom:3128/"
+proxy="http://loadbalancer-k8s.mon.dom:3128/"
 NoProxy="${NoProxyAdd}"
 
 #                                                                               	  #
@@ -353,7 +353,7 @@ nom="Configuration du fichier /etc/profil avec proxy auth"
 dnfproxyauth(){
 vrai="1"
 cat <<EOF >> /etc/dnf/dnf.conf
-proxy=http://${proxyUrl}
+proxy="${proxyUrl}"
 proxy_username=${proxyLogin}
 proxy_password=${proxyPassword}
 EOF
@@ -365,7 +365,7 @@ nom="Configuration de yum avec proxy auth"
 profilproxy(){
 vrai="1"
 cat <<EOF >> /etc/profile
-export HTTP_PROXY="http://${proxy}"
+export HTTP_PROXY="${proxy}"
 export HTTPS_PROXY="${proxy}"
 export http_proxy="${proxy}"
 export https_proxy="${proxy}"
@@ -379,7 +379,7 @@ nom="Configuration du fichier /etc/profil avec proxy"
 bashproxy(){
 vrai="1"
 cat <<EOF >> ~/.bashrc
-export HTTP_PROXY="http://${proxy}"
+export HTTP_PROXY="${proxy}"
 export HTTPS_PROXY="${proxy}"
 export http_proxy="${proxy}"
 export https_proxy="${proxy}"
@@ -394,7 +394,7 @@ nom="Configuration du fichier /etc/profil avec proxy"
 dnfproxy(){
 vrai="1"
 cat <<EOF >> /etc/dnf/dnf.conf
-proxy=http://${proxy}
+proxy="${proxy}"
 EOF
 vrai="0"
 nom="Configuration de DNF avec proxy"
