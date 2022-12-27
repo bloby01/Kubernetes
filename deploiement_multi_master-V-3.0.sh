@@ -78,8 +78,8 @@
 #
 numetape=0
 NBR=0
-appmaster="wget nfs-utils kubelet iproute-tc kubeadm kubectl"
-appworker="wget nfs-utils kubelet iproute-tc kubeadm"
+appmaster="wget nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
+appworker="wget nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
 appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server squid"
 NoProxyAdd=".mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,localhost,127.0.0.1"
 VersionContainerD="1.6.14"
@@ -95,7 +95,18 @@ NoProxy="${NoProxyAdd}"
 #                      Déclaration des fonctions                                	  #
 #                                                                               	  #
 ###########################################################################################
-
+#Fonction d'installation du repo pour Kubernetes
+repok8s(){
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+exclude=kubelet kubeadm kubectl
+EOF
+}
 #Fonction de vérification des étapes
 verif(){
 numetape=`expr ${numetape} + 1 `
@@ -407,7 +418,122 @@ export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1)
 export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 }
-
+configWget(){
+cat <<EOF > /etc/wgetrc
+###
+### Sample Wget initialization file .wgetrc
+###
+## You can use this file to change the default behaviour of wget or to
+## avoid having to type many many command-line options. This file does
+## not contain a comprehensive list of commands -- look at the manual
+## to find out what you can put into this file. You can find this here:
+##   $ info wget.info 'Startup File'
+## Or online here:
+##   https://www.gnu.org/software/wget/manual/wget.html#Startup-File
+##
+## Wget initialization file can reside in /etc/wgetrc
+## (global, for all users) or $HOME/.wgetrc (for a single user).
+##
+## To use the settings in this file, you will have to uncomment them,
+## as well as change them, in most cases, as the values on the
+## commented-out lines are the default values (e.g. "off").
+##
+## Command are case-, underscore- and minus-insensitive.
+## For example ftp_proxy, ftp-proxy and ftpproxy are the same.
+##
+## Global settings (useful for setting up in /etc/wgetrc).
+## Think well before you change them, since they may reduce wget's
+## functionality, and make it behave contrary to the documentation:
+##
+# You can set retrieve quota for beginners by specifying a value
+# optionally followed by 'K' (kilobytes) or 'M' (megabytes).  The
+# default quota is unlimited.
+#quota = inf
+# You can lower (or raise) the default number of retries when
+# downloading a file (default is 20).
+#tries = 20
+# Lowering the maximum depth of the recursive retrieval is handy to
+# prevent newbies from going too "deep" when they unwittingly start
+# the recursive retrieval.  The default is 5.
+#reclevel = 5
+# By default Wget uses "passive FTP" transfer where the client
+# initiates the data connection to the server rather than the other
+# way around.  That is required on systems behind NAT where the client
+# computer cannot be easily reached from the Internet.  However, some
+# firewalls software explicitly supports active FTP and in fact has
+# problems supporting passive transfer.  If you are in such
+# environment, use "passive_ftp = off" to revert to active FTP.
+#passive_ftp = off
+# The "wait" command below makes Wget wait between every connection.
+# If, instead, you want Wget to wait only between retries of failed
+# downloads, set waitretry to maximum number of seconds to wait (Wget
+# will use "linear backoff", waiting 1 second after the first failure
+# on a file, 2 seconds after the second failure, etc. up to this max).
+#waitretry = 10
+##
+## Local settings (for a user to set in his $HOME/.wgetrc).  It is
+## *highly* undesirable to put these settings in the global file, since
+## they are potentially dangerous to "normal" users.
+##
+## Even when setting up your own ~/.wgetrc, you should know what you
+## are doing before doing so.
+##
+# Set this to on to use timestamping by default:
+#timestamping = off
+# It is a good idea to make Wget send your email address in a From:
+# header with your request (so that server administrators can contact
+# you in case of errors).  Wget does *not* send From: by default.
+#header = From: Your Name <username@site.domain>
+# You can set up other headers, like Accept-Language.  Accept-Language
+# is *not* sent by default.
+#header = Accept-Language: en
+# You can set the default proxies for Wget to use for http, https, and ftp.
+# They will override the value in the environment.
+https_proxy = http://loadBalancer-k8s.mon.dom:3128/
+http_proxy = http://loadBalancer-k8s.mon.dom:3128/
+ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/
+#https_proxy = http://proxy.yoyodyne.com:18023/
+#http_proxy = http://proxy.yoyodyne.com:18023/
+#ftp_proxy = http://proxy.yoyodyne.com:18023/
+# If you do not want to use proxy at all, set this to off.
+#use_proxy = on
+# You can customize the retrieval outlook.  Valid options are default,
+# binary, mega and micro.
+#dot_style = default
+# Setting this to off makes Wget not download /robots.txt.  Be sure to
+# know *exactly* what /robots.txt is and how it is used before changing
+# the default!
+#robots = on
+# It can be useful to make Wget wait between connections.  Set this to
+# the number of seconds you want Wget to wait.
+#wait = 0
+# You can force creating directory structure, even if a single is being
+# retrieved, by setting this to on.
+#dirstruct = off
+# You can turn on recursive retrieving by default (don't do this if
+# you are not sure you know what it means) by setting this to on.
+#recursive = off
+# To always back up file X as X.orig before converting its links (due
+# to -k / --convert-links / convert_links = on having been specified),
+# set this variable to on:
+#backup_converted = off
+# To have Wget follow FTP links from HTML files by default, set this
+# to on:
+#follow_ftp = off
+# To try ipv6 addresses first:
+#prefer-family = IPv6
+# Set default IRI support state
+#iri = off
+# Force the default system encoding
+#localencoding = UTF-8
+# Force the default remote server encoding
+#remoteencoding = UTF-8
+# Turn on to prevent following non-HTTPS links when in recursive mode
+#httpsonly = off
+# Tune HTTPS security (auto, SSLv2, SSLv3, TLSv1, PFS)
+#secureprotocol = auto
+EOF
+}
 ###################################################################################################
 #                                                                                                 #
 #                             Debut de la séquence d'Installation                                 #
@@ -736,147 +862,18 @@ then
 #  echange des clés ssh avec le LB
 CopyIdLB
 # 
-if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
-then 
-#################################################
-# 
-# Echange de clés ssh avec master1-k8s.mon.dom
-#
-vrai="1"
-CopyIdRoot && \
-vrai="0"
-nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
-verif
-fi
 #################################################
 # 
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
 vrai="1"
-cat <<EOF > /etc/wgetrc
-
-###
-### Sample Wget initialization file .wgetrc
-###
-## You can use this file to change the default behaviour of wget or to
-## avoid having to type many many command-line options. This file does
-## not contain a comprehensive list of commands -- look at the manual
-## to find out what you can put into this file. You can find this here:
-##   $ info wget.info 'Startup File'
-## Or online here:
-##   https://www.gnu.org/software/wget/manual/wget.html#Startup-File
-##
-## Wget initialization file can reside in /etc/wgetrc
-## (global, for all users) or $HOME/.wgetrc (for a single user).
-##
-## To use the settings in this file, you will have to uncomment them,
-## as well as change them, in most cases, as the values on the
-## commented-out lines are the default values (e.g. "off").
-##
-## Command are case-, underscore- and minus-insensitive.
-## For example ftp_proxy, ftp-proxy and ftpproxy are the same.
-##
-## Global settings (useful for setting up in /etc/wgetrc).
-## Think well before you change them, since they may reduce wget's
-## functionality, and make it behave contrary to the documentation:
-##
-# You can set retrieve quota for beginners by specifying a value
-# optionally followed by 'K' (kilobytes) or 'M' (megabytes).  The
-# default quota is unlimited.
-#quota = inf
-# You can lower (or raise) the default number of retries when
-# downloading a file (default is 20).
-#tries = 20
-# Lowering the maximum depth of the recursive retrieval is handy to
-# prevent newbies from going too "deep" when they unwittingly start
-# the recursive retrieval.  The default is 5.
-#reclevel = 5
-# By default Wget uses "passive FTP" transfer where the client
-# initiates the data connection to the server rather than the other
-# way around.  That is required on systems behind NAT where the client
-# computer cannot be easily reached from the Internet.  However, some
-# firewalls software explicitly supports active FTP and in fact has
-# problems supporting passive transfer.  If you are in such
-# environment, use "passive_ftp = off" to revert to active FTP.
-#passive_ftp = off
-# The "wait" command below makes Wget wait between every connection.
-# If, instead, you want Wget to wait only between retries of failed
-# downloads, set waitretry to maximum number of seconds to wait (Wget
-# will use "linear backoff", waiting 1 second after the first failure
-# on a file, 2 seconds after the second failure, etc. up to this max).
-#waitretry = 10
-##
-## Local settings (for a user to set in his $HOME/.wgetrc).  It is
-## *highly* undesirable to put these settings in the global file, since
-## they are potentially dangerous to "normal" users.
-##
-## Even when setting up your own ~/.wgetrc, you should know what you
-## are doing before doing so.
-##
-# Set this to on to use timestamping by default:
-#timestamping = off
-# It is a good idea to make Wget send your email address in a From:
-# header with your request (so that server administrators can contact
-# you in case of errors).  Wget does *not* send From: by default.
-#header = From: Your Name <username@site.domain>
-# You can set up other headers, like Accept-Language.  Accept-Language
-# is *not* sent by default.
-#header = Accept-Language: en
-# You can set the default proxies for Wget to use for http, https, and ftp.
-# They will override the value in the environment.
-https_proxy = http://loadBalancer-k8s.mon.dom:3128/
-http_proxy = http://loadBalancer-k8s.mon.dom:3128/
-ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/
-#https_proxy = http://proxy.yoyodyne.com:18023/
-#http_proxy = http://proxy.yoyodyne.com:18023/
-#ftp_proxy = http://proxy.yoyodyne.com:18023/
-# If you do not want to use proxy at all, set this to off.
-#use_proxy = on
-# You can customize the retrieval outlook.  Valid options are default,
-# binary, mega and micro.
-#dot_style = default
-# Setting this to off makes Wget not download /robots.txt.  Be sure to
-# know *exactly* what /robots.txt is and how it is used before changing
-# the default!
-#robots = on
-# It can be useful to make Wget wait between connections.  Set this to
-# the number of seconds you want Wget to wait.
-#wait = 0
-# You can force creating directory structure, even if a single is being
-# retrieved, by setting this to on.
-#dirstruct = off
-# You can turn on recursive retrieving by default (don't do this if
-# you are not sure you know what it means) by setting this to on.
-#recursive = off
-# To always back up file X as X.orig before converting its links (due
-# to -k / --convert-links / convert_links = on having been specified),
-# set this variable to on:
-#backup_converted = off
-# To have Wget follow FTP links from HTML files by default, set this
-# to on:
-#follow_ftp = off
-# To try ipv6 addresses first:
-#prefer-family = IPv6
-# Set default IRI support state
-#iri = off
-# Force the default system encoding
-#localencoding = UTF-8
-# Force the default remote server encoding
-#remoteencoding = UTF-8
-# Turn on to prevent following non-HTTPS links when in recursive mode
-#httpsonly = off
-# Tune HTTPS security (auto, SSLv2, SSLv3, TLSv1, PFS)
-#secureprotocol = auto
-EOF
-
-#sed -i -e "s|#https_proxy = http://proxy.yoyodyne.com:18023/|https_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
-#sed -i -e "s|#http_proxy = http://proxy.yoyodyne.com:18023/|http_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
-#sed -i -e "s|#ftp_proxy = http://proxy.yoyodyne.com:18023/|ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+configWget && \
 profilproxy && \
 dnfproxy && \
 vrai="0"
-nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
+nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer"
 verif
+
 #################################################
 # 
 # Suppression du swap
@@ -886,6 +883,16 @@ vrai="1"
 Swap && \
 vrai="0"
 nom="Etape ${numetape} - Configuration du Swap à off"
+verif
+#################################################
+# 
+# Installation du repo de Kubernetes
+#
+#
+vrai="1"
+repok8s && \
+vrai="0"
+nom="Etape ${numetape} - Configuration du repo Kubernetes"
 verif
 #################################################
 # 
@@ -1005,6 +1012,24 @@ EOF
 vrai="0"
 nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
 verif
+##################################################
+#
+# choix du noeud maitre 2 ou 3
+#
+#
+if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
+then 
+#################################################
+# 
+# Echange de clés ssh avec master1-k8s.mon.dom
+#
+vrai="1"
+CopyIdRoot && \
+vrai="0"
+nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
+verif
+fi
+
 elif [ "$first" = "no" ]
 then
 
@@ -1047,17 +1072,12 @@ fi
 ############################################################################################
 if [ "${node}" = "worker" ]
 then
-#  echange des clés ssh avec le LB
-#CopyIdLB
-# 
 #################################################
 # 
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
 vrai="1"
-sed -i -e "s|#https_proxy = http://proxy.yoyodyne.com:18023/|https_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
-sed -i -e "s|#http_proxy = http://proxy.yoyodyne.com:18023/|http_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
-sed -i -e "s|#ftp_proxy = http://proxy.yoyodyne.com:18023/|ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/|" /etc/wgetrc && \
+configWget && \
 profilproxy && \
 dnfproxy && \
 vrai="0"
