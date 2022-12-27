@@ -815,9 +815,9 @@ cat <<EOF > /etc/wgetrc
 ##
 # Set this to on to use timestamping by default:
 #timestamping = off
-# It is a good idea to make Wget send your email address in a `From:'
+# It is a good idea to make Wget send your email address in a From:
 # header with your request (so that server administrators can contact
-# you in case of errors).  Wget does *not* send `From:' by default.
+# you in case of errors).  Wget does *not* send From: by default.
 #header = From: Your Name <username@site.domain>
 # You can set up other headers, like Accept-Language.  Accept-Language
 # is *not* sent by default.
