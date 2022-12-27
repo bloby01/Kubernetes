@@ -179,7 +179,7 @@ verif
 }
 
 # Fonction de configuration des parametres communs du dhcp
-dhcp () {
+dhcp(){
 vrai="1"
 cat <<EOF > /etc/dhcp/dhcpd.conf
 ddns-updates on;
@@ -214,7 +214,7 @@ nom="Installation et configuration de dhcp sur master"
 }
 
 # Fonction de configuration du serveur Named maitre SOA
-named () {
+named(){
 vrai="1"
 cat <<EOF >> /etc/named.conf
 include "/etc/named/ddns.key" ;
@@ -238,7 +238,7 @@ nom="Déclaration des zones dans named.conf"
 }
 
 # Fonction de configuration de la zone direct mon.dom
-namedMonDom () {
+namedMonDom(){
 vrai="1"
 cat <<EOF > /var/named/mon.dom.db
 \$TTL 300
@@ -262,7 +262,7 @@ nom="Configuration du fichier de zone mondom.db"
 }
 
 # Fonction de configuration de la zone reverse named
-namedRevers () {
+namedRevers(){
 vrai="1"
 cat <<EOF > /var/named/172.21.0.db
 \$TTL 300
@@ -280,7 +280,7 @@ nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
 }
 
 # Fonction de configuration du repo k8s
-repok8s () {
+repok8s(){
 vrai="1"
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -297,7 +297,7 @@ nom="Configuration du repository yum pour kubernetes"
 }
 
 # Fonction  de configuration du SElinux et du swap à off
-Swap () {
+Swap(){
 vrai="1"
 swapoff   -a && \
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab && \
@@ -306,7 +306,7 @@ nom="Désactivation du Swap"
 }
 
 # Fonction de configuration du module bridge
-moduleBr () {
+moduleBr(){
 vrai="1"
 modprobe  br_netfilter && \
 cat <<EOF > /etc/rc.modules
@@ -326,7 +326,7 @@ nom="Configuration du module br_netfilter et routage IP"
 }
 
 # Fonction de serveur de temps
-temps() {
+temps(){
 vrai="1"
 timedatectl set-timezone "Europe/Paris" && \
 timedatectl set-ntp true && \
@@ -335,7 +335,7 @@ nom="Configuration du serveur de temps"
 }
 
 # Fonction  de configuration de profil avec proxy auth
-profilproxyauth() {
+profilproxyauth(){
 vrai="1"
 cat <<EOF >> /etc/profile
 export HTTP_PROXY="http://${proxyLogin}:${proxyPassword}@${proxyUrl}"
@@ -350,7 +350,7 @@ nom="Configuration du fichier /etc/profil avec proxy auth"
 }
 
 # Fonction de configuration de yum avec proxy auth
-dnfproxyauth() {
+dnfproxyauth(){
 vrai="1"
 cat <<EOF >> /etc/dnf/dnf.conf
 proxy=http://${proxyUrl}
@@ -362,7 +362,7 @@ nom="Configuration de yum avec proxy auth"
 }
 
 # Fonction  de configuration de profil avec proxy
-profilproxy() {
+profilproxy(){
 vrai="1"
 cat <<EOF >> /etc/profile
 export HTTP_PROXY="http://${proxy}"
@@ -375,9 +375,23 @@ EOF
 vrai="0"
 nom="Configuration du fichier /etc/profil avec proxy"
 }
+# Fonction  de configuration du shell bash avec proxy
+bashproxy(){
+vrai="1"
+cat <<EOF >> ~/.bashrc
+export HTTP_PROXY="http://${proxy}"
+export HTTPS_PROXY="${proxy}"
+export http_proxy="${proxy}"
+export https_proxy="${proxy}"
+export no_proxy="${NoProxy}"
+export NO_PROXY="${NoProxy}"
+EOF
+vrai="0"
+nom="Configuration du fichier /etc/profil avec proxy"
+}
 
 # Fonction de configuration de dnf avec proxy
-dnfproxy() {
+dnfproxy(){
 vrai="1"
 cat <<EOF >> /etc/dnf/dnf.conf
 proxy=http://${proxy}
@@ -388,12 +402,12 @@ nom="Configuration de DNF avec proxy"
 
 # Fonction de création des clés pour ssh-copy-id
 #
-CopyIdRoot () {
+CopyIdRoot(){
 #
 #ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
-CopyIdLB () {
+CopyIdLB(){
 #
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom
@@ -402,7 +416,7 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom
 
 # Fonction de récupération du token et sha253 de cacert
 #
-RecupToken () {
+RecupToken(){
 alias master1="ssh root@master1-k8s.mon.dom"
 scp root@master1-k8s.mon.dom:noeudsupplementaires.txt ~/.
 if [ -d ~/.kube ]
@@ -867,6 +881,7 @@ CopyIdLB
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
 vrai="1"
+bashproxy && \
 configWget && \
 profilproxy && \
 dnfproxy && \
@@ -963,7 +978,7 @@ ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt && \
+bash kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -1058,7 +1073,7 @@ fi
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \
+bash kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
@@ -1177,7 +1192,7 @@ vrai="1"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau worker en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
+bash kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
