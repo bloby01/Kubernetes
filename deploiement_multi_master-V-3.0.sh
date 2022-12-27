@@ -593,11 +593,11 @@ then
 vrai="1"
 hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
 export node="loadBalancer"
-vrai="0"
-nom="Etape ${numetape} - Construction du nom d hote"
-verif
-fi
-vrai="1"
+#vrai="0"
+#nom="Etape ${numetape} - Construction du nom d hote"
+#verif
+#fi
+#vrai="1"
 t=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
 if [ "$t" = "y" -o "$t" = "Y" ]
 then
@@ -613,10 +613,15 @@ auth=0 ; until [ "${auth}" = "y" -o "${auth}" = "Y" -o "${auth}" = "n" -o "${aut
   read proxyPassword
   clear
   fi
-fi && \
-vrai="0" && \
+vrai="0"
 nom="Etape ${numetape} - Configuration liaison au proxy  ok"
 verif
+fi
+vrai="0"
+nom="Etape ${numetape} - Construction du nom d hote"
+verif
+fi
+
 
 #################################################
 # 
