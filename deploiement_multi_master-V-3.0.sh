@@ -583,7 +583,7 @@ vrai="1"
 dnssec-keygen -a RSASHA512 -b 2048 DDNS_UPDATE && \
 cat <<EOF > /etc/named/ddns.key
 key DDNS_UPDATE {
-	algorithm RSASHA512.SIG-ALG.REG.INT;
+	algorithm RSA.SIG-ALG.REG.INT;
   secret "bad" ;
 };
 EOF
