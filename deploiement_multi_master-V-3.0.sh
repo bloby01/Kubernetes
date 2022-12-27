@@ -86,7 +86,7 @@ VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
 VersionCalico="3.24.5"
-proxy="loadbalancer.mon.dom:3128/"
+proxy="loadbalancer-k8s.mon.dom:3128/"
 NoProxy="${NoProxyAdd}"
 
 #                                                                               	  #
