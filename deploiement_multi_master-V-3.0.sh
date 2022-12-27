@@ -1125,6 +1125,18 @@ Swap && \
 vrai="0"
 nom="Etape ${numetape} - Configuration du Swap à off"
 verif
+
+#################################################
+# 
+# Installation du repo de Kubernetes
+#
+#
+vrai="1"
+repok8s && \
+vrai="0"
+nom="Etape ${numetape} - Installation du repo de Kubernetes"
+verif
+
 #################################################
 # 
 # Installation des outils
