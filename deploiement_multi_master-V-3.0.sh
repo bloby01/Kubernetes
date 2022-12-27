@@ -1211,7 +1211,7 @@ vrai="1"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau worker en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-~/.bashrc
+source < ~/.bashrc
 kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
