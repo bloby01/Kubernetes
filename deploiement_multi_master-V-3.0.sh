@@ -753,7 +753,7 @@ fi
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
 vrai="1"
-cat <<EOF> /etc/wgetrc
+cat <<EOF > /etc/wgetrc
 ###
 ### Sample Wget initialization file .wgetrc
 ###
