@@ -84,7 +84,6 @@ appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils
 printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
 printf -v IpCluster '%s,' 172.21.0.{0..255}
 NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
-#NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,localhost,127.0.0.1"
 VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
@@ -895,14 +894,14 @@ CopyIdLB
 # 
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
-#vrai="1"
-#environmentProxy && \
-#configWget && \
+vrai="1"
+environmentProxy && \
+configWget && \
 ####profilproxy && \
-#dnfproxy && \
-#vrai="0"
-#nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer"
-#verif
+dnfproxy && \
+vrai="0"
+nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer"
+verif
 
 #################################################
 # 
@@ -1108,14 +1107,14 @@ then
 # 
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
-#vrai="1"
-#environmentProxy && \
-#configWget && \
+vrai="1"
+environmentProxy && \
+configWget && \
 #####profilproxy && \
-#dnfproxy && \
-#vrai="0"
-#nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
-#verif
+dnfproxy && \
+vrai="0"
+nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
+verif
 #################################################
 #
 # Echange des clés ssh avec master1-k8s.mon.dom
