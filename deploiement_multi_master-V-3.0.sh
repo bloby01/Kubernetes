@@ -88,7 +88,7 @@ NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
 VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
-VersionCalico="3.24.0"
+VersionCalico="3.22.0"
 proxy="http://loadbalancer-k8s.mon.dom:3128/"
 NoProxy="${NoProxyAdd}"
 
