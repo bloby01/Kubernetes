@@ -81,7 +81,10 @@ NBR=0
 appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
 appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
 appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server squid"
-NoProxyAdd=".mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,localhost,127.0.0.1"
+printf -v IpCalico '%s,' 192.168.{0..255}.{0..255}
+printf -v IpCluster '%s,' 172.21.0.{0..255}
+NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
+#NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,localhost,127.0.0.1"
 VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
@@ -337,7 +340,7 @@ nom="Configuration du serveur de temps"
 # Fonction  de configuration de profil avec proxy auth
 profilproxyauth(){
 vrai="1"
-cat <<EOF >> /etc/profile
+cat <<EOF > /etc/profile
 export HTTP_PROXY="http://${proxyLogin}:${proxyPassword}@${proxyUrl}"
 export HTTPS_PROXY="${HTTP_PROXY}"
 export http_proxy="${HTTP_PROXY}"
