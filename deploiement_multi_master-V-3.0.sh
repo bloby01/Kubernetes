@@ -11,7 +11,7 @@
 #   Version Containerd	: 1.6.14
 #   Version RunC 	: 1.1.4
 #   Version CNI-Plugin	: 1.1.1
-#   Version calico	: 3.24.0
+#   Version calico	: 3.22.0
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
