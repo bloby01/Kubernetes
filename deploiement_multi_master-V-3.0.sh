@@ -81,7 +81,7 @@ NBR=0
 appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
 appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
 appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server squid"
-printf -v IpCalico '%s,' 192.168.{0..127}.{0..255}
+printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
 printf -v IpCluster '%s,' 172.21.0.{0..255}
 NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
 #NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,172.21.0.1,172.21.0.2,172.21.0.3,172.21.0.100,172.21.0.101,172.21.0.102,172.21.0.103,172.21.0.104,172.21.0.105,172.21.0.106,172.21.0.107,172.21.0.108,172.21.0.109,172.21.0.110,172.21.0.111,172.21.0.112,172.21.0.113,localhost,127.0.0.1"
@@ -993,7 +993,7 @@ ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/17" &> /root/noeudsupplementaires.txt' && \
+su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/19" &> /root/noeudsupplementaires.txt' && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -1025,8 +1025,8 @@ verif
 vrai="1"
 wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
 wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
-sed -i -e "s|192.168.0.0/16|192.168.0.0/17|g" tigera-operator.yaml && \
-sed -i -e "s|192.168.0.0/16|192.168.0.0/17|g" custom-resources.yaml && \
+sed -i -e "s|192.168.0.0/16|192.168.0.0/19|g" tigera-operator.yaml && \
+sed -i -e "s|192.168.0.0/16|192.168.0.0/19|g" custom-resources.yaml && \
 kubectl create -f tigera-operator.yaml && \
 kubectl create -f custom-resources.yaml && \
 vrai="0"
