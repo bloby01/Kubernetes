@@ -895,14 +895,14 @@ CopyIdLB
 # 
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
-vrai="1"
-environmentProxy && \
-configWget && \
-#profilproxy && \
-dnfproxy && \
-vrai="0"
-nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer"
-verif
+#vrai="1"
+#environmentProxy && \
+#configWget && \
+####profilproxy && \
+#dnfproxy && \
+#vrai="0"
+#nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer"
+#verif
 
 #################################################
 # 
@@ -1089,8 +1089,8 @@ fi
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-source /root/.bashrc
-kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \
+
+su -lc 'kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}'  && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
 verif
@@ -1108,14 +1108,14 @@ then
 # 
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
-vrai="1"
-environmentProxy && \
-configWget && \
-#profilproxy && \
-dnfproxy && \
-vrai="0"
-nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
-verif
+#vrai="1"
+#environmentProxy && \
+#configWget && \
+#####profilproxy && \
+#dnfproxy && \
+#vrai="0"
+#nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
+#verif
 #################################################
 #
 # Echange des clés ssh avec master1-k8s.mon.dom
@@ -1222,8 +1222,8 @@ vrai="1"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau worker en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-source /root/.bashrc
-kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
+
+su -lc 'kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker}' && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
