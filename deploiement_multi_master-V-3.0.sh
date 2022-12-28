@@ -98,6 +98,12 @@ NoProxy="${NoProxyAdd}"
 #                      Déclaration des fonctions                                	  #
 #                                                                               	  #
 ###########################################################################################
+#Fonction de creation du fichier /etc/environment
+#
+environmentProxy(){
+echo $NoProxyAdd > /etc/environment
+}
+
 #Fonction d'installation du repo pour Kubernetes
 repok8s(){
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -110,6 +116,7 @@ gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 exclude=kubelet kubeadm kubectl
 EOF
 }
+
 #Fonction de vérification des étapes
 verif(){
 numetape=`expr ${numetape} + 1 `
@@ -889,9 +896,9 @@ CopyIdLB
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
 vrai="1"
-bashproxy && \
+environmentProxy && \
 configWget && \
-profilproxy && \
+#profilproxy && \
 dnfproxy && \
 vrai="0"
 nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer"
@@ -986,8 +993,7 @@ ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-source /root/.bashrc
-kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt && \
+su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt' && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -1102,8 +1108,9 @@ then
 # Configuration des noeuds pour acceder au proxy du loadbalancer
 #
 vrai="1"
+environmentProxy && \
 configWget && \
-profilproxy && \
+#profilproxy && \
 dnfproxy && \
 vrai="0"
 nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
