@@ -11,7 +11,7 @@
 #   Version Containerd	: 1.6.14
 #   Version RunC 	: 1.1.4
 #   Version CNI-Plugin	: 1.1.1
-#   Version calico	: 3.22
+#   Version calico	: 3.24.2
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
@@ -88,7 +88,7 @@ NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
 VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
-VersionCalico="3.22"
+VersionCalico="3.24.2"
 proxy="http://loadbalancer-k8s.mon.dom:3128/"
 NoProxy="${NoProxyAdd}"
 
