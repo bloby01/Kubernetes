@@ -1,16 +1,14 @@
-kind: PersistentVolumeClaim
+kind: Service
 apiVersion: v1
 metadata:
-  name: mon-volume-mongo
+  name: mongo
 spec:
-  storageClassName: nfs-client
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Mi
-    limits:
-      storage: 1500Mi
+  ports:
+  - port: 27017
+    name: toto
+  clusterIP: None
+  selector:
+    app: mongo
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -19,30 +17,33 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: mongo
+      app: monmongo
   serviceName: "mongo"
   replicas: 3
   template:
     metadata:
       labels:
-        app: mongo
+        app: monmongo
     spec:
       containers:
         - name: mongodb
           image: mongo:3.4.1
           command:
           - mongod
-          - "--replSet"
+          - --replSet
           - rs0
-          - "--smallfiles"
-          - "--noprealloc"
           volumeMounts:
-            - name: mongodb
-              mountPath: /data/mongodb
+            - name: database
+              mountPath: /data/db
           ports:
           - containerPort: 27017
-            name: peer
-      volumes:
-        - name: mongodb
-          persistentVolumeClaim:
-            claimName: mon-volume-mongo
+            name: toto
+  volumeClaimTemplates:
+  - metadata:
+      name: database
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: nfs-client
+      resources:
+        requests:
+          storage: 100Mi
