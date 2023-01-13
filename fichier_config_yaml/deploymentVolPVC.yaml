@@ -29,6 +29,13 @@ spec:
       containers:
         - name: web2
           image: bloby01/web:v1
+          resources:
+            limits:
+              cpu: 60m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
           volumeMounts:
           - name: mes-sites
             mountPath: /var/www/
