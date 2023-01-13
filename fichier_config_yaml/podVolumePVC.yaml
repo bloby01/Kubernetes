@@ -1,0 +1,21 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: mon-pod
+spec:
+  containers:
+  - name: mon-pod
+    image: busybox:stable
+    command:
+      - "/bin/sh"
+    args:
+      - "-c"
+      - "touch /mnt/SUCCESS && exit 0 || exit 1"
+    volumeMounts:
+      - name: monpvc
+        mountPath: "/mnt"
+  restartPolicy: "Never"
+  volumes:
+    - name: monpvc
+      persistentVolumeClaim:
+        claimName: mon-volume-pvc
