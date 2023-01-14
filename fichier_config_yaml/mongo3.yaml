@@ -1,0 +1,49 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: mongo
+spec:
+  ports:
+  - port: 27017
+    name: toto
+  clusterIP: None
+  selector:
+    app: monmongo
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+spec:
+  selector:
+    matchLabels:
+      app: monmongo
+  serviceName: "mongo"
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: monmongo
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:3.4.1
+          command:
+          - mongod
+          - --replSet
+          - rs0
+          volumeMounts:
+            - name: database
+              mountPath: /data/db
+          ports:
+          - containerPort: 27017
+            name: toto
+  volumeClaimTemplates:
+  - metadata:
+      name: database
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: standard
+      resources:
+        requests:
+          storage: 100Mi
