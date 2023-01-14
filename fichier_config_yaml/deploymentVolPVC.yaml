@@ -38,7 +38,7 @@ spec:
               memory: 32Mi
           volumeMounts:
           - name: mes-sites
-            mountPath: /var/www/
+            mountPath: /var/data/
           ports:
           - containerPort: 80
       volumes:
