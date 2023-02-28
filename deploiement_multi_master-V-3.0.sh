@@ -722,6 +722,8 @@ verif
 #
 #
 vrai="1"
+sed -i 's/#cache_dir ufs/cache_dir ufs/g' /etc/squid/squid.conf
+squid -z
 systemctl enable --now squid  && \
 vrai="0"
 nom="Demarrage de squid cache  OK"
