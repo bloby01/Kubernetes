@@ -1689,7 +1689,7 @@ spec:
      serviceAccountName: traefik-ingress-controller
      terminationGracePeriodSeconds: 60
      tolerations:
-     - key: node-role.kubernetes.io/master
+     - key: node-role.kubernetes.io/control-plane
        effect: NoSchedule
      containers:
 #     - image: traefik:v2.5.5
