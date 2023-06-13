@@ -1692,8 +1692,8 @@ spec:
      - key: node-role.kubernetes.io/control-plane
        effect: NoSchedule
      containers:
-#     - image: traefik:v2.5.5
-     - image: traefik
+     - image: traefik:v2.9
+#     - image: traefik
        name: traefik-ingress-lb
        imagePullPolicy: Always
        volumeMounts:
