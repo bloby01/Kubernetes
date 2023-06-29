@@ -1,1 +1,59 @@
-
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mon-volume-web
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Mi
+    limits:
+      storage: 500Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web3
+spec:
+  selector:
+    matchLabels:
+      app: web3
+  replicas: 4
+  template:
+    metadata:
+      labels:
+        app: web3
+    spec:
+      containers:
+        - name: web3
+          image: bloby01/web:v1
+          resources:
+            limits:
+              cpu: 60m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 32Mi
+          volumeMounts:
+          - name: mes-sites
+            mountPath: /var/data/
+          ports:
+          - containerPort: 80
+      volumes:
+        - name: mes-sites
+          persistentVolumeClaim:
+            claimName: mon-volume-web
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: web3
+spec:
+  selector:
+    app: web3
+  ports:
+    - protocol: TCP
+      port: 80
+      name: web3
