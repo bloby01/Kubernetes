@@ -7,6 +7,7 @@ RUN ln -s /dev/stdout /var/log/httpd/access_log
 RUN ln -s /dev/stderr /var/log/httpd/error_log
 EXPOSE 80
 COPY httpd-foreground /usr/sbin/httpd-foreground
+RUN chmod +x /usr/sbin/httpd-foreground
 ENTRYPOINT /usr/sbin/httpd-foreground
 WORKDIR /var/www/html/
 ADD index.php . 
