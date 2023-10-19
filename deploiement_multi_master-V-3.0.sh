@@ -419,28 +419,6 @@ nom="Etape ${numetape} - Construction du nom d hote"
 verif
 fi
 
-#vrai="1"
-#t=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
-#if [ "$t" = "y" -o "$t" = "Y" ]
-#then
-#prox="yes"
-#echo -n "Mettre l'url d'acces au format suivant <IP:PORT/>  : "
-#read proxyUrl
-#auth=0 ; until [ "${auth}" = "y" -o "${auth}" = "Y" -o "${auth}" = "n" -o "${auth}" = "N" ] ; do echo -n "Y a t il un login et un mot de passe pour passer le proxy ? Y/N : " ; read auth ; done
-#  if [ "$auth" = "y" -o "$auth" = "Y" ]
-#  then
-#  echo -n "Mettre votre login <jean> :  "
-#  read proxyLogin
-#  echo -n "Mettre votre mot de passe <password> :  "
-#  read proxyPassword
-#  clear
-#  fi
-#vrai="0"
-#nom="Etape ${numetape} - Configuration liaison au proxy  ok"
-#verif
-#fi
-
-
 #################################################
 # 
 # Ouverture du passage des flux IN sur les interfaces réseaux
@@ -476,6 +454,8 @@ verif
 #                                                                                          #
 ############################################################################################
 clear
+if [ "${node}" = "loadBalancer" ]
+then
 ################################################ 
 # installation des applications.
 #
@@ -633,7 +613,7 @@ systemctl enable  --now  dhcpd.service && \
 vrai="0"
 nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
 verif
-#fi
+fi
 
 ############################################################################################
 #                                                                                          #
