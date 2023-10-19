@@ -633,7 +633,7 @@ systemctl enable  --now  dhcpd.service && \
 vrai="0"
 nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
 verif
-fi
+#fi
 
 ############################################################################################
 #                                                                                          #
