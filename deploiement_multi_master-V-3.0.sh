@@ -749,11 +749,13 @@ verif
 #
 #
 vrai="1"
-wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
-wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml
+#wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
+#wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
 #sed -i "s|192.168.0.0/16|192.168.0.0/19|g" custom-resources.yaml && \
-kubectl apply -f tigera-operator.yaml && \
-kubectl apply -f custom-resources.yaml && \
+#kubectl apply -f tigera-operator.yaml && \
+#kubectl apply -f custom-resources.yaml && \
 vrai="0"
 nom="Etape ${numetape} - Deploiement calico v${VersionCalico}"
 verif
