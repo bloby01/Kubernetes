@@ -65,7 +65,6 @@
 # - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
 # - L'API est joignable par le loadBalancer sur l'adresse 172.21.0.100:6443     #
-# - Un service de proxy cache est présent sur la machine loadbalancer		#
 #                                                                               #
 #################################################################################
 #
@@ -80,7 +79,7 @@ numetape=0
 NBR=0
 appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
 appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
-appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server squid"
+appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
 printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
 printf -v IpCluster '%s,' 172.21.0.{0..255}
 NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
@@ -88,8 +87,8 @@ VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
 VersionCalico="3.24.2"
-proxy="http://loadbalancer-k8s.mon.dom:3128/"
-NoProxy="${NoProxyAdd}"
+#proxy="http://loadbalancer-k8s.mon.dom:3128/"
+#NoProxy="${NoProxyAdd}"
 
 #                                                                               	  #
 ###########################################################################################
@@ -99,9 +98,9 @@ NoProxy="${NoProxyAdd}"
 ###########################################################################################
 #Fonction de creation du fichier /etc/environment
 #
-environmentProxy(){
-echo $NoProxyAdd > /etc/environment
-}
+#environmentProxy(){
+#echo $NoProxyAdd > /etc/environment
+#}
 
 #Fonction d'installation du repo pour Kubernetes
 repok8s(){
@@ -305,7 +304,7 @@ vrai="0"
 nom="Configuration du repository yum pour kubernetes"
 }
 
-# Fonction  de configuration du SElinux et du swap à off
+# Fonction  de configuration du swap à off
 Swap(){
 vrai="1"
 swapoff   -a && \
@@ -343,72 +342,6 @@ vrai="0"
 nom="Configuration du serveur de temps"
 }
 
-# Fonction  de configuration de profil avec proxy auth
-profilproxyauth(){
-vrai="1"
-cat <<EOF > /etc/profile
-export HTTP_PROXY="http://${proxyLogin}:${proxyPassword}@${proxyUrl}"
-export HTTPS_PROXY="${HTTP_PROXY}"
-export http_proxy="${HTTP_PROXY}"
-export https_proxy="${HTTP_PROXY}"
-export no_proxy="${NoProxyAdd}"
-export NO_PROXY="${NoProxyAdd}"
-EOF
-vrai="0"
-nom="Configuration du fichier /etc/profil avec proxy auth"
-}
-
-# Fonction de configuration de yum avec proxy auth
-dnfproxyauth(){
-vrai="1"
-cat <<EOF >> /etc/dnf/dnf.conf
-proxy="${proxyUrl}"
-proxy_username=${proxyLogin}
-proxy_password=${proxyPassword}
-EOF
-vrai="0"
-nom="Configuration de yum avec proxy auth"
-}
-
-# Fonction  de configuration de profil avec proxy
-profilproxy(){
-vrai="1"
-cat <<EOF >> /etc/profile
-export HTTP_PROXY="${proxy}"
-export HTTPS_PROXY="${proxy}"
-export http_proxy="${proxy}"
-export https_proxy="${proxy}"
-export no_proxy="${NoProxy}"
-export NO_PROXY="${NoProxy}"
-EOF
-vrai="0"
-nom="Configuration du fichier /etc/profil avec proxy"
-}
-# Fonction  de configuration du shell bash avec proxy
-bashproxy(){
-vrai="1"
-cat <<EOF >> ~/.bashrc
-export HTTP_PROXY="${proxy}"
-export HTTPS_PROXY="${proxy}"
-export http_proxy="${proxy}"
-export https_proxy="${proxy}"
-export no_proxy="${NoProxy}"
-export NO_PROXY="${NoProxy}"
-EOF
-vrai="0"
-nom="Configuration du fichier /etc/profil avec proxy"
-}
-
-# Fonction de configuration de dnf avec proxy
-dnfproxy(){
-vrai="1"
-cat <<EOF >> /etc/dnf/dnf.conf
-proxy="${proxy}"
-EOF
-vrai="0"
-nom="Configuration de DNF avec proxy"
-}
-
 # Fonction de création des clés pour ssh-copy-id
 #
 CopyIdRoot(){
@@ -441,122 +374,7 @@ export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1)
 export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 }
-configWget(){
-cat <<EOF > /etc/wgetrc
-###
-### Sample Wget initialization file .wgetrc
-###
-## You can use this file to change the default behaviour of wget or to
-## avoid having to type many many command-line options. This file does
-## not contain a comprehensive list of commands -- look at the manual
-## to find out what you can put into this file. You can find this here:
-##   $ info wget.info 'Startup File'
-## Or online here:
-##   https://www.gnu.org/software/wget/manual/wget.html#Startup-File
-##
-## Wget initialization file can reside in /etc/wgetrc
-## (global, for all users) or $HOME/.wgetrc (for a single user).
-##
-## To use the settings in this file, you will have to uncomment them,
-## as well as change them, in most cases, as the values on the
-## commented-out lines are the default values (e.g. "off").
-##
-## Command are case-, underscore- and minus-insensitive.
-## For example ftp_proxy, ftp-proxy and ftpproxy are the same.
-##
-## Global settings (useful for setting up in /etc/wgetrc).
-## Think well before you change them, since they may reduce wget's
-## functionality, and make it behave contrary to the documentation:
-##
-# You can set retrieve quota for beginners by specifying a value
-# optionally followed by 'K' (kilobytes) or 'M' (megabytes).  The
-# default quota is unlimited.
-#quota = inf
-# You can lower (or raise) the default number of retries when
-# downloading a file (default is 20).
-#tries = 20
-# Lowering the maximum depth of the recursive retrieval is handy to
-# prevent newbies from going too "deep" when they unwittingly start
-# the recursive retrieval.  The default is 5.
-#reclevel = 5
-# By default Wget uses "passive FTP" transfer where the client
-# initiates the data connection to the server rather than the other
-# way around.  That is required on systems behind NAT where the client
-# computer cannot be easily reached from the Internet.  However, some
-# firewalls software explicitly supports active FTP and in fact has
-# problems supporting passive transfer.  If you are in such
-# environment, use "passive_ftp = off" to revert to active FTP.
-#passive_ftp = off
-# The "wait" command below makes Wget wait between every connection.
-# If, instead, you want Wget to wait only between retries of failed
-# downloads, set waitretry to maximum number of seconds to wait (Wget
-# will use "linear backoff", waiting 1 second after the first failure
-# on a file, 2 seconds after the second failure, etc. up to this max).
-#waitretry = 10
-##
-## Local settings (for a user to set in his $HOME/.wgetrc).  It is
-## *highly* undesirable to put these settings in the global file, since
-## they are potentially dangerous to "normal" users.
-##
-## Even when setting up your own ~/.wgetrc, you should know what you
-## are doing before doing so.
-##
-# Set this to on to use timestamping by default:
-#timestamping = off
-# It is a good idea to make Wget send your email address in a From:
-# header with your request (so that server administrators can contact
-# you in case of errors).  Wget does *not* send From: by default.
-#header = From: Your Name <username@site.domain>
-# You can set up other headers, like Accept-Language.  Accept-Language
-# is *not* sent by default.
-#header = Accept-Language: en
-# You can set the default proxies for Wget to use for http, https, and ftp.
-# They will override the value in the environment.
-https_proxy = http://loadBalancer-k8s.mon.dom:3128/
-http_proxy = http://loadBalancer-k8s.mon.dom:3128/
-ftp_proxy = http://loadBalancer-k8s.mon.dom:3128/
-#https_proxy = http://proxy.yoyodyne.com:18023/
-#http_proxy = http://proxy.yoyodyne.com:18023/
-#ftp_proxy = http://proxy.yoyodyne.com:18023/
-# If you do not want to use proxy at all, set this to off.
-#use_proxy = on
-# You can customize the retrieval outlook.  Valid options are default,
-# binary, mega and micro.
-#dot_style = default
-# Setting this to off makes Wget not download /robots.txt.  Be sure to
-# know *exactly* what /robots.txt is and how it is used before changing
-# the default!
-#robots = on
-# It can be useful to make Wget wait between connections.  Set this to
-# the number of seconds you want Wget to wait.
-#wait = 0
-# You can force creating directory structure, even if a single is being
-# retrieved, by setting this to on.
-#dirstruct = off
-# You can turn on recursive retrieving by default (don't do this if
-# you are not sure you know what it means) by setting this to on.
-#recursive = off
-# To always back up file X as X.orig before converting its links (due
-# to -k / --convert-links / convert_links = on having been specified),
-# set this variable to on:
-#backup_converted = off
-# To have Wget follow FTP links from HTML files by default, set this
-# to on:
-#follow_ftp = off
-# To try ipv6 addresses first:
-#prefer-family = IPv6
-# Set default IRI support state
-#iri = off
-# Force the default system encoding
-#localencoding = UTF-8
-# Force the default remote server encoding
-#remoteencoding = UTF-8
-# Turn on to prevent following non-HTTPS links when in recursive mode
-#httpsonly = off
-# Tune HTTPS security (auto, SSLv2, SSLv3, TLSv1, PFS)
-#secureprotocol = auto
-EOF
-}
+
 ###################################################################################################
 #                                                                                                 #
 #                             Debut de la séquence d'Installation                                 #
@@ -602,34 +420,31 @@ then
 vrai="1"
 hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
 export node="loadBalancer"
-#vrai="0"
-#nom="Etape ${numetape} - Construction du nom d hote"
-#verif
-#fi
-#vrai="1"
-t=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
-if [ "$t" = "y" -o "$t" = "Y" ]
-then
-prox="yes"
-echo -n "Mettre l'url d'acces au format suivant <IP:PORT/>  : "
-read proxyUrl
-auth=0 ; until [ "${auth}" = "y" -o "${auth}" = "Y" -o "${auth}" = "n" -o "${auth}" = "N" ] ; do echo -n "Y a t il un login et un mot de passe pour passer le proxy ? Y/N : " ; read auth ; done
-  if [ "$auth" = "y" -o "$auth" = "Y" ]
-  then
-  echo -n "Mettre votre login <jean> :  "
-  read proxyLogin
-  echo -n "Mettre votre mot de passe <password> :  "
-  read proxyPassword
-  clear
-  fi
-vrai="0"
-nom="Etape ${numetape} - Configuration liaison au proxy  ok"
-verif
-fi
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote"
 verif
 fi
+
+#vrai="1"
+#t=0 ; until [ "${t}" = "y" -o "${t}" = "Y" -o "${t}" = "n" -o "${t}" = "N" ] ; do echo -n "Y a t il un serveur proxy pour sortir du réseau ? Y/N : " ; read t ; done
+#if [ "$t" = "y" -o "$t" = "Y" ]
+#then
+#prox="yes"
+#echo -n "Mettre l'url d'acces au format suivant <IP:PORT/>  : "
+#read proxyUrl
+#auth=0 ; until [ "${auth}" = "y" -o "${auth}" = "Y" -o "${auth}" = "n" -o "${auth}" = "N" ] ; do echo -n "Y a t il un login et un mot de passe pour passer le proxy ? Y/N : " ; read auth ; done
+#  if [ "$auth" = "y" -o "$auth" = "Y" ]
+#  then
+#  echo -n "Mettre votre login <jean> :  "
+#  read proxyLogin
+#  echo -n "Mettre votre mot de passe <password> :  "
+#  read proxyPassword
+#  clear
+#  fi
+#vrai="0"
+#nom="Etape ${numetape} - Configuration liaison au proxy  ok"
+#verif
+#fi
 
 
 #################################################
@@ -666,48 +481,8 @@ verif
 #                       Déploiement du LB  HAProxy                                         #
 #                                                                                          #
 ############################################################################################
-if [ ${node} = "loadBalancer" ]
-then
-vrai="1"
-  if [ "$prox" = "yes" ]
-  then
-    if [ "$auth" = "y" -o "$auth" = "Y" ]
-    then
-    profilproxyauth
-    dnfproxyauth
-    ###############  fin de la conf proxy avec auth
-    elif [ "$auth" = "n" -o "$auth" = "N" ]
-    then
-    profilproxy
-    dnfproxy
-    fi
-  fi && \
-vrai="0" && \
-nom="Etape ${numetape} - Configuration de l'accès avec proxy ok"
-verif
 clear
-#################################################
-# 
-# Présentation des interfaces réseaux disponibles
-#
-#
-vrai="1"
-echo ""
-echo "liste des interfaces réseaux disponibles:"
-echo ""
-echo "-----------------------------------------"
-echo "`ip link`"
-echo ""
-echo "-----------------------------------------"
-echo ""
-echo -n "Mettre le nom de l'interface réseaux Interne: "
-read eth1 && \
-Swap && \
-vrai="0"
-nom="Etape ${numetape} - Choix de l'interface interne ok "
-verif
-#################################################
-# 
+################################################ 
 # installation des applications.
 #
 #
@@ -715,18 +490,6 @@ vrai="1"
 dnf  install -y ${appHAProxy} && \
 vrai="0"
 nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy. "
-verif
-################################################
-#
-# demarrage du service squid cache
-#
-#
-vrai="1"
-sed -i 's/#cache_dir ufs/cache_dir ufs/g' /etc/squid/squid.conf
-squid -z
-systemctl enable --now squid  && \
-vrai="0"
-nom="Demarrage de squid cache  OK"
 verif
 
 #################################################
@@ -861,7 +624,7 @@ verif
 #
 vrai="1"
 dhcp && \
-sed -i 's/.pid/& '"${eth1}"'/' /usr/lib/systemd/system/dhcpd.service && \
+sed -i 's/.pid/& 'enp0s8'/' /usr/lib/systemd/system/dhcpd.service && \
 vrai="0"
 nom="Etape ${numetape} - Configuration du service dhcp"
 verif
@@ -892,18 +655,6 @@ then
 #  echange des clés ssh avec le LB
 CopyIdLB
 # 
-#################################################
-# 
-# Configuration des noeuds pour acceder au proxy du loadbalancer
-#
-vrai="1"
-environmentProxy && \
-configWget && \
-####profilproxy && \
-dnfproxy && \
-vrai="0"
-nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer"
-verif
 
 #################################################
 # 
@@ -994,7 +745,7 @@ ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/19" &> /root/noeudsupplementaires.txt' && \
+su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt' && \
 #################################################
 # 
 # autorisation du compte stagiaire à gérer le cluster kubernetes
@@ -1026,7 +777,7 @@ verif
 vrai="1"
 wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
 wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
-sed -i "s|192.168.0.0/16|192.168.0.0/19|g" custom-resources.yaml && \
+#sed -i "s|192.168.0.0/16|192.168.0.0/19|g" custom-resources.yaml && \
 kubectl apply -f tigera-operator.yaml && \
 kubectl apply -f custom-resources.yaml && \
 vrai="0"
@@ -1090,7 +841,8 @@ fi
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-
+scp root@master1-k8s.mon.dom:mesimages.tar  ./
+ctr --namespace k8s.io images import mesimages.tar
 su -lc 'kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}'  && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
@@ -1106,18 +858,6 @@ fi
 if [ "${node}" = "worker" ]
 then
 #################################################
-# 
-# Configuration des noeuds pour acceder au proxy du loadbalancer
-#
-vrai="1"
-environmentProxy && \
-configWget && \
-#####profilproxy && \
-dnfproxy && \
-vrai="0"
-nom="Etape ${numetape} - Configuration des noeuds pour acceder au proxy du loadbalancer  OK"
-verif
-#################################################
 #
 # Echange des clés ssh avec master1-k8s.mon.dom
 #
@@ -1127,6 +867,17 @@ CopyIdRoot
 vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
+#################################################
+#
+#    creation de l'archive des images dans master 1
+#
+vrai="1"
+ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export ~/mesimages.tar $(ctr --namespace k8s.io images list -q) && \
+vrai="0"
+nom="Etape ${numetape} - Création de l'archive des images sur root@master1-k8s.mon.dom dans le fichier mesimages.tar"
+verif
+
+
 #################################################
 # 
 # Suppression du swap
@@ -1223,6 +974,9 @@ vrai="1"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau worker en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
+scp root@master1-k8s.mon.dom:mesimages.tar  ./
+ctr --namespace k8s.io images import mesimages.tar
 
 su -lc 'kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker}' && \
 vrai="0"
