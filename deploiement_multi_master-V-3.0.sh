@@ -5,7 +5,7 @@
 #   Version Containerd	: 1.6.14
 #   Version RunC 	: 1.1.4
 #   Version CNI-Plugin	: 1.1.1
-#   Version calico	: 3.24.2
+#   Version calico	: 3.26.3
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
@@ -74,15 +74,13 @@ NBR=0
 appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
 appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
 appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
-printf -v IpCluster '%s,' 172.21.0.{0..255}
-NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
+#printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
+#printf -v IpCluster '%s,' 172.21.0.{0..255}
+#NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
 VersionContainerD="1.6.14"
 VersionRunC="1.1.4"
 VersionCNI="1.1.1"
-VersionCalico="3.24.2"
-#proxy="http://loadbalancer-k8s.mon.dom:3128/"
-#NoProxy="${NoProxyAdd}"
+VersionCalico="3.26.3"
 
 #                                                                               	  #
 ###########################################################################################
