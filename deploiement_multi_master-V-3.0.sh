@@ -497,7 +497,7 @@ chown -R named:dhcpd /etc/named/ && \
 chmod -R 770 /etc/named && \
 sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
 sed -i -e "s|allow-query     { localhost; };|allow-query     { any; };|g" /etc/named.conf && \
-sed -i -e "s|directory|#directory|g" /etc/named.conf && \
+sed -i -e "s|directory	"/var/named/"|directory	"/etc/named"|" /etc/named.conf && \
 echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
 named && \
 namedMonDom && \
