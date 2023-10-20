@@ -270,6 +270,8 @@ zone "0.21.172.in-addr.arpa" in {
         max-journal-size 50k;
 };
 EOF
+chown -R named:dhcpd /etc/named/ && \
+chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
 chmod 660 /var/named/mon.dom.db && \
 chmod 660 /var/named/172.21.0.db && \
