@@ -237,7 +237,7 @@ zone "." IN {
         file "named.ca";
 };
 
-include "/var/named/named.root.key";
+include "/etc/named.root.key";
 zone "mon.dom" in {
         type master;
         inline-signing yes;
