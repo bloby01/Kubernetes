@@ -237,7 +237,7 @@ zone "." IN {
         file "named.ca";
 };
 
-include "/etc/named.root.key";
+include "/var/named/named.root.key";
 zone "mon.dom" in {
         type master;
         inline-signing yes;
@@ -270,8 +270,10 @@ zone "0.21.172.in-addr.arpa" in {
         max-journal-size 50k;
 };
 EOF
-chmod -R 770 /var/named/dynamic
-chown -R named:dhcpd /var/named/
+chown -R named:dhcpd /var/named/ && \
+chmod 660 /var/named/mon.dom.db && \
+chmod 660 /var/named/172.21.0.db && \
+chmod -R 770 /var/named/dynamic && \
 vrai="0"
 nom="Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf"
 }
@@ -546,16 +548,10 @@ verif
 #
 #
 vrai="1"
-#chown -R named:dhcpd /etc/named/ && \
-#chmod -R 770 /etc/named && \
 echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
 named && \
 namedMonDom && \
-chown named:dhcpd /etc/named/mon.dom.db && \
-chmod 660 /etc/named/mon.dom.db && \
 namedRevers && \
-chown named:dhcpd /etc/named/172.21.0.db && \
-chmod 660 /etc/named/172.21.0.db && \
 semanage permissive -a named_t && \
 systemctl enable --now named.service && \
 vrai="0"
