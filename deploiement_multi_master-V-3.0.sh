@@ -180,47 +180,64 @@ vrai="0"
 verif
 }
 
-# Fonction de configuration des parametres communs du dhcp
-dhcp(){
-vrai="1"
-cat <<EOF > /etc/dhcp/dhcpd.conf
-ddns-updates on;
-ddns-update-style interim;
-ignore client-updates;
-update-static-leases on;
-log-facility local7;
-zone mon.dom. {
-  primary 172.21.0.100;
-  key rndc-key;
-}
-zone 0.21.172.in-addr.arpa. {
-  primary 172.21.0.100;
-  key rndc-key;
-}
-option domain-name "mon.dom";
-option domain-name-servers 172.21.0.100;
-default-lease-time 600;
-max-lease-time 7200;
-authoritative;
-subnet 172.21.0.0 netmask 255.255.255.0 {
-  range 172.21.0.101 172.21.0.115;
-  option routers 172.21.0.100;
-  option broadcast-address 172.21.0.255;
-  ddns-domainname "mon.dom.";
-  ddns-rev-domainname "in-addr.arpa";
-}
-EOF
-vrai="0"
-nom="Installation et configuration de dhcp sur master"
-}
-
-# Fonction de configuration du serveur Named maitre SOA
+# Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 named(){
 vrai="1"
-rndc-confgen > /etc/named/rndc.conf
-head -11 /etc/named/rndc.conf >> /etc/named.conf
-cat <<EOF >> /etc/named.conf
-#include "/etc/named/ddns.key" ;
+cat <<EOF > /etc/named/rndc.conf
+# Start of rndc.conf
+key "rndc-key" {
+        algorithm hmac-sha256;
+        secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+};
+
+options {
+        default-key "rndc-key";
+        default-server 127.0.0.1;
+        default-port 953;
+};
+# End of rndc.conf
+
+# Use with the following in named.conf, adjusting the allow list as needed:
+# key "rndc-key" {
+#       algorithm hmac-sha256;
+#       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+# };
+#
+# controls {
+#       inet 127.0.0.1 port 953
+#               allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
+# };
+# End of named.conf
+EOF
+
+cat <<EOF > /etc/named.conf
+options {
+        listen-on port 53 { 172.21.0.100; 127.0.0.1; };
+        listen-on-v6 port 53 { ::1; };
+        directory       "/etc/named";
+        dump-file       "/etc/named/data/cache_dump.db";
+        statistics-file "/etc/named/data/named_stats.txt";
+        memstatistics-file "/etc/named/data/named_mem_stats.txt";
+        secroots-file   "/var/named/data/named.secroots";
+        recursing-file  "/var/named/data/named.recursing";
+        allow-query     { any; };
+        allow-new-zones yes;
+        recursion yes;
+        forwarders {8.8.8.8; 8.8.4.4; };
+        dnssec-validation yes;
+        managed-keys-directory "/etc/named/dynamic";
+        geoip-directory "/usr/share/GeoIP";
+        pid-file "/run/named/named.pid";
+        session-keyfile "/run/named/session.key";
+        include "/etc/crypto-policies/back-ends/bind.config";
+};
+
+zone "." IN {
+        type hint;
+        file "named.ca";
+};
+
+include "/etc/named.root.key";
 zone "mon.dom" in {
         type master;
         inline-signing yes;
@@ -231,6 +248,17 @@ zone "mon.dom" in {
         notify yes;
         max-journal-size 50k;
 };
+
+key "rndc-key" {
+       algorithm hmac-sha256;
+       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+};
+
+controls {
+        inet 127.0.0.1 port 953
+                allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
+};
+
 zone "0.21.172.in-addr.arpa" in {
         type master;
         inline-signing yes;
@@ -241,19 +269,18 @@ zone "0.21.172.in-addr.arpa" in {
         notify yes;
         max-journal-size 50k;
 };
-controls {
-        inet 127.0.0.1 port 953
-                allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
- };
 EOF
+mkdir /etc/named/dynamic
+chmod -R 770 /etc/named/dynamic
+chown -R named:dhcpd /etc/named/
 vrai="0"
-nom="Déclaration des zones dans named.conf"
+nom="Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf"
 }
 
 # Fonction de configuration de la zone direct mon.dom
 namedMonDom(){
 vrai="1"
-cat <<EOF > /var/named/mon.dom.db
+cat <<EOF > /etc/named/mon.dom.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
               1       ; serial
@@ -277,7 +304,7 @@ nom="Configuration du fichier de zone mondom.db"
 # Fonction de configuration de la zone reverse named
 namedRevers(){
 vrai="1"
-cat <<EOF > /var/named/172.21.0.db
+cat <<EOF > /etc/named/172.21.0.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
               1       ; serial
@@ -290,6 +317,44 @@ cat <<EOF > /var/named/172.21.0.db
 EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
+}
+# Fonction de configuration des parametres communs du dhcp
+dhcp(){
+vrai="1"
+cat <<EOF > /etc/dhcp/dhcpd.conf
+ddns-updates on;
+ddns-update-style interim;
+ignore client-updates;
+update-static-leases on;
+log-facility local7;
+#include "/etc/named/Kmon.dom.+008+09884.key";
+key "rndc-key" {
+        algorithm hmac-sha256;
+        secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+};
+zone mon.dom. {
+  primary 172.21.0.100;
+  key rndc-key;
+}
+zone 0.21.172.in-addr.arpa. {
+  primary 172.21.0.100;
+  key rndc-key;
+}
+option domain-name "mon.dom";
+option domain-name-servers 172.21.0.100;
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+subnet 172.21.0.0 netmask 255.255.255.0 {
+  range 172.21.0.101 172.21.0.109;
+  option routers 172.21.0.100;
+  option broadcast-address 172.21.0.255;
+  ddns-domainname "mon.dom.";
+  ddns-rev-domainname "in-addr.arpa.";
+}
+EOF
+vrai="0"
+nom="Installation et configuration de dhcp sur master"
 }
 
 # Fonction de configuration du repo k8s
@@ -483,32 +548,17 @@ verif
 #
 #
 vrai="1"
-#dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
-#dnssec-keygen -a RSASHA512 -b 2048 DDNS_UPDATE && \
-#cat <<EOF > /etc/named/ddns.key
-#key DDNS_UPDATE {
-#	algorithm hmac-sha512;
-#  secret "bad" ;
-#};
-#EOF
-#secret=`grep PrivateExponent: ./*.private | cut -f 2 -d " "` && \
-#sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
-chown -R named:dhcpd /etc/named/ && \
-chmod -R 770 /etc/named && \
-sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
-sed -i -e "s|allow-query     { localhost; };|allow-query     { any; };|g" /etc/named.conf && \
-sed -i -e "s|directory	"/var/named/"|directory	"/etc/named"|" /etc/named.conf && \
+#chown -R named:dhcpd /etc/named/ && \
+#chmod -R 770 /etc/named && \
 echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
 named && \
 namedMonDom && \
-chown named:named /etc/named/mon.dom.db && \
+chown named:dhcpd /etc/named/mon.dom.db && \
 chmod 660 /etc/named/mon.dom.db && \
 namedRevers && \
-chown named:named /etc/named/172.21.0.db && \
+chown named:dhcpd /etc/named/172.21.0.db && \
 chmod 660 /etc/named/172.21.0.db && \
 semanage permissive -a named_t && \
-#named-compilezone -f text -F raw -o 172.21.0.db.raw 0.21.172.in-addr.arpa /var/named/172.21.0.db && \
-#named-compilezone -f text -F raw -o mon.dom.db.raw mon.dom /var/named/mon.dom.db && \
 systemctl enable --now named.service && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et demarrage de bind"
