@@ -305,7 +305,7 @@ nom="Configuration du fichier de zone mondom.db"
 # Fonction de configuration de la zone reverse named
 namedRevers(){
 vrai="1"
-cat <<EOF > /var/named/172.21.0.db
+cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
               1       ; serial
