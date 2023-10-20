@@ -183,7 +183,7 @@ verif
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 named(){
 vrai="1"
-cat <<EOF > /etc/named/rndc.conf
+cat <<EOF > /var/named/rndc.conf
 # Start of rndc.conf
 key "rndc-key" {
         algorithm hmac-sha256;
@@ -215,9 +215,9 @@ options {
         listen-on port 53 { 172.21.0.100; 127.0.0.1; };
         listen-on-v6 port 53 { ::1; };
         directory       "/etc/named";
-        dump-file       "/etc/named/data/cache_dump.db";
-        statistics-file "/etc/named/data/named_stats.txt";
-        memstatistics-file "/etc/named/data/named_mem_stats.txt";
+        dump-file       "/var/named/data/cache_dump.db";
+        statistics-file "/var/named/data/named_stats.txt";
+        memstatistics-file "/var/named/data/named_mem_stats.txt";
         secroots-file   "/var/named/data/named.secroots";
         recursing-file  "/var/named/data/named.recursing";
         allow-query     { any; };
@@ -225,7 +225,7 @@ options {
         recursion yes;
         forwarders {8.8.8.8; 8.8.4.4; };
         dnssec-validation yes;
-        managed-keys-directory "/etc/named/dynamic";
+        managed-keys-directory "/var/named/dynamic";
         geoip-directory "/usr/share/GeoIP";
         pid-file "/run/named/named.pid";
         session-keyfile "/run/named/session.key";
@@ -242,7 +242,7 @@ zone "mon.dom" in {
         type master;
         inline-signing yes;
         auto-dnssec maintain;
-        file "mon.dom.db";
+        file "/var/named/mon.dom.db";
         allow-update { key "rndc-key"; };
         allow-query { any;};
         notify yes;
@@ -263,16 +263,15 @@ zone "0.21.172.in-addr.arpa" in {
         type master;
         inline-signing yes;
         auto-dnssec maintain;
-        file "0.21.172.in-addr.arpa.db";
+        file "/var/named/0.21.172.in-addr.arpa.db";
         allow-update { key "rndc-key"; };
         allow-query { any;};
         notify yes;
         max-journal-size 50k;
 };
 EOF
-mkdir /etc/named/dynamic
-chmod -R 770 /etc/named/dynamic
-chown -R named:dhcpd /etc/named/
+chmod -R 770 /var/named/dynamic
+chown -R named:dhcpd /var/named/
 vrai="0"
 nom="Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf"
 }
@@ -280,7 +279,7 @@ nom="Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf"
 # Fonction de configuration de la zone direct mon.dom
 namedMonDom(){
 vrai="1"
-cat <<EOF > /etc/named/mon.dom.db
+cat <<EOF > /var/named/mon.dom.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
               1       ; serial
@@ -304,7 +303,7 @@ nom="Configuration du fichier de zone mondom.db"
 # Fonction de configuration de la zone reverse named
 namedRevers(){
 vrai="1"
-cat <<EOF > /etc/named/172.21.0.db
+cat <<EOF > /var/named/172.21.0.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
               1       ; serial
@@ -327,7 +326,6 @@ ddns-update-style interim;
 ignore client-updates;
 update-static-leases on;
 log-facility local7;
-#include "/etc/named/Kmon.dom.+008+09884.key";
 key "rndc-key" {
         algorithm hmac-sha256;
         secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
