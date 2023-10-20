@@ -234,7 +234,7 @@ options {
 
 zone "." IN {
         type hint;
-        file "named.ca";
+        file "/var/named/named.ca";
 };
 
 include "/etc/named.root.key";
