@@ -189,14 +189,13 @@ ddns-update-style interim;
 ignore client-updates;
 update-static-leases on;
 log-facility local7;
-include "/etc/named/ddns.key";
 zone mon.dom. {
   primary 172.21.0.100;
-  key DDNS_UPDATE;
+  key rndc-key;
 }
 zone 0.21.172.in-addr.arpa. {
   primary 172.21.0.100;
-  key DDNS_UPDATE;
+  key rndc-key;
 }
 option domain-name "mon.dom";
 option domain-name-servers 172.21.0.100;
@@ -218,22 +217,34 @@ nom="Installation et configuration de dhcp sur master"
 # Fonction de configuration du serveur Named maitre SOA
 named(){
 vrai="1"
+rndc-confgen > /etc/named/rndc.conf
+head -11 /etc/named/rndc.conf >> /etc/named.conf
 cat <<EOF >> /etc/named.conf
-include "/etc/named/ddns.key" ;
-zone "mon.dom" IN {
+#include "/etc/named/ddns.key" ;
+zone "mon.dom" in {
         type master;
+        inline-signing yes;
+        auto-dnssec maintain;
         file "mon.dom.db";
-        allow-update {key DDNS_UPDATE;};
+        allow-update { key "rndc-key"; };
         allow-query { any;};
         notify yes;
+        max-journal-size 50k;
 };
-zone "0.21.172.in-addr.arpa" IN {
+zone "0.21.172.in-addr.arpa" in {
         type master;
-        file "172.21.0.db";
-        allow-update {key DDNS_UPDATE;};
+        inline-signing yes;
+        auto-dnssec maintain;
+        file "0.21.172.in-addr.arpa.db";
+        allow-update { key "rndc-key"; };
         allow-query { any;};
         notify yes;
+        max-journal-size 50k;
 };
+controls {
+        inet 127.0.0.1 port 953
+                allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
+ };
 EOF
 vrai="0"
 nom="Déclaration des zones dans named.conf"
@@ -473,30 +484,31 @@ verif
 #
 vrai="1"
 #dnssec-keygen -a HMAC-MD5 -b 128 -r /dev/urandom -n USER DDNS_UPDATE && \
-dnssec-keygen -a RSASHA512 -b 2048 DDNS_UPDATE && \
-cat <<EOF > /etc/named/ddns.key
-key DDNS_UPDATE {
-	algorithm hmac-sha512;
-  secret "bad" ;
-};
-EOF
-secret=`grep PrivateExponent: ./*.private | cut -f 2 -d " "` && \
-sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
-chown named:dhcpd /etc/named/ddns.key && \
-chmod 640 /etc/named/ddns.key && \
+#dnssec-keygen -a RSASHA512 -b 2048 DDNS_UPDATE && \
+#cat <<EOF > /etc/named/ddns.key
+#key DDNS_UPDATE {
+#	algorithm hmac-sha512;
+#  secret "bad" ;
+#};
+#EOF
+#secret=`grep PrivateExponent: ./*.private | cut -f 2 -d " "` && \
+#sed -i -e "s|bad|$secret|g" /etc/named/ddns.key && \
+chown -R named:dhcpd /etc/named/ && \
+chmod -R 770 /etc/named && \
 sed -i -e "s|listen-on port 53 { 127.0.0.1; };|listen-on port 53 { 172.21.0.100; 127.0.0.1; };|g" /etc/named.conf && \
 sed -i -e "s|allow-query     { localhost; };|allow-query     { any; };|g" /etc/named.conf && \
+sed -i -e "s|directory|#directory|g" /etc/named.conf && \
 echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
 named && \
 namedMonDom && \
-chown named:named /var/named/mon.dom.db && \
-chmod 660 /var/named/mon.dom.db && \
+chown named:named /etc/named/mon.dom.db && \
+chmod 660 /etc/named/mon.dom.db && \
 namedRevers && \
-chown named:named /var/named/172.21.0.db && \
-chmod 660 /var/named/172.21.0.db && \
+chown named:named /etc/named/172.21.0.db && \
+chmod 660 /etc/named/172.21.0.db && \
 semanage permissive -a named_t && \
-named-compilezone -f text -F raw -o 172.21.0.db.raw 0.21.172.in-addr.arpa /var/named/172.21.0.db && \
-named-compilezone -f text -F raw -o mon.dom.db.raw mon.dom /var/named/mon.dom.db && \
+#named-compilezone -f text -F raw -o 172.21.0.db.raw 0.21.172.in-addr.arpa /var/named/172.21.0.db && \
+#named-compilezone -f text -F raw -o mon.dom.db.raw mon.dom /var/named/mon.dom.db && \
 systemctl enable --now named.service && \
 vrai="0"
 nom="Etape ${numetape} - Configuration et demarrage de bind"
