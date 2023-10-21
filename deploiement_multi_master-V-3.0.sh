@@ -10,7 +10,7 @@
 #   Version kubelet: 1.26 +
 #   Version Containerd	: 1.7.7
 #   Version RunC 	: 1.1.9
-#   Version CNI-Plugin	: 1.1.2
+#   Version CNI-Plugin	: 1.3.9
 #   Version calico	: 3.26.3
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
@@ -85,7 +85,7 @@ printf -v IpCluster '%s,' 172.21.0.{0..255}
 #NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
 export VersionContainerD="1.7.7"
 export VersionRunC="1.1.9"
-export VersionCNI="1.1.2"
+export VersionCNI="1.3.0"
 export VersionCalico="3.26.3"
 
 #                                                                               	  #
@@ -176,6 +176,7 @@ systemctl daemon-reload && \
 systemctl enable --now containerd && \
 wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
 install -m  755 runc.amd64  /usr/local/bin/runc && \
+#wget https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz
 wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
 mkdir -p /opt/cni/bin && \
 tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
