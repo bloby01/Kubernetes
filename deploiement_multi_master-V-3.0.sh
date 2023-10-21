@@ -75,18 +75,18 @@
 #                                                                               	  #
 ###########################################################################################
 #
-numetape=0
-NBR=0
-appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
-appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
-appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-#printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
-#printf -v IpCluster '%s,' 172.21.0.{0..255}
+export numetape=0
+export NBR=0
+export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
+export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
+export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
+printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
+printf -v IpCluster '%s,' 172.21.0.{0..255}
 #NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
-VersionContainerD="1.7.7"
-VersionRunC="1.1.9"
-VersionCNI="1.1.2"
-VersionCalico="3.26.3"
+export VersionContainerD="1.7.7"
+export VersionRunC="1.1.9"
+export VersionCNI="1.1.2"
+export VersionCalico="3.26.3"
 
 #                                                                               	  #
 ###########################################################################################
