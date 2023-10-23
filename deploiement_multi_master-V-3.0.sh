@@ -11,7 +11,7 @@
 #   Version Containerd	: 1.7.7
 #   Version RunC 	: 1.1.9
 #   Version CNI-Plugin	: 1.3.0
-#   Version calico	: 3.26.3
+#   Version calico	: 3.8
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
@@ -86,7 +86,7 @@ printf -v IpCluster '%s,' 172.21.0.{0..255}
 export VersionContainerD="1.7.7"
 export VersionRunC="1.1.9"
 export VersionCNI="1.3.0"
-export VersionCalico="3.26.3"
+export VersionCalico="3.8"
 
 #                                                                               	  #
 ###########################################################################################
@@ -795,25 +795,20 @@ verif
 vrai="1"
 if [ "$first" = "yes" ]
 then
+while [ ${Reseau} = "calico" ] -o [ ${Reseau} = "flannel" ]
+do
+clear
+echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
+read Reseau
+done
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
+if [ $Reseau == "calico" ]
+then
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-echo "      Déploiement Kubernetes en cours "
+echo "      Déploiement Kubernetes en cours avec Calico en CNI "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt' && \
-#################################################
-# 
-# autorisation du compte stagiaire à gérer le cluster kubernetes
-#
-#
-vrai="1"
-useradd -m stagiaire
-mkdir  -p   /home/stagiaire/.kube && \
-cp  -i   /etc/kubernetes/admin.conf  /home/stagiaire/.kube/config && \
-chown  -R  stagiaire:stagiaire   /home/stagiaire/.kube && \
-vrai="0"
-nom="Etape ${numetape} - Construction du compte stagiaire avec le controle de K8S"
-verif
 #################################################
 # 
 # permettre à root de temporairement gérer le cluster kubernetes
@@ -830,16 +825,54 @@ verif
 #
 #
 vrai="1"
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/calico.yaml
+vrai="0"
+nom="Etape ${numetape} - Deploiement Calico v${VersionCalico}"
+verif
+elif [ $Reseau == "flannel" ]
+then
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+echo "      Déploiement Kubernetes en cours avec Flannel en CNI "
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="10.244.0.0/16" &> /root/noeudsupplementaires.txt' && \
+#################################################
+# 
+# permettre à root de temporairement gérer le cluster kubernetes
+#
+#
+vrai="1"
+export KUBECONFIG=/etc/kubernetes/admin.conf && \
+vrai="0"
+nom="Etape ${numetape} - Export de la variable KUBECONFIG"
+verif
+#################################################
+# 
+# Construire le réseau flannel pour k8s
+#
+#
+vrai="1"
+sysctl -w net.bridge.bridge-nf-call-iptables=1
+cat <<EOF >> /etc/sysctl.conf
+net.bridge.bridge-nf-call-iptables=1
+EOF
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-#kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
-#kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
-#wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
-#wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
-#sed -i "s|192.168.0.0/16|192.168.0.0/19|g" custom-resources.yaml && \
-#kubectl apply -f tigera-operator.yaml && \
-#kubectl apply -f custom-resources.yaml && \
 vrai="0"
 nom="Etape ${numetape} - Deploiement Flannel v${VersionFlannel}"
+verif
+fi
+
+#################################################
+# 
+# autorisation du compte stagiaire à gérer le cluster kubernetes
+#
+#
+vrai="1"
+useradd -m stagiaire
+mkdir  -p   /home/stagiaire/.kube && \
+cp  -i   /etc/kubernetes/admin.conf  /home/stagiaire/.kube/config && \
+chown  -R  stagiaire:stagiaire   /home/stagiaire/.kube && \
+vrai="0"
+nom="Etape ${numetape} - Construction du compte stagiaire avec le controle de K8S"
 verif
 #################################################
 # 
