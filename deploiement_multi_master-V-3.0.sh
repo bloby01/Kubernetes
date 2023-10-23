@@ -830,8 +830,6 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 vrai="0"
 nom="Etape ${numetape} - Deploiement Flannel v${VersionFlannel}"
 verif
-echo pause à valider
-read tt
 #################################################
 # 
 # Installation de bash-completion pour faciliter les saisies
