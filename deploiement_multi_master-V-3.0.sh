@@ -86,7 +86,7 @@ printf -v IpCluster '%s,' 172.21.0.{0..255}
 export VersionContainerD="1.7.7"
 export VersionRunC="1.1.9"
 export VersionCNI="1.3.0"
-export VersionCalico="3.8"
+export VersionCalico="3.26.3"
 
 #                                                                               	  #
 ###########################################################################################
@@ -844,7 +844,8 @@ verif
 #
 #
 vrai="1"
-kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/calico.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml
 vrai="0"
 nom="Etape ${numetape} - Deploiement Calico v${VersionCalico}"
 verif
