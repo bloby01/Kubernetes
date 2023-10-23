@@ -96,9 +96,10 @@ export VersionCalico="3.26.3"
 ###########################################################################################
 #Fonction de creation du fichier /etc/environment
 #
-#environmentProxy(){
-#echo $NoProxyAdd > /etc/environment
-#}
+SELinux(){
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+}
 
 #Fonction d'installation du repo pour Kubernetes
 repok8s(){
@@ -721,6 +722,16 @@ vrai="1"
 dnf  install -y ${appmaster} && \
 vrai="0"
 nom="Etape ${numetape} - Installation des outils et services sur le master"
+verif
+#################################################
+# 
+# Configuration SELinux à permissive.
+#
+#
+vrai="1"
+SELinux && \
+vrai="0"
+nom="Etape ${numetape} - Configuration SELinux à permissive"
 verif
 #################################################
 # 
