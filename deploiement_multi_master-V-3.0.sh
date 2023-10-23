@@ -763,7 +763,7 @@ kind: KubeletConfiguration
 cgroupDriver: systemd
 EOF
 mkdir -p /etc/kubernetes/ && \
-cat << EOF > /etc/kubernetes/proxy.conf
+cat << EOF > /var/lib/kubelet/proxy.yaml
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
 mode: "iptables" # ou "ipvs" selon votre choix
@@ -828,7 +828,7 @@ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documen
 #kubectl apply -f tigera-operator.yaml && \
 #kubectl apply -f custom-resources.yaml && \
 vrai="0"
-nom="Etape ${numetape} - Deploiement calico v${VersionCalico}"
+nom="Etape ${numetape} - Deploiement Flannel v${VersionFlannel}"
 verif
 echo pause à valider
 read tt
