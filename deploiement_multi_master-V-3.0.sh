@@ -98,7 +98,7 @@ export VersionCalico="3.8"
 #
 ChoixReseau(){
 Reseau=non
-while [ ${Reseau} = "calico" -o ${Reseau} = "flannel" ]
+until [ ${Reseau} = "calico" -o ${Reseau} = "flannel" ]
 do
 echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
 read Reseau
