@@ -97,7 +97,7 @@ export VersionCalico="3.8"
 #Fonction de question sur le choix du réseau à utiliser en CNI
 #
 ChoixReseau(){
-Reseau=0
+Reseau=non
 while [ ${Reseau} = "calico" -o ${Reseau} = "flannel" ]
 do
 echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
