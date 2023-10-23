@@ -94,6 +94,17 @@ export VersionCalico="3.8"
 #                      Déclaration des fonctions                                	  #
 #                                                                               	  #
 ###########################################################################################
+#Fonction de question sur le choix du réseau à utiliser en CNI
+#
+ChoixReseau(){
+Reseau=0
+while [ ${Reseau} = "calico" ] -o [ ${Reseau} = "flannel" ]
+do
+echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
+read Reseau
+done
+}
+
 #Fonction de creation du fichier /etc/environment
 #
 SELinux(){
@@ -102,6 +113,7 @@ sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 }
 
 #Fonction d'installation du repo pour Kubernetes
+#
 repok8s(){
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -115,6 +127,7 @@ EOF
 }
 
 #Fonction de vérification des étapes
+#
 verif(){
 numetape=`expr ${numetape} + 1 `
   if [ "${vrai}" -eq "0" ]; then
@@ -124,7 +137,9 @@ numetape=`expr ${numetape} + 1 `
     exit 0
   fi
 }
+
 # Fonction d'installation de containerd en derniere version stable
+#
 containerd(){
 vrai="1"
 wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
@@ -186,6 +201,7 @@ verif
 }
 
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
+#
 named(){
 vrai="1"
 cat <<EOF > /var/named/rndc.conf
@@ -201,7 +217,6 @@ options {
         default-port 953;
 };
 # End of rndc.conf
-
 # Use with the following in named.conf, adjusting the allow list as needed:
 # key "rndc-key" {
 #       algorithm hmac-sha256;
@@ -286,6 +301,7 @@ nom="Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf"
 }
 
 # Fonction de configuration de la zone direct mon.dom
+#
 namedMonDom(){
 vrai="1"
 cat <<EOF > /var/named/mon.dom.db
@@ -310,6 +326,7 @@ nom="Configuration du fichier de zone mondom.db"
 }
 
 # Fonction de configuration de la zone reverse named
+#
 namedRevers(){
 vrai="1"
 cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
@@ -326,7 +343,9 @@ EOF
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
 }
+
 # Fonction de configuration des parametres communs du dhcp
+#
 dhcp(){
 vrai="1"
 cat <<EOF > /etc/dhcp/dhcpd.conf
@@ -365,6 +384,7 @@ nom="Installation et configuration de dhcp sur master"
 }
 
 # Fonction de configuration du repo k8s
+#
 repok8s(){
 vrai="1"
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -382,6 +402,7 @@ nom="Configuration du repository yum pour kubernetes"
 }
 
 # Fonction  de configuration du swap à off
+#
 Swap(){
 vrai="1"
 swapoff   -a && \
@@ -391,6 +412,7 @@ nom="Désactivation du Swap"
 }
 
 # Fonction de configuration du module bridge
+#
 moduleBr(){
 vrai="1"
 modprobe  br_netfilter && \
@@ -411,6 +433,7 @@ nom="Configuration du module br_netfilter et routage IP"
 }
 
 # Fonction de serveur de temps
+#
 temps(){
 vrai="1"
 timedatectl set-timezone "Europe/Paris" && \
@@ -426,6 +449,7 @@ CopyIdRoot(){
 #ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
+
 CopyIdLB(){
 #
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
@@ -795,12 +819,9 @@ verif
 vrai="1"
 if [ "$first" = "yes" ]
 then
-while [ ${Reseau} = "calico" ] -o [ ${Reseau} = "flannel" ]
-do
-clear
-echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
-read Reseau
-done
+#################################################
+ChoixReseau
+#################################################
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 if [ $Reseau == "calico" ]
