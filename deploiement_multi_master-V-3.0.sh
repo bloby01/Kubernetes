@@ -98,7 +98,7 @@ export VersionCalico="3.8"
 #
 ChoixReseau(){
 Reseau=0
-while [ ${Reseau} = "calico" ] -o [ ${Reseau} = "flannel" ]
+while [ ${Reseau} = "calico" -o ${Reseau} = "flannel" ]
 do
 echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
 read Reseau
@@ -716,7 +716,8 @@ then
 #  echange des clés ssh avec le LB
 CopyIdLB
 # 
-
+#################################################
+ChoixReseau
 #################################################
 # 
 # Suppression du swap
@@ -819,9 +820,6 @@ verif
 vrai="1"
 if [ "$first" = "yes" ]
 then
-#################################################
-ChoixReseau
-#################################################
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
 if [ $Reseau == "calico" ]
