@@ -762,6 +762,14 @@ apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
 EOF
+mkdir -p /etc/kubernetes/ && \
+cat << EOF > /etc/kubernetes/proxy.conf
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "iptables" # ou "ipvs" selon votre choix
+#featureGates:
+#  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
+EOF
 systemctl daemon-reload && \
 systemctl enable --now kubelet && \
 vrai="0"
@@ -807,12 +815,13 @@ nom="Etape ${numetape} - Export de la variable KUBECONFIG"
 verif
 #################################################
 # 
-# Construire le réseau calico pour k8s
+# Construire le réseau flannel pour k8s
 #
 #
 vrai="1"
-kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
-kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+#kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
+#kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
 #wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml && \
 #wget https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml && \
 #sed -i "s|192.168.0.0/16|192.168.0.0/19|g" custom-resources.yaml && \
