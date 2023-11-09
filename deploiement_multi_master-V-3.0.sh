@@ -4,7 +4,7 @@
 #										#
 #################################################################################
 #
-#!/bin/bash
+#!/bin/sh
 #   Version script: 3.0
 #   Deploiement sur Rocky Linux 9 minimum
 #   Version kubelet: 1.26 +
