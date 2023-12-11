@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: w3
+ name: w2
 spec:
- replicas: 3
+ replicas: 1
  selector:
   matchLabels:
-   app: w3
+   app: w2
  template:
   metadata:
    labels:
-    app: w3
+    app: w2
   spec:
    containers:
    - image: bloby01/web:v1
-     name: w3
-     livenessProbe:
+     name: w2
+     readinessProbe:
       httpGet:
        path: /
        port: 80
@@ -23,18 +23,22 @@ spec:
       timeoutSeconds: 1
       periodSeconds: 10
       failureThreshold: 3
+     resources:
+       requests:
+         cpu: 60m
+       limits:
+         cpu: 60m
      ports:
      - containerPort: 80
        name: http
        protocol: TCP
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: w3
-  name: w3
+    app: w2
+  name: w2
 spec:
 #  externalTrafficPolicy: Cluster
   ports:
@@ -43,19 +47,38 @@ spec:
     protocol: TCP
     targetPort: 80
   selector:
-    app: w3
+    app: w2
   sessionAffinity: None
 ---
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: web3
+  name: web2
 spec:
   entryPoints:
     - web
   routes:
   - kind: Rule
-    match: Host(`w3.mon.dom`) && PathPrefix(`/`)
+    match: Host(`w2.mon.dom`) && PathPrefix(`/`)
     services:
-    - name: w3
+    - name: w2
       port: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+   name: w2
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: w2
+  minReplicas: 4
+  maxReplicas: 16
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 20
