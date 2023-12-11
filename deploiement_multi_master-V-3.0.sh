@@ -388,14 +388,21 @@ nom="Installation et configuration de dhcp sur master"
 repok8s(){
 vrai="1"
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+#[kubernetes]
+#name=Kubernetes
+#baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+#enabled=1
+#gpgcheck=1
+#repo_gpgcheck=1
+#gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+#exclude=kube*
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
 enabled=1
 gpgcheck=1
-repo_gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kube*
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 vrai="0"
 nom="Configuration du repository yum pour kubernetes"
