@@ -690,7 +690,7 @@ then
 	dhcp && \
 	sed -i 's/.pid/& 'enp0s8'/' /usr/lib/systemd/system/dhcpd.service && \
 	vrai="0"
-	nom="Installation et configuration du service DHCP sur loadBalancer-k8s.mon.dom"
+	nom="Etape ${numetape} - Installation et configuration du service DHCP sur loadBalancer-k8s.mon.dom"
 	verif
 	################################################
 	#
@@ -894,7 +894,7 @@ then
 		#
 		#
 		vrai="1"
-		cat <<EOF >> /home/stagiaire/.bashrc
+		cat <<EOF | tee /home/stagiaire/.bashrc
 		source <(kubectl completion bash)
 		EOF
 		vrai="0"
