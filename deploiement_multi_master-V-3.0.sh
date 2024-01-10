@@ -77,15 +77,15 @@
 #
 export numetape=0
 export NBR=0
-export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl --disableexcludes=kubernetes"
-export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm --disableexcludes=kubernetes"
+export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
+export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
 printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
 printf -v IpCluster '%s,' 172.21.0.{0..255}
 #NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
-export VersionContainerD="1.7.7"
-export VersionRunC="1.1.9"
-export VersionCNI="1.3.0"
+#export VersionContainerD="1.7.7"
+#export VersionRunC="1.1.9"
+#export VersionCNI="1.3.0"
 export VersionCalico="3.26.3"
 
 #                                                                               	  #
@@ -94,38 +94,6 @@ export VersionCalico="3.26.3"
 #                      Déclaration des fonctions                                	  #
 #                                                                               	  #
 ###########################################################################################
-#Fonction de question sur le choix du réseau à utiliser en CNI
-#
-ChoixReseau(){
-Reseau=non
-until [ ${Reseau} = "calico" -o ${Reseau} = "flannel" ]
-do
-echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
-read Reseau
-done
-}
-
-#Fonction de creation du fichier /etc/environment
-#
-SELinux(){
-sudo setenforce 0
-sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-}
-
-#Fonction d'installation du repo pour Kubernetes
-#
-repok8s(){
-cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-\$basearch
-enabled=1
-gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kubelet kubeadm kubectl
-EOF
-}
-
 #Fonction de vérification des étapes
 #
 verif(){
@@ -136,6 +104,44 @@ numetape=`expr ${numetape} + 1 `
     echo "Erreur sur Machine: ${node}${x}-k8s.mon.dom - ${nom} - OUPSSS "
     exit 0
   fi
+}
+
+#Fonction de question sur le choix du réseau à utiliser en CNI
+#
+ChoixReseau(){
+Reseau=non
+until [ ${Reseau} = "calico" -o ${Reseau} = "flannel" ]
+do
+echo -n "Quelle version de support CNI voulez-vous utiliser ? [ calico  /  flannel ] :"
+read Reseau
+done
+vrai="0"
+nom="Choix du addon réseau: ${Reseau} "
+}
+
+#Fonction de contrôle du SELinux
+#
+SELinux(){
+setenforce 0 && \
+sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
+vrai="0"
+nom="Configuration du SElinux à : permissive "
+}
+
+#Fonction d'installation du repo pour Kubernetes
+#
+repok8s() {
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF && \
+vrai="0"
+nom="Configuration du repository dnf pour kubernetes"
 }
 
 # Fonction d'installation de containerd en derniere version stable
@@ -186,8 +192,7 @@ OOMScoreAdjust=-999
 
 [Install]
 WantedBy=multi-user.target
-EOF
-
+EOF && \
 systemctl daemon-reload && \
 systemctl enable --now containerd && \
 wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
@@ -228,7 +233,7 @@ options {
 #               allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
 # };
 # End of named.conf
-EOF
+EOF && \
 
 cat <<EOF > /etc/named.conf
 options {
@@ -289,7 +294,7 @@ zone "0.21.172.in-addr.arpa" in {
         notify yes;
         max-journal-size 50k;
 };
-EOF
+EOF && \
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
@@ -320,7 +325,7 @@ w2          CNAME   worker3-k8s.mon.dom.
 w3          CNAME   worker1-k8s.mon.dom.
 w4          CNAME   worker2-k8s.mon.dom.
 
-EOF
+EOF && \
 vrai="0"
 nom="Configuration du fichier de zone mondom.db"
 }
@@ -339,7 +344,7 @@ cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
               300 )    ; minimum
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
-EOF
+EOF && \
 vrai="0"
 nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
 }
@@ -378,34 +383,9 @@ subnet 172.21.0.0 netmask 255.255.255.0 {
   ddns-domainname "mon.dom.";
   ddns-rev-domainname "in-addr.arpa.";
 }
-EOF
+EOF && \
 vrai="0"
 nom="Installation et configuration de dhcp sur master"
-}
-
-# Fonction de configuration du repo k8s
-#
-repok8s(){
-vrai="1"
-cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-#[kubernetes]
-#name=Kubernetes
-#baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-#enabled=1
-#gpgcheck=1
-#repo_gpgcheck=1
-#gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-#exclude=kube*
-[kubernetes]
-name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
-enabled=1
-gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
-exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-EOF
-vrai="0"
-nom="Configuration du repository yum pour kubernetes"
 }
 
 # Fonction  de configuration du swap à off
@@ -425,7 +405,7 @@ vrai="1"
 modprobe  br_netfilter && \
 cat <<EOF > /etc/rc.modules
 modprobe  br_netfilter
-EOF
+EOF && \
 chmod  +x  /etc/rc.modules && \
 sysctl   -w net.bridge.bridge-nf-call-iptables=1 && \
 sysctl   -w net.bridge.bridge-nf-call-ip6tables=1 && \
@@ -434,7 +414,7 @@ cat <<EOF > /etc/sysctl.conf
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
 net.ipv4.ip_forward=1
-EOF
+EOF && \
 vrai="0"
 nom="Configuration du module br_netfilter et routage IP"
 }
@@ -454,33 +434,39 @@ nom="Configuration du serveur de temps"
 CopyIdRoot(){
 #
 #ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom && \
+vrai="0"
+nom="Copie des clés RSA sur root@master1-k8s.mon.dom"
 }
 
 CopyIdLB(){
 #
-ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom && \
+vrai="0"
+nom="Copie des clés RSA sur root@loadBalancer-k8s.mon.dom"
 }
 
 
-# Fonction de récupération du token et sha253 de cacert
+# Fonction de récupération du token et sha256 de cacert
 #
 RecupToken(){
-alias master1="ssh root@master1-k8s.mon.dom"
-scp root@master1-k8s.mon.dom:noeudsupplementaires.txt ~/.
+alias master1="ssh root@master1-k8s.mon.dom" && \
+scp root@master1-k8s.mon.dom:noeudsupplementaires.txt ~/. && \
 if [ -d ~/.kube ]
 then
 scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
 else
 mkdir ~/.kube
 scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
-fi
-export KUBECONFIG=~/.kube/config
-export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ")
-export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1)
-export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
-export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
+fi && \
+export KUBECONFIG=~/.kube/config && \
+export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ") && \
+export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1) && \
+export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
+export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
+vrai="0"
+nom="Récupération du token et sha256 de cacert "
 }
 
 ###################################################################################################
