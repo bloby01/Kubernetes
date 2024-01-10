@@ -88,7 +88,7 @@ printf -v IpCluster '%s,' 172.21.0.{0..255}
 #export VersionRunC="1.1.9"
 #export VersionCNI="1.3.0"
 export VersionCalico="3.27.0"
-
+export Version_k8s="v1.28"
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
@@ -142,10 +142,10 @@ repok8s(){
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+gpgkey=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 }
@@ -214,17 +214,14 @@ tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
 named(){
-echo "named stage 1"
 chown root:dhcpd /var/named && \
 chown root:dhcpd /etc/named && \
-echo "named stage 2"
 cat <<EOF | tee /var/named/rndc.conf
 # Start of rndc.conf
 key "rndc-key" {
 	algorithm hmac-sha256;
 	secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
 };
-
 options {
 	default-key "rndc-key";
 	default-server 127.0.0.1;
@@ -243,7 +240,6 @@ options {
 # };
 # End of named.conf
 EOF
-echo "named stage 3"
 cat <<EOF | tee /etc/named.conf
 options {
 	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
@@ -265,12 +261,10 @@ options {
 	session-keyfile "/run/named/session.key";
 	include "/etc/crypto-policies/back-ends/bind.config";
 };
-
 zone "." IN {
 	type hint;
 	file "/var/named/named.ca";
 };
-
 include "/etc/named.root.key";
 zone "mon.dom" in {
 	type master;
@@ -282,17 +276,14 @@ zone "mon.dom" in {
 	notify yes;
 	max-journal-size 50k;
 };
-
 key "rndc-key" {
        algorithm hmac-sha256;
        secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
 };
-
 controls {
 	inet 127.0.0.1 port 953
 		allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
 };
-
 zone "0.21.172.in-addr.arpa" in {
 	type master;
 	inline-signing yes;
@@ -311,7 +302,6 @@ EOF
 # Fonction de configuration de la zone direct mon.dom
 #
 namedMonDom(){
-echo "named stage 4"
 cat <<EOF | tee /var/named/mon.dom.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
@@ -327,7 +317,6 @@ w1          CNAME   worker2-k8s.mon.dom.
 w2          CNAME   worker3-k8s.mon.dom.
 w3          CNAME   worker1-k8s.mon.dom.
 w4          CNAME   worker2-k8s.mon.dom.
-
 EOF
 }
 #################################################
@@ -336,7 +325,6 @@ EOF
 # Fonction de configuration de la zone reverse named
 #
 namedRevers(){
-echo "named stage 5"
 cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
@@ -348,7 +336,6 @@ cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
 EOF
-echo "named stage 6"
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
@@ -965,7 +952,7 @@ then
 		nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
 		verif
 		vrai="1"
-		su -lc 'kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}'  && \
+		kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \
 		vrai="0"
 		nom="Etape ${numetape} - Intégration du noeud ${noeud}${x}-k8s.mon.dom au cluster K8S"
 		verif
@@ -1093,6 +1080,7 @@ then
 		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	else
 		ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export ~/mesimages.tar $(ctr --namespace k8s.io images list -q)
+  		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	fi && \
 	vrai="0"
 	nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
