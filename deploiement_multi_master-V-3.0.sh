@@ -546,9 +546,9 @@ cat <<EOF > /etc/hosts
 127.0.0.1 localhost
 EOF
 vrai="0"
-fi
 nom="Etape ${numetape} - Contruction du fichier hosts"
 verif
+fi
 ############################################################################################
 #                                                                                          #
 #                       Déploiement du LB  HAProxy                                         #
