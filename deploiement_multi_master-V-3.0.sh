@@ -146,7 +146,7 @@ enabled=1
 gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-EOF && \
+EOF
 }
 #################################################
 # 
@@ -237,7 +237,7 @@ options {
 #               allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
 # };
 # End of named.conf
-EOF && \
+EOF
 
 cat <<EOF > /etc/named.conf
 options {
@@ -298,7 +298,7 @@ zone "0.21.172.in-addr.arpa" in {
 	notify yes;
 	max-journal-size 50k;
 };
-EOF && \
+EOF
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
@@ -328,7 +328,7 @@ w2          CNAME   worker3-k8s.mon.dom.
 w3          CNAME   worker1-k8s.mon.dom.
 w4          CNAME   worker2-k8s.mon.dom.
 
-EOF && \
+EOF
 }
 #################################################
 # 
@@ -346,7 +346,7 @@ cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
 	      300 )    ; minimum
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
-EOF && \
+EOF
 }
 #################################################
 # 
@@ -384,7 +384,7 @@ subnet 172.21.0.0 netmask 255.255.255.0 {
   ddns-domainname "mon.dom.";
   ddns-rev-domainname "in-addr.arpa.";
 }
-EOF && \
+EOF
 }
 
 # Fonction  de configuration du swap à off
@@ -400,7 +400,7 @@ moduleBr(){
 modprobe  br_netfilter && \
 cat <<EOF > /etc/rc.modules
 modprobe  br_netfilter
-EOF && \
+EOF
 chmod  +x  /etc/rc.modules && \
 sysctl   -w net.bridge.bridge-nf-call-iptables=1 && \
 sysctl   -w net.bridge.bridge-nf-call-ip6tables=1 && \
@@ -409,7 +409,7 @@ cat <<EOF > /etc/sysctl.conf
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
 net.ipv4.ip_forward=1
-EOF && \
+EOF
 }
 #######################################################################
 # Fonction de serveur de temps
@@ -460,7 +460,7 @@ cat <<EOF > /var/lib/kubelet/config.yaml
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
-EOF && \
+EOF
 mkdir -p /etc/kubernetes/ && \
 cat << EOF > /var/lib/kubelet/proxy.yaml
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
@@ -468,7 +468,7 @@ kind: KubeProxyConfiguration
 mode: "iptables" # ou "ipvs" selon votre choix
 #featureGates:
 #  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
-EOF && \
+EOF
 systemctl daemon-reload && \
 systemctl enable --now kubelet && \
 }
