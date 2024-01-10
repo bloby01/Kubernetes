@@ -304,7 +304,7 @@ chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
 chmod 660 /var/named/mon.dom.db && \
 chmod 660 /var/named/172.21.0.db && \
-chmod -R 770 /var/named/dynamic && \
+chmod -R 770 /var/named/dynamic
 }
 #################################################
 # 
