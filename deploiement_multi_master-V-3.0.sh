@@ -641,7 +641,7 @@ then
 	#    server noeud1 master1-k8s.mon.dom:6443 check fall 3 rise 2
 	#    server noeud2 master2-k8s.mon.dom:6443 check fall 3 rise 2
 	#    server noeud3 master3-k8s.mon.dom:6443 check fall 3 rise 2
-	EOF && \
+	EOF
 	setsebool -P haproxy_connect_any on && \
 	systemctl enable --now haproxy && \
 	vrai="0"
