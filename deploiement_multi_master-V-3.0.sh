@@ -128,16 +128,16 @@ nom="Choix du addon réseau: ${Reseau} "
 
 #Fonction de contrôle du SELinux
 #
-SELinux(){
-setenforce 0 && \
-sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
-}
+#SELinux(){
+#setenforce 0 && \
+#sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
+#}
 #################################################
 # 
 
 #Fonction d'installation du repo pour Kubernetes
 #
-repok8s() {
+repok8s(){
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
