@@ -5,6 +5,7 @@
 #################################################################################
 #
 #!/bin/sh
+set -e
 #   Version script: 3.0
 #   Deploiement sur Rocky Linux 9 minimum
 #   Version kubelet: 1.28 +
@@ -352,7 +353,7 @@ chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
 chmod 660 /var/named/mon.dom.db && \
-chmod 660 /var/named/172.21.0.db && \
+chmod 660 /var/named/0.21.172.in-addr.arpa.db && \
 chmod -R 770 /var/named/dynamic
 }
 #################################################
