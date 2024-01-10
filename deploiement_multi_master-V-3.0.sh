@@ -138,15 +138,15 @@ ChoixReseau(){
 #Fonction d'installation du repo pour Kubernetes
 #
 repok8s(){
-	cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
-	[kubernetes]
-	name=Kubernetes
-	baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
-	enabled=1
-	gpgcheck=1
-	gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
-	exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-	EOF && \
+cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF && \
 }
 #################################################
 # 
@@ -154,58 +154,58 @@ repok8s(){
 # Fonction d'installation de containerd en derniere version stable
 #
 containerd(){
-	wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
-	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz && \
-	mkdir -p /usr/local/lib/systemd/system/
-	cat <<EOF > /usr/local/lib/systemd/system/containerd.service
-	# Copyright The containerd Authors.
-	#
-	# Licensed under the Apache License, Version 2.0 (the "License");
-	# you may not use this file except in compliance with the License.
-	# You may obtain a copy of the License at
-	#
-	#     http://www.apache.org/licenses/LICENSE-2.0
-	#
-	# Unless required by applicable law or agreed to in writing, software
-	# distributed under the License is distributed on an "AS IS" BASIS,
-	# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	# See the License for the specific language governing permissions and
-	# limitations under the License.
-	
-	[Unit]
-	Description=containerd container runtime
-	Documentation=https://containerd.io
-	After=network.target local-fs.target
-	
-	[Service]
-	ExecStartPre=-/sbin/modprobe overlay
-	ExecStart=/usr/local/bin/containerd
-	
-	Type=notify
-	Delegate=yes
-	KillMode=process
-	Restart=always
-	RestartSec=5
-	# Having non-zero Limit*s causes performance problems due to accounting overhead
-	# in the kernel. We recommend using cgroups to do container-local accounting.
-	LimitNPROC=infinity
-	LimitCORE=infinity
-	LimitNOFILE=infinity
-	# Comment TasksMax if your systemd version does not supports it.
-	# Only systemd 226 and above support this version.
-	TasksMax=infinity
-	OOMScoreAdjust=-999
-	
-	[Install]
-	WantedBy=multi-user.target
-	EOF && \
-	systemctl daemon-reload && \
-	systemctl enable --now containerd && \
-	wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
-	install -m  755 runc.amd64  /usr/local/bin/runc && \
-	wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
-	mkdir -p /opt/cni/bin && \
-	tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
+wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
+tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz && \
+mkdir -p /usr/local/lib/systemd/system/
+cat <<EOF > /usr/local/lib/systemd/system/containerd.service
+# Copyright The containerd Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[Unit]
+Description=containerd container runtime
+Documentation=https://containerd.io
+After=network.target local-fs.target
+
+[Service]
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/local/bin/containerd
+
+Type=notify
+Delegate=yes
+KillMode=process
+Restart=always
+RestartSec=5
+# Having non-zero Limit*s causes performance problems due to accounting overhead
+# in the kernel. We recommend using cgroups to do container-local accounting.
+LimitNPROC=infinity
+LimitCORE=infinity
+LimitNOFILE=infinity
+# Comment TasksMax if your systemd version does not supports it.
+# Only systemd 226 and above support this version.
+TasksMax=infinity
+OOMScoreAdjust=-999
+
+[Install]
+WantedBy=multi-user.target
+EOF && \
+systemctl daemon-reload && \
+systemctl enable --now containerd && \
+wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
+install -m  755 runc.amd64  /usr/local/bin/runc && \
+wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
+mkdir -p /opt/cni/bin && \
+tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
 }
 #################################################
 # 
@@ -213,98 +213,98 @@ containerd(){
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
 named(){
-	cat <<EOF > /var/named/rndc.conf
-	# Start of rndc.conf
-	key "rndc-key" {
-	        algorithm hmac-sha256;
-	        secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-	};
-	
-	options {
-	        default-key "rndc-key";
-	        default-server 127.0.0.1;
-	        default-port 953;
-	};
-	# End of rndc.conf
-	# Use with the following in named.conf, adjusting the allow list as needed:
-	# key "rndc-key" {
-	#       algorithm hmac-sha256;
-	#       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-	# };
-	#
-	# controls {
-	#       inet 127.0.0.1 port 953
-	#               allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
-	# };
-	# End of named.conf
-	EOF && \
-	
-	cat <<EOF > /etc/named.conf
-	options {
-	        listen-on port 53 { 172.21.0.100; 127.0.0.1; };
-	        listen-on-v6 port 53 { ::1; };
-	        directory       "/etc/named";
-	        dump-file       "/var/named/data/cache_dump.db";
-	        statistics-file "/var/named/data/named_stats.txt";
-	        memstatistics-file "/var/named/data/named_mem_stats.txt";
-	        secroots-file   "/var/named/data/named.secroots";
-	        recursing-file  "/var/named/data/named.recursing";
-	        allow-query     { any; };
-	        allow-new-zones yes;
-	        recursion yes;
-	        forwarders {8.8.8.8; 8.8.4.4; };
-	        dnssec-validation yes;
-	        managed-keys-directory "/var/named/dynamic";
-	        geoip-directory "/usr/share/GeoIP";
-	        pid-file "/run/named/named.pid";
-	        session-keyfile "/run/named/session.key";
-	        include "/etc/crypto-policies/back-ends/bind.config";
-	};
-	
-	zone "." IN {
-	        type hint;
-	        file "/var/named/named.ca";
-	};
-	
-	include "/etc/named.root.key";
-	zone "mon.dom" in {
-	        type master;
-	        inline-signing yes;
-	        auto-dnssec maintain;
-	        file "/var/named/mon.dom.db";
-	        allow-update { key "rndc-key"; };
-	        allow-query { any;};
-	        notify yes;
-	        max-journal-size 50k;
-	};
-	
-	key "rndc-key" {
-	       algorithm hmac-sha256;
-	       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-	};
-	
-	controls {
-	        inet 127.0.0.1 port 953
-	                allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
-	};
-	
-	zone "0.21.172.in-addr.arpa" in {
-	        type master;
-	        inline-signing yes;
-	        auto-dnssec maintain;
-	        file "/var/named/0.21.172.in-addr.arpa.db";
-	        allow-update { key "rndc-key"; };
-	        allow-query { any;};
-	        notify yes;
-	        max-journal-size 50k;
-	};
-	EOF && \
-	chown -R named:dhcpd /etc/named/ && \
-	chmod 770 /etc/named && \
-	chown -R named:dhcpd /var/named/ && \
-	chmod 660 /var/named/mon.dom.db && \
-	chmod 660 /var/named/172.21.0.db && \
-	chmod -R 770 /var/named/dynamic && \
+cat <<EOF > /var/named/rndc.conf
+# Start of rndc.conf
+key "rndc-key" {
+	algorithm hmac-sha256;
+	secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+};
+
+options {
+	default-key "rndc-key";
+	default-server 127.0.0.1;
+	default-port 953;
+};
+# End of rndc.conf
+# Use with the following in named.conf, adjusting the allow list as needed:
+# key "rndc-key" {
+#       algorithm hmac-sha256;
+#       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+# };
+#
+# controls {
+#       inet 127.0.0.1 port 953
+#               allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
+# };
+# End of named.conf
+EOF && \
+
+cat <<EOF > /etc/named.conf
+options {
+	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
+	listen-on-v6 port 53 { ::1; };
+	directory       "/etc/named";
+	dump-file       "/var/named/data/cache_dump.db";
+	statistics-file "/var/named/data/named_stats.txt";
+	memstatistics-file "/var/named/data/named_mem_stats.txt";
+	secroots-file   "/var/named/data/named.secroots";
+	recursing-file  "/var/named/data/named.recursing";
+	allow-query     { any; };
+	allow-new-zones yes;
+	recursion yes;
+	forwarders {8.8.8.8; 8.8.4.4; };
+	dnssec-validation yes;
+	managed-keys-directory "/var/named/dynamic";
+	geoip-directory "/usr/share/GeoIP";
+	pid-file "/run/named/named.pid";
+	session-keyfile "/run/named/session.key";
+	include "/etc/crypto-policies/back-ends/bind.config";
+};
+
+zone "." IN {
+	type hint;
+	file "/var/named/named.ca";
+};
+
+include "/etc/named.root.key";
+zone "mon.dom" in {
+	type master;
+	inline-signing yes;
+	auto-dnssec maintain;
+	file "/var/named/mon.dom.db";
+	allow-update { key "rndc-key"; };
+	allow-query { any;};
+	notify yes;
+	max-journal-size 50k;
+};
+
+key "rndc-key" {
+       algorithm hmac-sha256;
+       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+};
+
+controls {
+	inet 127.0.0.1 port 953
+		allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
+};
+
+zone "0.21.172.in-addr.arpa" in {
+	type master;
+	inline-signing yes;
+	auto-dnssec maintain;
+	file "/var/named/0.21.172.in-addr.arpa.db";
+	allow-update { key "rndc-key"; };
+	allow-query { any;};
+	notify yes;
+	max-journal-size 50k;
+};
+EOF && \
+chown -R named:dhcpd /etc/named/ && \
+chmod 770 /etc/named && \
+chown -R named:dhcpd /var/named/ && \
+chmod 660 /var/named/mon.dom.db && \
+chmod 660 /var/named/172.21.0.db && \
+chmod -R 770 /var/named/dynamic && \
 }
 #################################################
 # 
@@ -312,23 +312,23 @@ named(){
 # Fonction de configuration de la zone direct mon.dom
 #
 namedMonDom(){
-	cat <<EOF > /var/named/mon.dom.db
-	\$TTL 300
-	@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
-	              1       ; serial
-	              600      ; refresh
-	              900      ; retry
-	              3600      ; expire
-	              300 )    ; minimum
-	@             NS      loadBalancer-k8s.mon.dom.
-	loadBalancer-k8s   A       172.21.0.100
-	traefik     CNAME   worker1-k8s.mon.dom.
-	w1          CNAME   worker2-k8s.mon.dom.
-	w2          CNAME   worker3-k8s.mon.dom.
-	w3          CNAME   worker1-k8s.mon.dom.
-	w4          CNAME   worker2-k8s.mon.dom.
-	
-	EOF && \
+cat <<EOF > /var/named/mon.dom.db
+\$TTL 300
+@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
+	      1       ; serial
+	      600      ; refresh
+	      900      ; retry
+	      3600      ; expire
+	      300 )    ; minimum
+@             NS      loadBalancer-k8s.mon.dom.
+loadBalancer-k8s   A       172.21.0.100
+traefik     CNAME   worker1-k8s.mon.dom.
+w1          CNAME   worker2-k8s.mon.dom.
+w2          CNAME   worker3-k8s.mon.dom.
+w3          CNAME   worker1-k8s.mon.dom.
+w4          CNAME   worker2-k8s.mon.dom.
+
+EOF && \
 }
 #################################################
 # 
@@ -336,17 +336,17 @@ namedMonDom(){
 # Fonction de configuration de la zone reverse named
 #
 namedRevers(){
-	cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
-	\$TTL 300
-	@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
-	              1       ; serial
-	              600      ; refresh
-	              900      ; retry
-	              3600      ; expire
-	              300 )    ; minimum
-	@             NS      loadBalancer-k8s.mon.dom.
-	100           PTR     loadBalancer-k8s.mon.dom.
-	EOF && \
+cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
+\$TTL 300
+@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
+	      1       ; serial
+	      600      ; refresh
+	      900      ; retry
+	      3600      ; expire
+	      300 )    ; minimum
+@             NS      loadBalancer-k8s.mon.dom.
+100           PTR     loadBalancer-k8s.mon.dom.
+EOF && \
 }
 #################################################
 # 
@@ -354,123 +354,123 @@ namedRevers(){
 # Fonction de configuration des parametres communs du dhcp
 #
 dhcp(){
-	cat <<EOF > /etc/dhcp/dhcpd.conf
-	ddns-updates on;
-	ddns-update-style interim;
-	ignore client-updates;
-	update-static-leases on;
-	log-facility local7;
-	key "rndc-key" {
-	        algorithm hmac-sha256;
-	        secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-	};
-	zone mon.dom. {
-	  primary 172.21.0.100;
-	  key rndc-key;
-	}
-	zone 0.21.172.in-addr.arpa. {
-	  primary 172.21.0.100;
-	  key rndc-key;
-	}
-	option domain-name "mon.dom";
-	option domain-name-servers 172.21.0.100;
-	default-lease-time 600;
-	max-lease-time 7200;
-	authoritative;
-	subnet 172.21.0.0 netmask 255.255.255.0 {
-	  range 172.21.0.101 172.21.0.109;
-	  option routers 172.21.0.100;
-	  option broadcast-address 172.21.0.255;
-	  ddns-domainname "mon.dom.";
-	  ddns-rev-domainname "in-addr.arpa.";
-	}
-	EOF && \
+cat <<EOF > /etc/dhcp/dhcpd.conf
+ddns-updates on;
+ddns-update-style interim;
+ignore client-updates;
+update-static-leases on;
+log-facility local7;
+key "rndc-key" {
+	algorithm hmac-sha256;
+	secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+};
+zone mon.dom. {
+  primary 172.21.0.100;
+  key rndc-key;
+}
+zone 0.21.172.in-addr.arpa. {
+  primary 172.21.0.100;
+  key rndc-key;
+}
+option domain-name "mon.dom";
+option domain-name-servers 172.21.0.100;
+default-lease-time 600;
+max-lease-time 7200;
+authoritative;
+subnet 172.21.0.0 netmask 255.255.255.0 {
+  range 172.21.0.101 172.21.0.109;
+  option routers 172.21.0.100;
+  option broadcast-address 172.21.0.255;
+  ddns-domainname "mon.dom.";
+  ddns-rev-domainname "in-addr.arpa.";
+}
+EOF && \
 }
 
 # Fonction  de configuration du swap à off
 #
 Swap(){
-	swapoff   -a && \
-	sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab && \
+swapoff   -a && \
+sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab && \
 }
 ######################################################################
 # Fonction de configuration du module bridge
 #
 moduleBr(){
-	modprobe  br_netfilter && \
-	cat <<EOF > /etc/rc.modules
-	modprobe  br_netfilter
-	EOF && \
-	chmod  +x  /etc/rc.modules && \
-	sysctl   -w net.bridge.bridge-nf-call-iptables=1 && \
-	sysctl   -w net.bridge.bridge-nf-call-ip6tables=1 && \
-	sysctl -w net.ipv4.ip_forward=1 && \
-	cat <<EOF > /etc/sysctl.conf
-	net.bridge.bridge-nf-call-iptables=1
-	net.bridge.bridge-nf-call-ip6tables=1
-	net.ipv4.ip_forward=1
-	EOF && \
+modprobe  br_netfilter && \
+cat <<EOF > /etc/rc.modules
+modprobe  br_netfilter
+EOF && \
+chmod  +x  /etc/rc.modules && \
+sysctl   -w net.bridge.bridge-nf-call-iptables=1 && \
+sysctl   -w net.bridge.bridge-nf-call-ip6tables=1 && \
+sysctl -w net.ipv4.ip_forward=1 && \
+cat <<EOF > /etc/sysctl.conf
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+net.ipv4.ip_forward=1
+EOF && \
 }
 #######################################################################
 # Fonction de serveur de temps
 #
 temps(){
-	timedatectl set-timezone "Europe/Paris" && \
-	timedatectl set-ntp true && \
+timedatectl set-timezone "Europe/Paris" && \
+timedatectl set-ntp true && \
 }
 #######################################################################
 # Fonction de création des clés pour ssh-copy-id
 #
 CopyIdRoot(){
-	#ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
-	ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom && \
+#ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom && \
 }
 #######################################################################
 CopyIdLB(){
-	ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
-	ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom && \
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom && \
 }
 #######################################################################
 # Fonction de récupération du token et sha256 de cacert
 #
 RecupToken(){
-	alias master1="ssh root@master1-k8s.mon.dom" && \
-	scp root@master1-k8s.mon.dom:noeudsupplementaires.txt ~/. && \
-	if [ -d ~/.kube ]
-		then
-		scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
-	else
-		mkdir ~/.kube
-		scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
-	fi && \
-	export KUBECONFIG=~/.kube/config && \
-	export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ") && \
-	export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1) && \
-	export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
-	export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
+alias master1="ssh root@master1-k8s.mon.dom" && \
+scp root@master1-k8s.mon.dom:noeudsupplementaires.txt ~/. && \
+if [ -d ~/.kube ]
+	then
+	scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
+else
+	mkdir ~/.kube
+	scp root@master1-k8s.mon.dom:/etc/kubernetes/admin.conf ~/.kube/config
+fi && \
+export KUBECONFIG=~/.kube/config && \
+export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ") && \
+export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1) && \
+export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
+export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
 }
 #################################################
 # 
 # Démarrage du service kubelet
 #
 #
-	StartServiceKubelet (){
-	mkdir -p /var/lib/kubelet/ && \
-	cat <<EOF > /var/lib/kubelet/config.yaml
-	apiVersion: kubelet.config.k8s.io/v1beta1
-	kind: KubeletConfiguration
-	cgroupDriver: systemd
-	EOF && \
-	mkdir -p /etc/kubernetes/ && \
-	cat << EOF > /var/lib/kubelet/proxy.yaml
-	apiVersion: kubeproxy.config.k8s.io/v1alpha1
-	kind: KubeProxyConfiguration
-	mode: "iptables" # ou "ipvs" selon votre choix
-	#featureGates:
-	#  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
-	EOF && \
-	systemctl daemon-reload && \
-	systemctl enable --now kubelet && \
+StartServiceKubelet(){
+mkdir -p /var/lib/kubelet/ && \
+cat <<EOF > /var/lib/kubelet/config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+EOF && \
+mkdir -p /etc/kubernetes/ && \
+cat << EOF > /var/lib/kubelet/proxy.yaml
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "iptables" # ou "ipvs" selon votre choix
+#featureGates:
+#  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
+EOF && \
+systemctl daemon-reload && \
+systemctl enable --now kubelet && \
 }
 #####################################################################
 # configuration du service haproxy
