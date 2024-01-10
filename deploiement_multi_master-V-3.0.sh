@@ -213,8 +213,8 @@ tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
 named(){
-chown root:dhcpd /var/named
-chown root:dhcpd /etc/named
+chown root:dhcpd /var/named && \
+chown root:dhcpd /etc/named && \
 cat <<EOF | tee /var/named/rndc.conf
 # Start of rndc.conf
 key "rndc-key" {
