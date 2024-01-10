@@ -881,9 +881,9 @@ then
 		#
 		#
 		vrai="1"
-		cat <<EOF | tee /home/stagiaire/.bashrc
-		source <(kubectl completion bash)
-		EOF
+		#cat <<EOF | tee /home/stagiaire/.bashrc
+		#source <(kubectl completion bash)
+		#EOF
 		vrai="0"
 		nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
 		verif
