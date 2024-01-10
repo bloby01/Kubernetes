@@ -564,6 +564,8 @@ then
 		if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
 		then 
 			first="yes"
+   			echo -n "Quel type de réseau CNI voulez-vous déployer ? calico / flannel : "
+      			read Reseau
 		else
 			first="no"
 		fi
@@ -800,7 +802,7 @@ then
 	then
 		ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg' && \
 		ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service && \
-		if [ "$Reseau" == "calico" ]
+  		if [ "$Reseau" == "calico" ]
 		then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Calico en CNI "
