@@ -800,7 +800,7 @@ then
 	then
 		ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg' && \
 		ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service && \
-		if [ $Reseau == "calico" ]
+		if [ "$Reseau" == "calico" ]
 		then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Calico en CNI "
@@ -830,7 +830,7 @@ then
 			vrai="0"
 			nom="Etape ${numetape} - Deploiement Calico v${VersionCalico} en CNI sur le cluster"
 			verif
-		elif [ $Reseau == "flannel" ]
+		elif [ "$Reseau" == "flannel" ]
 		then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Flannel en CNI "
