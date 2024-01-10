@@ -157,7 +157,7 @@ containerd(){
 wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
 tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz && \
 mkdir -p /usr/local/lib/systemd/system/
-cat <<EOF > /usr/local/lib/systemd/system/containerd.service
+cat <<EOF | tee /usr/local/lib/systemd/system/containerd.service
 # Copyright The containerd Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -198,7 +198,7 @@ OOMScoreAdjust=-999
 
 [Install]
 WantedBy=multi-user.target
-EOF && \
+EOF
 systemctl daemon-reload && \
 systemctl enable --now containerd && \
 wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
@@ -213,7 +213,7 @@ tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
 named(){
-cat <<EOF > /var/named/rndc.conf
+cat <<EOF | tee /var/named/rndc.conf
 # Start of rndc.conf
 key "rndc-key" {
 	algorithm hmac-sha256;
@@ -239,7 +239,7 @@ options {
 # End of named.conf
 EOF
 
-cat <<EOF > /etc/named.conf
+cat <<EOF | tee /etc/named.conf
 options {
 	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
 	listen-on-v6 port 53 { ::1; };
@@ -312,7 +312,7 @@ chmod -R 770 /var/named/dynamic
 # Fonction de configuration de la zone direct mon.dom
 #
 namedMonDom(){
-cat <<EOF > /var/named/mon.dom.db
+cat <<EOF | tee /var/named/mon.dom.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
 	      1       ; serial
@@ -336,7 +336,7 @@ EOF
 # Fonction de configuration de la zone reverse named
 #
 namedRevers(){
-cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
+cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
 	      1       ; serial
@@ -354,7 +354,7 @@ EOF
 # Fonction de configuration des parametres communs du dhcp
 #
 dhcp(){
-cat <<EOF > /etc/dhcp/dhcpd.conf
+cat <<EOF | tee /etc/dhcp/dhcpd.conf
 ddns-updates on;
 ddns-update-style interim;
 ignore client-updates;
@@ -398,14 +398,14 @@ sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 #
 moduleBr(){
 modprobe  br_netfilter && \
-cat <<EOF > /etc/rc.modules
+cat <<EOF | tee /etc/rc.modules
 modprobe  br_netfilter
 EOF
 chmod  +x  /etc/rc.modules && \
 sysctl   -w net.bridge.bridge-nf-call-iptables=1 && \
 sysctl   -w net.bridge.bridge-nf-call-ip6tables=1 && \
 sysctl -w net.ipv4.ip_forward=1 && \
-cat <<EOF > /etc/sysctl.conf
+cat <<EOF | tee /etc/sysctl.conf
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
 net.ipv4.ip_forward=1
@@ -456,13 +456,13 @@ export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | o
 #
 StartServiceKubelet(){
 mkdir -p /var/lib/kubelet/ && \
-cat <<EOF > /var/lib/kubelet/config.yaml
+cat <<EOF | tee /var/lib/kubelet/config.yaml
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
 EOF
 mkdir -p /etc/kubernetes/ && \
-cat << EOF > /var/lib/kubelet/proxy.yaml
+cat <<EOF | tee /var/lib/kubelet/proxy.yaml
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
 mode: "iptables" # ou "ipvs" selon votre choix
@@ -475,7 +475,7 @@ systemctl enable --now kubelet
 #####################################################################
 # configuration du service haproxy
 ConfHaProxy(){
-cat <<EOF > /etc/haproxy/haproxy.cfg
+cat <<EOF | tee /etc/haproxy/haproxy.cfg
 global
     log         127.0.0.1 local2
     chroot      /var/lib/haproxy
