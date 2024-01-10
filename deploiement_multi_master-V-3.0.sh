@@ -84,9 +84,9 @@ export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-pytho
 printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
 printf -v IpCluster '%s,' 172.21.0.{0..255}
 #NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
-#export VersionContainerD="1.7.7"
-#export VersionRunC="1.1.9"
-#export VersionCNI="1.3.0"
+export VersionContainerD="1.7.7"
+export VersionRunC="1.1.9"
+export VersionCNI="1.3.0"
 export VersionCalico="3.27.0"
 export Version_k8s="v1.28"
 #                                                                               	  #
@@ -776,11 +776,11 @@ then
 	# installation de containerd
 	#
 	#
-	#vrai="1"
-	#containerd && \
-	#vrai="0"
-	#nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
-	#verif
+	vrai="1"
+	containerd && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
+	verif
 	#################################################
 	# 
 	# Démarrage du service kubelet
@@ -1043,11 +1043,11 @@ then
 	# installation de containerd
 	#
 	#
-	#vrai="1"
-	#containerd && \
-	#vrai="0"
-	#nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
-	#verif
+	vrai="1"
+	containerd && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
+	verif
 	#################################################
 	# 
 	# Démarrage du service kubelet
