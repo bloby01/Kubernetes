@@ -303,14 +303,6 @@ zone "0.21.172.in-addr.arpa" in {
 	max-journal-size 50k;
 };
 EOF
-echo "named stage 4"
-chown -R named:dhcpd /etc/named/ && \
-chmod 770 /etc/named && \
-chown -R named:dhcpd /var/named/ && \
-chmod 660 /var/named/mon.dom.db && \
-chmod 660 /var/named/172.21.0.db && \
-chmod -R 770 /var/named/dynamic
-echo "named stage 5"
 }
 #################################################
 # 
@@ -318,6 +310,7 @@ echo "named stage 5"
 # Fonction de configuration de la zone direct mon.dom
 #
 namedMonDom(){
+echo "named stage 4"
 cat <<EOF | tee /var/named/mon.dom.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
@@ -342,6 +335,7 @@ EOF
 # Fonction de configuration de la zone reverse named
 #
 namedRevers(){
+echo "named stage 5"
 cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
@@ -353,6 +347,13 @@ cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
 EOF
+echo "named stage 6"
+chown -R named:dhcpd /etc/named/ && \
+chmod 770 /etc/named && \
+chown -R named:dhcpd /var/named/ && \
+chmod 660 /var/named/mon.dom.db && \
+chmod 660 /var/named/172.21.0.db && \
+chmod -R 770 /var/named/dynamic
 }
 #################################################
 # 
@@ -894,7 +895,7 @@ then
 		vrai="1"
 		cat <<EOF >> /home/stagiaire/.bashrc
 		source <(kubectl completion bash)
-		EOF && \
+		EOF
 		vrai="0"
 		nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
 		verif
