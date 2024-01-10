@@ -213,8 +213,10 @@ tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
 named(){
+echo "named stage 1"
 chown root:dhcpd /var/named && \
 chown root:dhcpd /etc/named && \
+echo "named stage 2"
 cat <<EOF | tee /var/named/rndc.conf
 # Start of rndc.conf
 key "rndc-key" {
@@ -240,7 +242,7 @@ options {
 # };
 # End of named.conf
 EOF
-
+echo "named stage 3"
 cat <<EOF | tee /etc/named.conf
 options {
 	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
@@ -301,12 +303,14 @@ zone "0.21.172.in-addr.arpa" in {
 	max-journal-size 50k;
 };
 EOF
+echo "named stage 4"
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
 chmod 660 /var/named/mon.dom.db && \
 chmod 660 /var/named/172.21.0.db && \
 chmod -R 770 /var/named/dynamic
+echo "named stage 5"
 }
 #################################################
 # 
