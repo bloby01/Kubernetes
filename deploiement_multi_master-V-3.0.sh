@@ -7,11 +7,11 @@
 #!/bin/sh
 #   Version script: 3.0
 #   Deploiement sur Rocky Linux 9 minimum
-#   Version kubelet: 1.26 +
+#   Version kubelet: 1.28 +
 #   Version Containerd	: 1.7.7
 #   Version RunC 	: 1.1.9
 #   Version CNI-Plugin	: 1.3.0
-#   Version calico	: 3.8
+#   Version calico	: 3.27
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
@@ -86,7 +86,7 @@ printf -v IpCluster '%s,' 172.21.0.{0..255}
 #export VersionContainerD="1.7.7"
 #export VersionRunC="1.1.9"
 #export VersionCNI="1.3.0"
-export VersionCalico="3.26.3"
+export VersionCalico="3.27.0"
 
 #                                                                               	  #
 ###########################################################################################
@@ -94,8 +94,11 @@ export VersionCalico="3.26.3"
 #                      Déclaration des fonctions                                	  #
 #                                                                               	  #
 ###########################################################################################
+#################################################
+# 
 #Fonction de vérification des étapes
 #
+
 verif(){
 numetape=`expr ${numetape} + 1 `
   if [ "${vrai}" -eq "0" ]; then
@@ -105,6 +108,8 @@ numetape=`expr ${numetape} + 1 `
     exit 0
   fi
 }
+#################################################
+# 
 
 #Fonction de question sur le choix du réseau à utiliser en CNI
 #
@@ -118,20 +123,22 @@ done
 vrai="0"
 nom="Choix du addon réseau: ${Reseau} "
 }
+#################################################
+# 
 
 #Fonction de contrôle du SELinux
 #
 SELinux(){
 setenforce 0 && \
 sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
-vrai="0"
-nom="Configuration du SElinux à : permissive "
 }
+#################################################
+# 
 
 #Fonction d'installation du repo pour Kubernetes
 #
 repok8s() {
-cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
 baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
@@ -140,14 +147,13 @@ gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF && \
-vrai="0"
-nom="Configuration du repository dnf pour kubernetes"
 }
+#################################################
+# 
 
 # Fonction d'installation de containerd en derniere version stable
 #
 containerd(){
-vrai="1"
 wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
 tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz && \
 mkdir -p /usr/local/lib/systemd/system/
@@ -200,15 +206,13 @@ install -m  755 runc.amd64  /usr/local/bin/runc && \
 wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
 mkdir -p /opt/cni/bin && \
 tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
-nom="Déploiement de containerd, RUNC et CNI plugin sur le noeud"
-vrai="0"
-verif
 }
+#################################################
+# 
 
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
 named(){
-vrai="1"
 cat <<EOF > /var/named/rndc.conf
 # Start of rndc.conf
 key "rndc-key" {
@@ -301,14 +305,13 @@ chown -R named:dhcpd /var/named/ && \
 chmod 660 /var/named/mon.dom.db && \
 chmod 660 /var/named/172.21.0.db && \
 chmod -R 770 /var/named/dynamic && \
-vrai="0"
-nom="Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf"
 }
+#################################################
+# 
 
 # Fonction de configuration de la zone direct mon.dom
 #
 namedMonDom(){
-vrai="1"
 cat <<EOF > /var/named/mon.dom.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
@@ -326,14 +329,13 @@ w3          CNAME   worker1-k8s.mon.dom.
 w4          CNAME   worker2-k8s.mon.dom.
 
 EOF && \
-vrai="0"
-nom="Configuration du fichier de zone mondom.db"
 }
+#################################################
+# 
 
 # Fonction de configuration de la zone reverse named
 #
 namedRevers(){
-vrai="1"
 cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
 \$TTL 300
 @       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
@@ -345,9 +347,9 @@ cat <<EOF > /var/named/0.21.172.in-addr.arpa.db
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
 EOF && \
-vrai="0"
-nom="Configuration du fichier de zone 0.21.172.in-addr.arpa.db"
 }
+#################################################
+# 
 
 # Fonction de configuration des parametres communs du dhcp
 #
@@ -384,24 +386,18 @@ subnet 172.21.0.0 netmask 255.255.255.0 {
   ddns-rev-domainname "in-addr.arpa.";
 }
 EOF && \
-vrai="0"
-nom="Installation et configuration de dhcp sur master"
 }
 
 # Fonction  de configuration du swap à off
 #
 Swap(){
-vrai="1"
 swapoff   -a && \
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab && \
-vrai="0"
-nom="Désactivation du Swap"
 }
 
 # Fonction de configuration du module bridge
 #
 moduleBr(){
-vrai="1"
 modprobe  br_netfilter && \
 cat <<EOF > /etc/rc.modules
 modprobe  br_netfilter
@@ -415,18 +411,13 @@ net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
 net.ipv4.ip_forward=1
 EOF && \
-vrai="0"
-nom="Configuration du module br_netfilter et routage IP"
 }
 
 # Fonction de serveur de temps
 #
 temps(){
-vrai="1"
 timedatectl set-timezone "Europe/Paris" && \
 timedatectl set-ntp true && \
-vrai="0"
-nom="Configuration du serveur de temps"
 }
 
 # Fonction de création des clés pour ssh-copy-id
@@ -435,18 +426,13 @@ CopyIdRoot(){
 #
 #ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom && \
-vrai="0"
-nom="Copie des clés RSA sur root@master1-k8s.mon.dom"
 }
 
 CopyIdLB(){
 #
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom && \
-vrai="0"
-nom="Copie des clés RSA sur root@loadBalancer-k8s.mon.dom"
 }
-
 
 # Fonction de récupération du token et sha256 de cacert
 #
@@ -465,10 +451,30 @@ export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " "
 export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1) && \
 export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
 export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
-vrai="0"
-nom="Récupération du token et sha256 de cacert "
 }
-
+#################################################
+# 
+# Démarrage du service kubelet
+#
+#
+StartServiceKubelet (){
+mkdir -p /var/lib/kubelet/ && \
+cat <<EOF > /var/lib/kubelet/config.yaml
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cgroupDriver: systemd
+EOF && \
+mkdir -p /etc/kubernetes/ && \
+cat << EOF > /var/lib/kubelet/proxy.yaml
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "iptables" # ou "ipvs" selon votre choix
+#featureGates:
+#  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
+EOF && \
+systemctl daemon-reload && \
+systemctl enable --now kubelet && \
+}
 ###################################################################################################
 #                                                                                                 #
 #                             Debut de la séquence d'Installation                                 #
@@ -489,16 +495,15 @@ do
 echo -n 'Indiquez si cette machine doit être "loadBalancer ou master" ou "worker", mettre en toutes lettres votre réponse: '
 read noeud
 done
+vrai="1"
 if [ "${noeud}" = "worker" ]
 then
-vrai="1"
 x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 systemctl restart NetworkManager
 export node="worker"
 elif [ ${noeud} = "master" ]
 then
-vrai="1"
 x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 systemctl restart NetworkManager
@@ -511,13 +516,12 @@ export node="master"
 	fi
 elif [ ${noeud} = "loadBalancer" ]
 then
-vrai="1"
 hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
 export node="loadBalancer"
+fi && \
 vrai="0"
-nom="Etape ${numetape} - Construction du nom d hote"
+nom="Etape ${numetape} - Construction du nom d hote à ${noeud}${x}-k8s.mon.dom"
 verif
-fi
 
 #################################################
 # 
@@ -538,12 +542,9 @@ verif
 #
 #
 vrai="1"
-f="/etc/hosts"
-cat <<EOF > ${f}
+cat <<EOF > /etc/hosts
 127.0.0.1 localhost
 EOF
-if [ -f "${f}" ]
-then
 vrai="0"
 fi
 nom="Etape ${numetape} - Contruction du fichier hosts"
@@ -584,7 +585,7 @@ verif
 
 #################################################
 # 
-# Configuration du LB HAProxy
+# Configuration et demarrage du LB HAProxy
 #
 #
 vrai="1"
@@ -644,7 +645,7 @@ backend kubernetes-backend
 #    server noeud1 master1-k8s.mon.dom:6443 check fall 3 rise 2
 #    server noeud2 master2-k8s.mon.dom:6443 check fall 3 rise 2
 #    server noeud3 master3-k8s.mon.dom:6443 check fall 3 rise 2
-EOF
+EOF && \
 setsebool -P haproxy_connect_any on && \
 systemctl enable --now haproxy && \
 vrai="0"
@@ -680,7 +681,7 @@ vrai="1"
 dhcp && \
 sed -i 's/.pid/& 'enp0s8'/' /usr/lib/systemd/system/dhcpd.service && \
 vrai="0"
-nom="Etape ${numetape} - Configuration du service dhcp"
+nom="Installation et configuration du service DHCP sur loadBalancer-k8s.mon.dom"
 verif
 ################################################
 #
@@ -701,16 +702,18 @@ fi
 #                                                                                          #
 ############################################################################################
 
-# installation des paramètres sur les noeuds du cluster.
+# installation des paramètres sur les noeuds master du cluster.
 #
 #
 if [ "${node}" = "master" ]
 then
 #  echange des clés ssh avec le LB
+vrai="1"
 CopyIdLB
+vrai="0"
+nom="Etape ${numetape} - Configuration du Swap à off"
+verif
 # 
-#################################################
-ChoixReseau
 #################################################
 # 
 # Suppression du swap
@@ -746,11 +749,11 @@ verif
 # Configuration SELinux à permissive.
 #
 #
-vrai="1"
-SELinux && \
-vrai="0"
-nom="Etape ${numetape} - Configuration SELinux à permissive"
-verif
+#vrai="1"
+#SELinux && \
+#vrai="0"
+#nom="Etape ${numetape} - Configuration du SElinux à : permissive "
+#verif
 #################################################
 # 
 # Configuration du temps.
@@ -775,34 +778,20 @@ verif
 # installation de containerd
 #
 #
-vrai="1"
-containerd && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
+#vrai="1"
+#containerd && \
+#vrai="0"
+#nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
+#verif
 #################################################
 # 
 # Démarrage du service kubelet
 #
 #
 vrai="1"
-mkdir -p /var/lib/kubelet/ && \
-cat <<EOF > /var/lib/kubelet/config.yaml
-apiVersion: kubelet.config.k8s.io/v1beta1
-kind: KubeletConfiguration
-cgroupDriver: systemd
-EOF
-mkdir -p /etc/kubernetes/ && \
-cat << EOF > /var/lib/kubelet/proxy.yaml
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-kind: KubeProxyConfiguration
-mode: "iptables" # ou "ipvs" selon votre choix
-#featureGates:
-#  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
-EOF
-systemctl daemon-reload && \
-systemctl enable --now kubelet && \
+StartServiceKubelet && \
 vrai="0"
-nom="Etape ${numetape} - Démarrage du service kubelet"
+nom="Etape ${numetape} - Démarrage du service kubelet avec support IPTables"
 verif
 
 #################################################
@@ -813,15 +802,18 @@ verif
 vrai="1"
 if [ "$first" = "yes" ]
 then
-ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg'
-ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
+ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg' && \
+ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service && \
 if [ $Reseau == "calico" ]
 then
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours avec Calico en CNI "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt' && \
+su -lc 'kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt' && \
 #################################################
+vrai="0"
+nom="Etape ${numetape} - Cluster Kubernetes correctement initialisé"
+verif
 # 
 # permettre à root de temporairement gérer le cluster kubernetes
 #
@@ -833,22 +825,25 @@ nom="Etape ${numetape} - Export de la variable KUBECONFIG"
 verif
 #################################################
 # 
-# Construire le réseau flannel pour k8s
+# Construire le réseau calico pour k8s
 #
 #
 vrai="1"
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml
 vrai="0"
-nom="Etape ${numetape} - Deploiement Calico v${VersionCalico}"
+nom="Etape ${numetape} - Deploiement Calico v${VersionCalico} en CNI sur le cluster"
 verif
 elif [ $Reseau == "flannel" ]
 then
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement Kubernetes en cours avec Flannel en CNI "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-su -lc 'kubeadm init --control-plane-endpoint="`host loadBalancer-k8s.mon.dom | cut -f 4 -d " "`:6443" --upload-certs  --pod-network-cidr="10.244.0.0/16" &> /root/noeudsupplementaires.txt' && \
+su -lc 'kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="10.244.0.0/16" &> /root/noeudsupplementaires.txt' && \
 #################################################
+vrai="0"
+nom="Etape ${numetape} - Cluster Kubernetes correctement initialisé"
+verif
 # 
 # permettre à root de temporairement gérer le cluster kubernetes
 #
@@ -864,11 +859,7 @@ verif
 #
 #
 vrai="1"
-sysctl -w net.bridge.bridge-nf-call-iptables=1
-cat <<EOF >> /etc/sysctl.conf
-net.bridge.bridge-nf-call-iptables=1
-EOF
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml && \
 vrai="0"
 nom="Etape ${numetape} - Deploiement Flannel v${VersionFlannel}"
 verif
@@ -880,8 +871,13 @@ fi
 #
 #
 vrai="1"
+if [ "stagiaire" == "`grep stagiaire /etc/passwd | cut -f 1 -d ":"`" ]
+then
+mkdir  -p   /home/stagiaire/.kube
+else
 useradd -m stagiaire
-mkdir  -p   /home/stagiaire/.kube && \
+mkdir  -p   /home/stagiaire/.kube
+fi && \
 cp  -i   /etc/kubernetes/admin.conf  /home/stagiaire/.kube/config && \
 chown  -R  stagiaire:stagiaire   /home/stagiaire/.kube && \
 vrai="0"
@@ -895,7 +891,7 @@ verif
 vrai="1"
 cat <<EOF >> /home/stagiaire/.bashrc
 source <(kubectl completion bash)
-EOF
+EOF && \
 vrai="0"
 nom="Etape ${numetape} - Installation et configuration de stagiaire avec bash-completion"
 verif
@@ -933,6 +929,7 @@ verif
 # 
 # Intégration d'un noeud master au cluster
 #
+vrai="1"
 if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" ]
 then 
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud2|    server noeud2|g" /etc/haproxy/haproxy.cfg'
@@ -941,15 +938,33 @@ elif [ "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
 then 
 ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud3|    server noeud3|g" /etc/haproxy/haproxy.cfg'
 ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service
-fi
+fi && 
+vrai="0"
+nom="Etape ${numetape} - Intégration du noeud ${noeud}${x}-k8s.mon.dom à la conf du LoadBalancer"
+verif
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau master en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+vrai="1"
+if [ -f `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
+then
 scp root@master1-k8s.mon.dom:mesimages.tar  ./
-ctr --namespace k8s.io images import mesimages.tar
+else
+ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export ~/mesimages.tar $(ctr --namespace k8s.io images list -q)
+scp root@master1-k8s.mon.dom:mesimages.tar  ./
+fi && \
+vrai="0"
+nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
+verif
+vrai="1"
+ctr --namespace k8s.io images import mesimages.tar && \
+vrai="0"
+nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
+verif
+vrai="1"
 su -lc 'kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}'  && \
 vrai="0"
-nom="Etape ${numetape} - Intégration du noeud  au cluster K8S"
+nom="Etape ${numetape} - Intégration du noeud ${noeud}${x}-k8s.mon.dom au cluster K8S"
 verif
 fi
 
@@ -966,22 +981,11 @@ then
 # Echange des clés ssh avec master1-k8s.mon.dom
 #
 vrai="1"
-ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
-CopyIdRoot
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
+CopyIdRoot && \
 vrai="0"
 nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 verif
-#################################################
-#
-#    creation de l'archive des images dans master 1
-#
-vrai="1"
-ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export ~/mesimages.tar $(ctr --namespace k8s.io images list -q) && \
-vrai="0"
-nom="Etape ${numetape} - Création de l'archive des images sur root@master1-k8s.mon.dom dans le fichier mesimages.tar"
-verif
-
-
 #################################################
 # 
 # Suppression du swap
@@ -992,7 +996,16 @@ Swap && \
 vrai="0"
 nom="Etape ${numetape} - Configuration du Swap à off"
 verif
-
+#################################################
+# 
+# Configuration SELinux à permissive.
+#
+#
+#vrai="1"
+#SELinux && \
+#vrai="0"
+#nom="Etape ${numetape} - Configuration du SElinux à : permissive "
+#verif
 #################################################
 # 
 # Installation du repo de Kubernetes
@@ -1003,7 +1016,6 @@ repok8s && \
 vrai="0"
 nom="Etape ${numetape} - Installation du repo de Kubernetes"
 verif
-
 #################################################
 # 
 # Installation des outils
@@ -1039,24 +1051,18 @@ verif
 # installation de containerd
 #
 #
-vrai="1"
-containerd && \
-vrai="0"
-nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
+#vrai="1"
+#containerd && \
+#vrai="0"
+#nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
+#verif
 #################################################
 # 
 # Démarrage du service kubelet
 #
 #
 vrai="1"
-mkdir -p /var/lib/kubelet/ && \
-cat <<EOF > /var/lib/kubelet/config.yaml
-apiVersion: kubelet.config.k8s.io/v1beta1
-kind: KubeletConfiguration
-cgroupDriver: systemd
-EOF
-systemctl daemon-reload && \
-systemctl enable --now kubelet && \
+StartServiceKubelet && \
 vrai="0"
 nom="Etape ${numetape} - Demarrage du service kubelet sur le worker"
 verif
@@ -1065,7 +1071,7 @@ verif
 # Recuperation du token sur le master pour l'intégration au cluster
 #
 vrai="1"
-RecupToken
+RecupToken && \
 vrai="0"
 nom="Etape ${numetape} - Recuperation du token sur le master pour l'intégration au cluster"
 verif
@@ -1078,11 +1084,23 @@ vrai="1"
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 echo "      Déploiement d'un nouveau worker en cours "
 echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-
+vrai="1"
+if [ -f `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
+then
 scp root@master1-k8s.mon.dom:mesimages.tar  ./
-ctr --namespace k8s.io images import mesimages.tar
-
-su -lc 'kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker}' && \
+else
+ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export ~/mesimages.tar $(ctr --namespace k8s.io images list -q)
+fi && \
+vrai="0"
+nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
+verif
+vrai="1"
+ctr --namespace k8s.io images import mesimages.tar && \
+vrai="0"
+nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
+verif
+vrai="1"
+kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
 vrai="0"
 nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 verif
