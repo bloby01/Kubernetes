@@ -807,7 +807,8 @@ then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Calico en CNI "
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" &> /root/noeudsupplementaires.txt && \
+			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" --v=9 
+   #&> /root/noeudsupplementaires.txt && \
 			#################################################
 			vrai="0"
 			nom="Etape ${numetape} - Cluster Kubernetes correctement initialisé"
