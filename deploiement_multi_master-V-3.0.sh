@@ -205,7 +205,7 @@ wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/ru
 install -m  755 runc.amd64  /usr/local/bin/runc && \
 wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
 mkdir -p /opt/cni/bin && \
-tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
+tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 }
 #################################################
 # 
@@ -391,7 +391,7 @@ EOF
 #
 Swap(){
 swapoff   -a && \
-sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab && \
+sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 }
 ######################################################################
 # Fonction de configuration du module bridge
@@ -416,19 +416,19 @@ EOF
 #
 temps(){
 timedatectl set-timezone "Europe/Paris" && \
-timedatectl set-ntp true && \
+timedatectl set-ntp true
 }
 #######################################################################
 # Fonction de création des clés pour ssh-copy-id
 #
 CopyIdRoot(){
 #ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom && \
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
 #######################################################################
 CopyIdLB(){
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom && \
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom
 }
 #######################################################################
 # Fonction de récupération du token et sha256 de cacert
@@ -447,7 +447,7 @@ export KUBECONFIG=~/.kube/config && \
 export token=$(grep token ~/noeudsupplementaires.txt | head -1 | cut -f 4 -d " ") && \
 export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1) && \
 export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
-export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
+export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 }
 #################################################
 # 
@@ -470,7 +470,7 @@ mode: "iptables" # ou "ipvs" selon votre choix
 #  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
 EOF
 systemctl daemon-reload && \
-systemctl enable --now kubelet && \
+systemctl enable --now kubelet
 }
 #####################################################################
 # configuration du service haproxy
