@@ -594,13 +594,13 @@ verif
 # et déclaration du résolveur DNS client
 #
 #
-vrai="1"
-cat <<EOF > /etc/hosts
-127.0.0.1 localhost
-EOF
-vrai="0"
-nom="Etape ${numetape} - Contruction du fichier hosts"
-verif
+#vrai="1"
+#cat <<EOF > /etc/hosts
+#127.0.0.1 localhost
+#EOF
+#vrai="0"
+#nom="Etape ${numetape} - Contruction du fichier hosts"
+#verif
 ############################################################################################
 #                                                                                          #
 #                       Déploiement du LB  HAProxy                                         #
