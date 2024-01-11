@@ -454,14 +454,14 @@ apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
 cgroupDriver: systemd
 EOF
-#mkdir -p /etc/kubernetes/ && \
-#cat <<EOF | tee /var/lib/kubelet/proxy.yaml
-#apiVersion: kubeproxy.config.k8s.io/v1alpha1
-#kind: KubeProxyConfiguration
-#mode: "iptables" # ou "ipvs" selon votre choix
+mkdir -p /etc/kubernetes/ && \
+cat <<EOF | tee /var/lib/kubelet/proxy.yaml
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+mode: "iptables" # ou "ipvs" selon votre choix
 #featureGates:
 #  SupportIPVSProxyMode: true # Si vous utilisez le mode "ipvs"
-#EOF
+EOF
 systemctl daemon-reload && \
 systemctl enable --now kubelet
 }
@@ -582,11 +582,13 @@ verif
 #
 #
 vrai="1"
-firewall-cmd  --set-default-zone trusted && \
-firewall-cmd --add-interface=lo --zone=trusted --permanent && \
-firewall-cmd --reload && \
+#firewall-cmd  --set-default-zone trusted && \
+#firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+#firewall-cmd --reload && \
+systemctl disable --now firewalld
 vrai="0"
-nom="Etape ${numetape} - Regles de firewall à trusted"
+#nom="Etape ${numetape} - Regles de firewall à trusted"
+nom="Etape ${numetape} - FirewallD arreter"
 verif
 #################################################
 #
