@@ -86,7 +86,7 @@ export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-pytho
 #NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
 export VersionContainerD="1.7.7"
 export VersionRunC="1.1.9"
-export VersionCNI="1.1.2"
+export VersionCNI="1.4.0"
 export VersionCalico="3.27.0"
 export Version_k8s="v1.29"
 #                                                                               	  #
@@ -204,11 +204,9 @@ systemctl daemon-reload && \
 systemctl enable --now containerd && \
 wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
 install -m  755 runc.amd64  /usr/local/bin/runc && \
-#wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
-wget https://github.com/containernetworking/cni/archive/refs/tags/v${VersionCNI}.tar.gz && \
+wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
 mkdir -p /opt/cni/bin && \
-#tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
-tar Cxzf /opt/cni/bin/ v${VersionCNI}.tar.gz
+tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 }
 #################################################
 # 
