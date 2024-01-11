@@ -9,10 +9,11 @@ set -e
 #   Version script: 3.0
 #   Deploiement sur Rocky Linux 9 minimum
 #   Version kubelet: 1.28 +
-#   Version Containerd	: 1.7.7
-#   Version RunC 	: 1.1.9
-#   Version CNI-Plugin	: 1.3.0
+#   Version Containerd	: 1.7.11
+#   Version RunC 	: 1.1.11
+#   Version CNI-Plugin	: 1.4.0
 #   Version calico	: 3.27
+#   Version Kubelet	: 1.29
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
@@ -81,11 +82,8 @@ export NBR=0
 export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-#printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
-#printf -v IpCluster '%s,' 172.21.0.{0..255}
-#NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
-export VersionContainerD="1.7.7"
-export VersionRunC="1.1.9"
+export VersionContainerD="1.7.11"
+export VersionRunC="1.1.11"
 export VersionCNI="1.4.0"
 export VersionCalico="3.27.0"
 export Version_k8s="v1.29"
