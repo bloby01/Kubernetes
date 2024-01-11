@@ -129,7 +129,8 @@ ChoixReseau(){
 #
 SELinux(){
 	setenforce 0 && \
-	sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+	sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
+	grubby --update-kernel ALL --args selinux=0
 }
 #################################################
 # 
@@ -750,7 +751,7 @@ then
 	vrai="1"
 	SELinux && \
 	vrai="0"
-	nom="Etape ${numetape} - Configuration du SElinux à : permissive "
+	nom="Etape ${numetape} - Configuration du SElinux à : disabled "
 	verif
 	#################################################
 	# 
@@ -808,7 +809,7 @@ then
 			echo "      Déploiement Kubernetes en cours avec Calico en CNI "
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
    			kubeadm config images pull
-			kubeadm init --control-plane-endpoint 172.21.0.101:6443 --upload-certs  --pod-network-cidr 192.168.0.0/16 --apiserver-bind-port 6443 --v 7
+			kubeadm init --control-plane-endpoint 172.21.0.100:6443 --upload-certs  --pod-network-cidr 192.168.0.0/16 --apiserver-bind-port 6443 --v 6
    #&> /root/noeudsupplementaires.txt && \
 			#################################################
 			vrai="0"
@@ -1000,7 +1001,7 @@ then
 	vrai="1"
 	SELinux && \
 	vrai="0"
-	nom="Etape ${numetape} - Configuration du SElinux à : permissive "
+	nom="Etape ${numetape} - Configuration du SElinux à : disabled "
 	verif
 	#################################################
 	# 
