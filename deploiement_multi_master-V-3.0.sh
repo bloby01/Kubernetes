@@ -8,7 +8,7 @@
 set -e
 #   Version script: 3.0
 #   Deploiement sur Rocky Linux 9 minimum
-#   Version kubelet: 1.28 +
+#   Version kubelet: 1.29 +
 #   Version Containerd	: 1.7.11
 #   Version RunC 	: 1.1.11
 #   Version CNI-Plugin	: 1.4.0
