@@ -841,7 +841,7 @@ then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Flannel en CNI "
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-			kubeadm init --control-plane-endpoint 172.21.0.100:6443 --upload-certs  --pod-network-cidr 10.244.0.0/16  --apiserver-bind-port 6443 --v 7
+			kubeadm init --control-plane-endpoint 172.21.0.100:6443 --upload-certs  --pod-network-cidr 10.244.0.0/16  --apiserver-bind-port 6443 --v 6
    			# &> /root/noeudsupplementaires.txt && \
 			#################################################
 			vrai="0"
