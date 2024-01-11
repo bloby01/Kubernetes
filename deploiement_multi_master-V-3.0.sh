@@ -806,7 +806,7 @@ then
 			echo "      Déploiement Kubernetes en cours avec Calico en CNI "
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
    			kubeadm config images pull
-			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" --apiserver-bind-port="6443"
+			kubeadm init --control-plane-endpoint 172.21.0.100:6443 --upload-certs  --pod-network-cidr 192.168.0.0/16 --apiserver-bind-port 6443 --v 7
    #&> /root/noeudsupplementaires.txt && \
 			#################################################
 			vrai="0"
@@ -827,6 +827,7 @@ then
 			#
 			#
 			vrai="1"
+   			#export VersionCalico="3.27.0"
 			kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
 			kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml
 			vrai="0"
@@ -837,7 +838,8 @@ then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Flannel en CNI "
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="10.244.0.0/16" &> /root/noeudsupplementaires.txt && \
+			kubeadm init --control-plane-endpoint 172.21.0.100:6443 --upload-certs  --pod-network-cidr 10.244.0.0/16  --apiserver-bind-port 6443 --v 7
+   			# &> /root/noeudsupplementaires.txt && \
 			#################################################
 			vrai="0"
 			nom="Etape ${numetape} - Cluster Kubernetes correctement initialisé"
