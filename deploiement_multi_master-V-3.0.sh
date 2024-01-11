@@ -88,7 +88,7 @@ export VersionContainerD="1.7.7"
 export VersionRunC="1.1.9"
 export VersionCNI="1.3.0"
 export VersionCalico="3.27.0"
-export Version_k8s="v1.28"
+export Version_k8s="v1.29"
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
