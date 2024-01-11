@@ -807,7 +807,7 @@ then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Calico en CNI "
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" --v=5 
+			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" --apiserver-bind-port="6443" --v=5 
    #&> /root/noeudsupplementaires.txt && \
 			#################################################
 			vrai="0"
