@@ -81,12 +81,12 @@ export NBR=0
 export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
-printf -v IpCluster '%s,' 172.21.0.{0..255}
+#printf -v IpCalico '%s,' 192.168.{0..31}.{0..255}
+#printf -v IpCluster '%s,' 172.21.0.{0..255}
 #NoProxyAdd=".cluster.local,${IpCalico}.mon.dom,${IpCluster}localhost,127.0.0.1"
 export VersionContainerD="1.7.7"
 export VersionRunC="1.1.9"
-export VersionCNI="1.3.0"
+export VersionCNI="1.1.2"
 export VersionCalico="3.27.0"
 export Version_k8s="v1.29"
 #                                                                               	  #
@@ -204,9 +204,11 @@ systemctl daemon-reload && \
 systemctl enable --now containerd && \
 wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
 install -m  755 runc.amd64  /usr/local/bin/runc && \
-wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
+#wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
+wget https://github.com/containernetworking/cni/archive/refs/tags/v${VersionCNI}.tar.gz && \
 mkdir -p /opt/cni/bin && \
-tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
+#tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
+tar Cxzf /opt/cni/bin/ v${VersionCNI}.tar.gz
 }
 #################################################
 # 
