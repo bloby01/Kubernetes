@@ -129,10 +129,10 @@ ChoixReseau(){
 
 #Fonction de contrôle du SELinux
 #
-#SELinux(){
-#	setenforce 0 && \
-#	sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
-#}
+SELinux(){
+	setenforce 0 && \
+	sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config && \
+}
 #################################################
 # 
 
@@ -747,11 +747,11 @@ then
 	# Configuration SELinux à permissive.
 	#
 	#
-	#vrai="1"
-	#SELinux && \
-	#vrai="0"
-	#nom="Etape ${numetape} - Configuration du SElinux à : permissive "
-	#verif
+	vrai="1"
+	SELinux && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration du SElinux à : permissive "
+	verif
 	#################################################
 	# 
 	# Configuration du temps.
@@ -807,7 +807,7 @@ then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 			echo "      Déploiement Kubernetes en cours avec Calico en CNI "
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" --apiserver-bind-port="6443" --v=5 
+			kubeadm init --control-plane-endpoint="172.21.0.100:6443" --upload-certs  --pod-network-cidr="192.168.0.0/16" --apiserver-bind-port="6443" 
    #&> /root/noeudsupplementaires.txt && \
 			#################################################
 			vrai="0"
@@ -994,11 +994,11 @@ then
 	# Configuration SELinux à permissive.
 	#
 	#
-	#vrai="1"
-	#SELinux && \
-	#vrai="0"
-	#nom="Etape ${numetape} - Configuration du SElinux à : permissive "
-	#verif
+	vrai="1"
+	SELinux && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration du SElinux à : permissive "
+	verif
 	#################################################
 	# 
 	# Installation du repo de Kubernetes
