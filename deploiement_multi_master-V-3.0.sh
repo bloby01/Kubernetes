@@ -958,8 +958,10 @@ then
 		vrai="1"
 		if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
 		then
+  			echo "Copie de l'archive des Images à partir de master1-k8s.mon.dom"
 			scp root@master1-k8s.mon.dom:mesimages.tar  ./
 		else
+   			echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
 			ssh root@master1-k8s.mon.dom 'ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)'
 			scp root@master1-k8s.mon.dom:mesimages.tar  ./
 		fi && \
@@ -1097,8 +1099,10 @@ then
 	vrai="1"
 	if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
 	then
+ 		echo "Copie de l'archive des Images à partir de master1-k8s.mon.dom"
 		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	else
+ 		echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
 		ssh root@master1-k8s.mon.dom 'ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)'
   		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	fi && \
