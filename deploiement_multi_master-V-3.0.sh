@@ -7,7 +7,7 @@
 #!/bin/sh
 set -e
 #   Version script: 3.0
-#   Deploiement sur Rocky Linux 9 minimum
+#   Deploiement sur Rocky Linux 8
 #   Version kubelet: 1.29 +
 #   Version Containerd	: 1.7.11
 #   Version RunC 	: 1.1.11
@@ -54,15 +54,15 @@ set -e
 #                                                                               #
 #################################################################################
 #                                                                               #
-# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 9.0 & +  #
+# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 8        #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
 # - Le script requière :		        				#
 #	*  L'outil vitualbox (le cluster fonctionne dans un réseau privé)       #
-#	*  Le loadBalancer à deux interface réseaux :			        #
+#	*  Le loadBalancer à deux interfaces réseaux :			        #
 #		- La première en bridge/dhcp				        #
 #       	- La seconde dans le réseau privé est attendu à 172.21.0.100/24 #
 #   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
-# - Le réseau overlay est gérer par VxLAN à l'aide de Calico                     #
+# - Le réseau overlay est gérer par VxLAN à l'aide de Calico                    #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
 # - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
