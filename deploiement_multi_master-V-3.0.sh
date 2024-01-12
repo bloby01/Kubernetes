@@ -154,8 +154,13 @@ EOF
 # Fonction d'installation de containerd en derniere version stable
 #
 containerd(){
-wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
-tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz && \
+if [ -f containerd-${VersionContainerD}-linux-amd64.tar.gz ]
+then
+	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
+else
+	wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
+	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
+fi
 mkdir -p /usr/local/lib/systemd/system/
 cat <<EOF | tee /usr/local/lib/systemd/system/containerd.service
 # Copyright The containerd Authors.
@@ -201,11 +206,22 @@ WantedBy=multi-user.target
 EOF
 systemctl daemon-reload && \
 systemctl enable --now containerd && \
-wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
-install -m  755 runc.amd64  /usr/local/bin/runc && \
+if [ -f runc.amd64 ]
+then
+	install -m  755 runc.amd64  /usr/local/bin/runc
+else
+	wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
+	install -m  755 runc.amd64  /usr/local/bin/runc
+fi
+if [ -f cni-plugins-linux-amd64-v${VersionCNI}.tgz ]
+then
+mkdir -p /opt/cni/bin && \
+tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
+else
 wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
 mkdir -p /opt/cni/bin && \
 tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
+fi
 }
 #################################################
 # 
@@ -411,6 +427,12 @@ EOF
 temps(){
 timedatectl set-timezone "Europe/Paris" && \
 timedatectl set-ntp true
+}
+#######################################################################
+# Fonction de création des clés pour ssh-copy-id
+#
+CopyIdRootSrvSupp(){
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
 #######################################################################
 # Fonction de création des clés pour ssh-copy-id
@@ -719,7 +741,7 @@ then
 	vrai="1"
 	CopyIdLB
 	vrai="0"
-	nom="Etape ${numetape} - Configuration du Swap à off"
+	nom="Etape ${numetape} - echange des clés ssh avec le LB "
 	verif
 	if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
 	then 
@@ -728,7 +750,7 @@ then
 		# Echange de clés ssh avec master1-k8s.mon.dom
 		#
 		vrai="1"
-		CopyIdRoot && \
+		CopyIdRootSrvSupp && \
 		vrai="0"
 		nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 		verif
