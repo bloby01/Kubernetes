@@ -721,7 +721,19 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Configuration du Swap à off"
 	verif
-	# 
+	if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
+	then 
+		#################################################
+		# 
+		# Echange de clés ssh avec master1-k8s.mon.dom
+		#
+		vrai="1"
+		CopyIdRoot && \
+		vrai="0"
+		nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
+		verif
+	fi
+ 	# 
 	#################################################
 	# 
 	# Suppression du swap
@@ -890,21 +902,9 @@ then
 		# choix du noeud maitre 2 ou 3
 		#
 		#
-		if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
-		then 
-			#################################################
-			# 
-			# Echange de clés ssh avec master1-k8s.mon.dom
-			#
-			vrai="1"
-			CopyIdRoot && \
-			vrai="0"
-			nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
-			verif
-		fi
 	elif [ "$first" = "no" ]
 	then
-		#################################################
+ 		#################################################
 		# 
 		# Récupération du token sur master1-k8s.mon.dom
 		#
