@@ -6,14 +6,15 @@
 #
 #!/bin/sh
 set -e
-#   Version script: 3.0
-#   Deploiement sur Rocky Linux 8
-#   Version kubelet: 1.29 +
-#   Version Containerd	: 1.7.11
-#   Version RunC 	: 1.1.11
-#   Version CNI-Plugin	: 1.4.0
-#   Version calico	: 3.27
-#   Version Kubelet	: 1.29
+#   Version script		: 3.0
+#   Deploiement sur Rocky Linux : 8
+#   Version kubelet		: 1.29 +
+#   Version Containerd		: 1.7.11
+#   Version RunC 		: 1.1.11
+#   Version CNI-Plugin		: 1.4.0
+#   Version calico		: 3.27
+#   Version minimal Kubelet	: 1.29
+#
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
 #   By christophe.merle@gmail.com
 #
@@ -396,6 +397,8 @@ subnet 172.21.0.0 netmask 255.255.255.0 {
 }
 EOF
 }
+#################################################
+# 
 
 # Fonction  de configuration du swap à off
 #
@@ -404,6 +407,8 @@ swapoff   -a && \
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 }
 ######################################################################
+#
+
 # Fonction de configuration du module bridge
 #
 moduleBr(){
@@ -422,6 +427,8 @@ net.ipv4.ip_forward=1
 EOF
 }
 #######################################################################
+#
+
 # Fonction de serveur de temps
 #
 temps(){
@@ -429,12 +436,16 @@ timedatectl set-timezone "Europe/Paris" && \
 timedatectl set-ntp true
 }
 #######################################################################
+#
+
 # Fonction de création des clés pour ssh-copy-id
 #
 CopyIdRootSrvSupp(){
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
 #######################################################################
+#
+
 # Fonction de création des clés pour ssh-copy-id
 #
 CopyIdRoot(){
@@ -442,11 +453,17 @@ ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
 #######################################################################
+#
+
+# Fonction de création des clés pour ssh-copy-id
+#
 CopyIdLB(){
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom
 }
 #######################################################################
+#
+
 # Fonction de récupération du token et sha256 de cacert
 #
 RecupToken(){
@@ -467,8 +484,8 @@ export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | o
 }
 #################################################
 # 
+
 # Démarrage du service kubelet
-#
 #
 StartServiceKubelet(){
 mkdir -p /var/lib/kubelet/ && \
@@ -489,7 +506,10 @@ systemctl daemon-reload && \
 systemctl enable --now kubelet
 }
 #####################################################################
+#
+
 # configuration du service haproxy
+#
 ConfHaProxy(){
 cat <<EOF | tee /etc/haproxy/haproxy.cfg
 global
@@ -549,17 +569,21 @@ backend kubernetes-backend
 #    server noeud3 master3-k8s.mon.dom:6443 check fall 3 rise 2
 EOF
 }
-
 #################################################
 # 
+
 # Ouverture du passage des flux IN sur les interfaces réseaux
-#
 #
 parefeuLB(){
 firewall-cmd  --set-default-zone trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 firewall-cmd --reload
 }
+#################################################
+# 
+
+# Ouverture du passage des flux IN sur les interfaces réseaux
+#
 parefeuNoeuds(){
 systemctl disable --now firewalld
 }
@@ -590,17 +614,26 @@ then
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 	systemctl restart NetworkManager
 	export node="worker"
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] :
+  	read vk8s
+   	export Version_k8s="$vk8s"
 elif [ ${noeud} = "master" ]
 then
 	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer (1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 ): " ; read x ; done
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 	systemctl restart NetworkManager
 	export node="master"
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] :
+  	read vk8s
+   	export Version_k8s="$vk8s"
 		if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
 		then 
 			first="yes"
-   			echo -n "Quel type de réseau CNI voulez-vous déployer ? calico / flannel : "
-      			read Reseau
+			until [ "${Reseau}" == "calico" -o "${Reseau}" == "flannel" ]
+   			do
+      				echo -n "Quel type de réseau CNI voulez-vous déployer ? calico / flannel : "
+      				read Reseau
+	 		done
 		else
 			first="no"
 		fi
