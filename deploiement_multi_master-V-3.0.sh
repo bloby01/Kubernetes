@@ -610,7 +610,7 @@ done
 vrai="1"
 if [ "${noeud}" = "worker" ]
 then
-	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer \(1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 \): " ; read x ; done
+	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 	systemctl restart NetworkManager
 	export node="worker"
@@ -619,7 +619,7 @@ then
    	export Version_k8s="$vk8s"
 elif [ "${noeud}" = "master" ]
 then
-	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer \(1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 \): ' ; read x ; done
+	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : ' ; read x ; done
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 	systemctl restart NetworkManager
 	export node="master"
