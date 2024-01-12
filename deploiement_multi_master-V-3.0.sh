@@ -416,7 +416,7 @@ timedatectl set-ntp true
 # Fonction de création des clés pour ssh-copy-id
 #
 CopyIdRoot(){
-#ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P ""
+ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
 #######################################################################
@@ -527,6 +527,20 @@ backend kubernetes-backend
 #    server noeud3 master3-k8s.mon.dom:6443 check fall 3 rise 2
 EOF
 }
+
+#################################################
+# 
+# Ouverture du passage des flux IN sur les interfaces réseaux
+#
+#
+parefeuLB(){
+firewall-cmd  --set-default-zone trusted && \
+firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+firewall-cmd --reload
+}
+parefeuNoeuds(){
+systemctl disable --now firewalld
+}
 ###################################################################################################
 #                                                                                                 #
 #                             Debut de la séquence d'Installation                                 #
@@ -577,33 +591,6 @@ vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote à ${noeud}${x}-k8s.mon.dom"
 verif
 
-#################################################
-# 
-# Ouverture du passage des flux IN sur les interfaces réseaux
-#
-#
-vrai="1"
-#firewall-cmd  --set-default-zone trusted && \
-#firewall-cmd --add-interface=lo --zone=trusted --permanent && \
-#firewall-cmd --reload && \
-systemctl disable --now firewalld
-vrai="0"
-#nom="Etape ${numetape} - Regles de firewall à trusted"
-nom="Etape ${numetape} - FirewallD arreter"
-verif
-#################################################
-#
-# Construction du fichier de résolution interne hosts.
-# et déclaration du résolveur DNS client
-#
-#
-#vrai="1"
-#cat <<EOF > /etc/hosts
-#127.0.0.1 localhost
-#EOF
-#vrai="0"
-#nom="Etape ${numetape} - Contruction du fichier hosts"
-#verif
 ############################################################################################
 #                                                                                          #
 #                       Déploiement du LB  HAProxy                                         #
@@ -612,6 +599,16 @@ verif
 clear
 if [ "${node}" = "loadBalancer" ]
 then
+	#################################################
+	# 
+	# Ouverture du passage des flux IN sur les interfaces réseaux du LB
+	#
+	vrai=1
+	parefeuLB && \
+	vrai="0"
+	nom="Etape ${numetape} - Regles de firewall à trusted"
+	verif
+
 	################################################ 
 	# installation des applications.
 	#
@@ -706,6 +703,18 @@ fi
 #
 if [ "${node}" = "master" ]
 then
+	#################################################
+	# 
+	# Désactivation du gestionnaire firewalld sur le noeud
+	#
+	vrai=1
+	parefeuNoeuds && \
+	vrai="0"
+	nom="Etape ${numetape} - Désactivation du gestionnaire firewalld sur le noeud "
+	verif
+ 	#
+  	#################################################
+   	#
 	#  echange des clés ssh avec le LB
 	vrai="1"
 	CopyIdLB
@@ -717,7 +726,6 @@ then
 	# 
 	# Suppression du swap
 	#
-	#
 	vrai="1"
 	Swap && \
 	vrai="0"
@@ -726,7 +734,6 @@ then
 	#################################################
 	# 
 	# Installation du repo de Kubernetes
-	#
 	#
 	vrai="1"
 	repok8s && \
@@ -737,7 +744,6 @@ then
 	# 
 	# installation des applications.
 	#
-	#
 	vrai="1"
 	dnf  install -y ${appmaster} && \
 	vrai="0"
@@ -747,7 +753,6 @@ then
 	# 
 	# Configuration SELinux à permissive.
 	#
-	#
 	vrai="1"
 	SELinux && \
 	vrai="0"
@@ -756,7 +761,6 @@ then
 	#################################################
 	# 
 	# Configuration du temps.
-	#
 	#
 	vrai="1"
 	temps && \
@@ -776,7 +780,6 @@ then
 	# 
 	# installation de containerd
 	#
-	#
 	vrai="1"
 	containerd && \
 	vrai="0"
@@ -785,7 +788,6 @@ then
 	#################################################
 	# 
 	# Démarrage du service kubelet
-	#
 	#
 	vrai="1"
 	StartServiceKubelet && \
@@ -796,7 +798,6 @@ then
 	#################################################
 	# 
 	# deployement du master
-	#
 	#
 	vrai="1"
 	if [ "$first" = "yes" ]
@@ -964,6 +965,15 @@ fi
 if [ "${node}" = "worker" ]
 then
 	#################################################
+	# 
+	# Désactivation du gestionnaire firewalld sur le noeud
+	#
+	vrai=1
+	parefeuNoeuds && \
+	vrai="0"
+	nom="Etape ${numetape} - Désactivation du gestionnaire firewalld sur le noeud "
+	verif
+ 	#################################################
 	#
 	# Echange des clés ssh avec master1-k8s.mon.dom
 	#
@@ -977,7 +987,6 @@ then
 	# 
 	# Suppression du swap
 	#
-	#
 	vrai="1"
 	Swap && \
 	vrai="0"
@@ -986,7 +995,6 @@ then
 	#################################################
 	# 
 	# Configuration SELinux à permissive.
-	#
 	#
 	vrai="1"
 	SELinux && \
@@ -997,7 +1005,6 @@ then
 	# 
 	# Installation du repo de Kubernetes
 	#
-	#
 	vrai="1"
 	repok8s && \
 	vrai="0"
@@ -1006,7 +1013,6 @@ then
 	#################################################
 	# 
 	# Installation des outils
-	#
 	#
 	vrai="1"
 	dnf install -y ${appworker} && \
@@ -1017,7 +1023,6 @@ then
 	#
 	# synchronisation de temps
 	#
-	#
 	vrai="1"
 	temps && \
 	vrai="0"
@@ -1026,7 +1031,6 @@ then
 	#################################################
 	# 
 	# Chargement du module noyau de bridge
-	#
 	#
 	vrai="1"
 	moduleBr && \
@@ -1037,7 +1041,6 @@ then
 	# 
 	# installation de containerd
 	#
-	#
 	vrai="1"
 	containerd && \
 	vrai="0"
@@ -1046,7 +1049,6 @@ then
 	#################################################
 	# 
 	# Démarrage du service kubelet
-	#
 	#
 	vrai="1"
 	StartServiceKubelet && \
@@ -1065,7 +1067,6 @@ then
 	#################################################
 	# 
 	# Jonction de l'hôte au cluster
-	#
 	#
 	vrai="1"
 	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
