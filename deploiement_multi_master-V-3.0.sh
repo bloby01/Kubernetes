@@ -933,7 +933,7 @@ then
 		echo "      Déploiement d'un nouveau master en cours "
 		echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 		vrai="1"
-		if [ -f `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
+		if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
 		then
 			scp root@master1-k8s.mon.dom:mesimages.tar  ./
 		else
@@ -1072,7 +1072,7 @@ then
 	echo "      Déploiement d'un nouveau worker en cours "
 	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 	vrai="1"
-	if [ -f `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
+	if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
 	then
 		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	else
