@@ -958,7 +958,6 @@ then
 		vrai="1"
 		if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
 		then
-  			echo "Copie de l'archive des Images à partir de master1-k8s.mon.dom"
 			scp root@master1-k8s.mon.dom:mesimages.tar  ./
 		else
    			echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
@@ -969,6 +968,7 @@ then
 		nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
 		verif
 		vrai="1"
+  		echo "Import des Images"
 		ctr --namespace k8s.io images import mesimages.tar && \
 		vrai="0"
 		nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
@@ -1099,8 +1099,7 @@ then
 	vrai="1"
 	if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
 	then
- 		echo "Copie de l'archive des Images à partir de master1-k8s.mon.dom"
-		scp root@master1-k8s.mon.dom:mesimages.tar  ./
+ 		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	else
  		echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
 		ssh root@master1-k8s.mon.dom 'ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)'
@@ -1110,6 +1109,7 @@ then
 	nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
 	verif
 	vrai="1"
+ 	echo "Import des Images"
 	ctr --namespace k8s.io images import mesimages.tar && \
 	vrai="0"
 	nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
