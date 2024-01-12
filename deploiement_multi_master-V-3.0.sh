@@ -1,9 +1,3 @@
-#################################################################################
-#										#
-#			Pas opérationnel en l'état !				#
-#										#
-#################################################################################
-#
 #!/bin/sh
 set -e
 #   Version script		: 3.0
@@ -12,7 +6,7 @@ set -e
 #   Version Containerd		: 1.7.11
 #   Version RunC 		: 1.1.11
 #   Version CNI-Plugin		: 1.4.0
-#   Version calico		: 3.27
+#   Version calico		: 3.27.O
 #   Version minimal Kubelet	: 1.29
 #
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
