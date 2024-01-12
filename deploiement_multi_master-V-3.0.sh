@@ -937,7 +937,7 @@ then
 		then
 			scp root@master1-k8s.mon.dom:mesimages.tar  ./
 		else
-			ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export ~/mesimages.tar $(ctr --namespace k8s.io images list -q)
+			ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)
 			scp root@master1-k8s.mon.dom:mesimages.tar  ./
 		fi && \
 		vrai="0"
@@ -1076,7 +1076,7 @@ then
 	then
 		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	else
-		ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export ~/mesimages.tar $(ctr --namespace k8s.io images list -q)
+		ssh root@master1-k8s.mon.dom ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)
   		scp root@master1-k8s.mon.dom:mesimages.tar  ./
 	fi && \
 	vrai="0"
