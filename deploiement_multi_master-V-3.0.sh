@@ -1,3 +1,5 @@
+# liens d'accès aux VMs de bases.
+# https://drive.google.com/file/d/1CzqLZtR1P1erMNBXyi7qyDV9xUfFwy1K/view?usp=drivesdk
 #!/bin/sh
 set -e
 #   Version script		: 3.0
