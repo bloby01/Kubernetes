@@ -6,7 +6,7 @@ set -e
 #   Deploiement sur Rocky Linux : 8
 #   Version kubelet		: 1.29 +
 #   Version Containerd		: 1.7.11
-#   Version RunC 		: 1.1.11
+#   Version RunC 		: 1.1.12
 #   Version CNI-Plugin		: 1.4.0
 #   Version calico		: 3.27.O
 #   Version minimal Kubelet	: 1.29
@@ -80,7 +80,7 @@ export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubea
 export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
 export VersionContainerD="1.7.11"
-export VersionRunC="1.1.11"
+export VersionRunC="1.1.12"
 export VersionCNI="1.4.0"
 export VersionCalico="3.27.0"
 export Version_k8s="v1.29"
