@@ -5,10 +5,10 @@ set -e
 #   Version script		: 3.0
 #   Deploiement sur Rocky Linux : 8
 #   Version kubelet		: 1.29 +
-#   Version Containerd		: 1.7.11
+#   Version Containerd		: 1.7.18
 #   Version RunC 		: 1.1.12
-#   Version CNI-Plugin		: 1.4.0
-#   Version calico		: 3.27.O
+#   Version CNI-Plugin		: 1.5.0
+#   Version calico		: 3.28.O
 #   Version minimal Kubelet	: 1.29
 #
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
