@@ -79,11 +79,12 @@ export NBR=0
 export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-export VersionContainerD="1.7.11"
+#export VersionContainerD="1.7.11"  export VersionRunC="1.1.12"  export VersionCalico="3.27.0" export VersionCNI="1.4.0"
+export VersionContainerD="1.7.18"
 export VersionRunC="1.1.12"
-export VersionCNI="1.4.0"
-export VersionCalico="3.27.0"
-export Version_k8s="v1.30"
+export VersionCNI="1.5.0"
+export VersionCalico="3.28.0"
+#export Version_k8s="v1.30"
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
