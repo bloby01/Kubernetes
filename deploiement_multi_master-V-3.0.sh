@@ -83,7 +83,7 @@ export VersionContainerD="1.7.11"
 export VersionRunC="1.1.12"
 export VersionCNI="1.4.0"
 export VersionCalico="3.27.0"
-export Version_k8s="v1.29"
+export Version_k8s="v1.30"
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
@@ -138,7 +138,8 @@ repok8s(){
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
+#baseurl=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/
 enabled=1
 gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/repodata/repomd.xml.key
