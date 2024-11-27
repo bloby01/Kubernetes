@@ -2,13 +2,13 @@
 # https://drive.google.com/file/d/1CzqLZtR1P1erMNBXyi7qyDV9xUfFwy1K/view?usp=drivesdk
 #!/bin/sh
 set -e
-#   Version script		: 3.0
+#   Version script		: 3.1
 #   Deploiement sur Rocky Linux : 8
-#   Version kubelet		: 1.29 +
-#   Version Containerd		: 1.7.18
-#   Version RunC 		: 1.1.12
-#   Version CNI-Plugin		: 1.5.0
-#   Version calico		: 3.28.O
+#   Version kubelet		: 1.31
+#   Version Containerd		: 2.0.0
+#   Version RunC 		: 1.2.2
+#   Version CNI-Plugin		: 1.6.0
+#   Version calico		: 3.29.1
 #   Version minimal Kubelet	: 1.29
 #
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
@@ -80,10 +80,10 @@ export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubea
 export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
 #export VersionContainerD="1.7.11"  export VersionRunC="1.1.12"  export VersionCalico="3.27.0" export VersionCNI="1.4.0"
-export VersionContainerD="1.7.18"
-export VersionRunC="1.1.12"
-export VersionCNI="1.5.0"
-export VersionCalico="3.28.0"
+export VersionContainerD="2.0.0"
+export VersionRunC="1.2.2"
+export VersionCNI="1.6.0"
+export VersionCalico="3.29.1"
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
