@@ -1,13 +1,15 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: john-pod-manager-rolebinding
+  name: John-pods-manager-Rolebinding
   namespace: preprod
 subjects:
 - kind: User
   name: John
+  namespace: preprod
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
-  name: John-pods-manager
+  name: John-pods-manager-Role
+  namespace: preprod
   apiGroup: rbac.authorization.k8s.io
