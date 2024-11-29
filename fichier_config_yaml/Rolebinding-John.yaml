@@ -5,7 +5,7 @@ metadata:
   namespace: preprod
 subjects:
 - kind: User
-  name: John
+  name: john
   namespace: preprod
   apiGroup: rbac.authorization.k8s.io
 roleRef:
