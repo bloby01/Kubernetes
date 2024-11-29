@@ -11,5 +11,4 @@ subjects:
 roleRef:
   kind: Role
   name: John-pods-manager-Role
-  namespace: preprod
   apiGroup: rbac.authorization.k8s.io
