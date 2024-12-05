@@ -1,5 +1,5 @@
 # liens d'accès aux VMs de bases.
-# https://drive.google.com/file/d/1CzqLZtR1P1erMNBXyi7qyDV9xUfFwy1K/view?usp=drivesdk
+# https://drive.google.com/file/d/19UgL5bwEU_3Fahq9vXUiZvVkKgzrtUA7/view?usp=drive_link
 #!/bin/sh
 set -e
 #   Version script		: 3.1
