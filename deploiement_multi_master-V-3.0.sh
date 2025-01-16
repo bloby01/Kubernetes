@@ -1,5 +1,5 @@
-# liens d'accès aux VMs de bases.
-# https://drive.google.com/file/d/19UgL5bwEU_3Fahq9vXUiZvVkKgzrtUA7/view?usp=drive_link
+# liens d'accès aux VMs RockyLinux9.5 de bases.
+# https://drive.google.com/file/d/1XGM_FW26fGIzo5tcwHDP7sCsSAQAqe2b/view?usp=sharing
 #!/bin/sh
 set -e
 #   Version script		: 3.1
