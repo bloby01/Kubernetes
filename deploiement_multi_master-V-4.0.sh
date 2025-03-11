@@ -1,10 +1,8 @@
-# liens d'accès aux VMs RockyLinux9.5 de bases.
-# https://drive.google.com/file/d/1XGM_FW26fGIzo5tcwHDP7sCsSAQAqe2b/view?usp=sharing
 #!/bin/sh
 set -e
-#   Version script		: 3.1
-#   Deploiement sur Rocky Linux : 8
-#   Version kubelet		: 1.31
+#   Version script		: 4.0
+#   Deploiement sur Rocky Linux : 9
+#   Version kubelet		: 1.32
 #   Version Containerd		: 2.0.0
 #   Version RunC 		: 1.2.2
 #   Version CNI-Plugin		: 1.6.0
@@ -24,10 +22,7 @@ set -e
 #                                                                               #
 #                       LABS  Kubernetes                                        #
 #                                                                               #
-#                                                                               #
-#               Internet                                                        #
-#                   |                                                           #
-#                 (VM) LB Nginx DHCPD NAMED NAT SQUID cache                     #
+#                 (VM) LB Nginx DHCPD NAMED                                     #
 #                              |                                                #
 #                 (vm master1) |                                                #
 #                        |     | (vm master2)                                   #
@@ -35,7 +30,7 @@ set -e
 #                        |     |  |     |                                       #
 #                        |     |  |     |                                       #
 #                      -------------------                                      #
-#                      |  switch  interne|--(VM) Client linux                   #
+#   INTERNET -- NAT ---|  switch  interne|--(VM) Client linux                   #
 #                      |-----------------|                                      #
 #                        |     |      |                                         #
 #                        |     |      |                                         #
@@ -51,13 +46,12 @@ set -e
 #                                                                               #
 #################################################################################
 #                                                                               #
-# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 8        #
+# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 9        #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
 # - Le script requière :		        				#
-#	*  L'outil vitualbox (le cluster fonctionne dans un réseau privé)       #
-#	*  Le loadBalancer à deux interfaces réseaux :			        #
-#		- La première en bridge/dhcp				        #
-#       	- La seconde dans le réseau privé est attendu à 172.21.0.100/24 #
+#	*  l'hyperviseur KVM (le cluster fonctionne dans un réseau privé NAT)   #
+#	*  Le loadBalancer est externe au cluster :			        #
+#       	- L'adresse IP du loadbalancer    :   172.21.0.100/24           #
 #   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
 # - Le réseau overlay est gérer par VxLAN à l'aide de Calico                    #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
@@ -79,7 +73,6 @@ export NBR=0
 export appmaster="wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appworker="wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
-#export VersionContainerD="1.7.11"  export VersionRunC="1.1.12"  export VersionCalico="3.27.0" export VersionCNI="1.4.0"
 export VersionContainerD="2.0.0"
 export VersionRunC="1.2.2"
 export VersionCNI="1.6.0"
@@ -138,7 +131,6 @@ repok8s(){
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-#baseurl=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/
 baseurl=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/
 enabled=1
 gpgcheck=1
