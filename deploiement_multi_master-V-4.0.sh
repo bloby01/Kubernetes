@@ -22,24 +22,26 @@ set -e
 #                                                                               #
 #                       LABS  Kubernetes                                        #
 #                                                                               #
-#                 (VM) LB Nginx DHCPD NAMED                                     #
-#                              |                                                #
-#                 (vm master1) |                                                #
-#                        |     | (vm master2)                                   #
-#                        |     |  |     (VM master3)                            #
+#                         LB DHCPD NAMED                                        #
+#			172.21.0.100/24						#
+#			       |						#				
+#                      master1 |                                                #
+#                        |     | master2                                        #
+#                        |     |  |     master3                                 #
 #                        |     |  |     |                                       #
 #                        |     |  |     |                                       #
 #                      -------------------                                      #
-#   INTERNET -- NAT ---|  switch  interne|--(VM) Client linux                   #
+#   INTERNET -- NAT ---|  switch  interne|-------Client kubectl                 #
+#		       |   172.21.0.0/24 |					#
 #                      |-----------------|                                      #
 #                        |     |      |                                         #
 #                        |     |      |                                         #
-#                 (vm)worker1  |      |                                         #
-#                      (vm)worker2    |                                         #
-#                            (vm) worker3                                       #
+#                     worker1  |      |                                         #
+#                            worker2  |                                         #
+#                                 worker3                                       #
 #                                                                               #
 #                                                                               #
-#                                                                               #
+#                                                                               #			
 #################################################################################
 #                                                                               #
 #                          Features                                             #
