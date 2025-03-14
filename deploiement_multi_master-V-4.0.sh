@@ -721,7 +721,10 @@ then
 	#
 	vrai="1"
 	dhcp && \
-	sed -i 's/.pid/& 'enp0s8'/' /usr/lib/systemd/system/dhcpd.service && \
+        ip link show
+        echo -n "Renseigner le nom de la carte réseau : "
+        read Carte
+        sed -i 's/.pid/& '${Carte}'/' /usr/lib/systemd/system/dhcpd.service && \
 	vrai="0"
 	nom="Etape ${numetape} - Installation et configuration du service DHCP sur loadBalancer-k8s.mon.dom"
 	verif
