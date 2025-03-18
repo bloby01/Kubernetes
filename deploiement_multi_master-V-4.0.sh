@@ -10,7 +10,7 @@ set -e
 #   Version minimal Kubelet	: 1.29
 #
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
-#   By christophe.merle@gmail.com
+#   By ste.cmc.merle@gmail.com
 #
 # Script destiné à faciliter le déploiement de cluster kubernetes en multi-master
 # Il est à exécuter dans le cadre d'une formation.
@@ -51,7 +51,8 @@ set -e
 # - Le système sur lequel s'exécute ce script doit être un Rocky Linux 9        #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
 # - Le script requière :		        				#
-#	*  l'hyperviseur KVM (le cluster fonctionne dans un réseau privé NAT)   #
+#	*  l'hyperviseur KVM (le cluster fonctionne dans un réseau privé NAT    #
+#           sans dhcp sur le Network kvm)   					#  
 #	*  Le loadBalancer est externe au cluster :			        #
 #       	- L'adresse IP du loadbalancer    :   172.21.0.100/24           #
 #   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
@@ -60,7 +61,8 @@ set -e
 # - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
 # - L'API est joignable par le loadBalancer sur l'adresse 172.21.0.100:6443     #
-#                                                                               #
+# - Les parefeux  firewalld sont configurer pour ne laisser passer que   le     #
+#    trict minimum + 80 et 443 TCP sur les worker				#
 #################################################################################
 #
 #
@@ -566,8 +568,13 @@ EOF
 # Ouverture du passage des flux IN sur les interfaces réseaux
 #
 parefeuLB(){
-firewall-cmd  --set-default-zone trusted && \
-firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+firewall-cmd  --set-default-zone block && \
+firewall-cmd --add-interface=lo --zone=trusted && \
+firewall-cmd --add-port=6443/tcp --permanent && \
+firewall-cmd --add-port=22/tcp --permanent && \
+firewall-cmd --add-port=2049/tcp --permanent && \
+firewall-cmd --add-port=67/udp --permanent && \
+firewall-cmd --add-port=53/udp --permanent && \
 firewall-cmd --reload
 }
 #################################################
@@ -575,8 +582,31 @@ firewall-cmd --reload
 
 # Ouverture du passage des flux IN sur les interfaces réseaux
 #
-parefeuNoeuds(){
-systemctl disable --now firewalld
+parefeuNoeudsMaster(){
+firewall-cmd  --set-default-zone block && \
+firewall-cmd --add-interface=lo --zone=trusted && \
+firewall-cmd --add-port=6443/tcp --permanent && \
+firewall-cmd --add-port=22/tcp --permanent && \
+firewall-cmd --add-port=2379/tcp --permanent && \
+firewall-cmd --add-port=2380/tcp --permanent && \
+firewall-cmd --add-port=10250/tcp --permanent && \
+firewall-cmd --add-port=10256/tcp --permanent && \
+firewall-cmd --add-port=179/tcp --permanent && \
+firewall-cmd --add-port=4789/udp --permanent && \
+firewall-cmd --add-port=8080/tcp --permanent && \
+firewall-cmd --reload
+}
+parefeuNoeudsWorker(){
+firewall-cmd  --set-default-zone block && \
+firewall-cmd --add-interface=lo --zone=trusted && \
+firewall-cmd --add-port=22/tcp --permanent && \
+firewall-cmd --add-port=10250/tcp --permanent && \
+firewall-cmd --add-port=10256/tcp --permanent && \
+firewall-cmd --add-port=179/tcp --permanent && \
+firewall-cmd --add-port=4789/udp --permanent && \
+firewall-cmd --add-port=80/tcp --permanent && \
+firewall-cmd --add-port=443/tcp --permanent && \
+firewall-cmd --reload
 }
 ###################################################################################################
 #                                                                                                 #
@@ -754,12 +784,12 @@ if [ "${node}" = "master" ]
 then
 	#################################################
 	# 
-	# Désactivation du gestionnaire firewalld sur le noeud
+	# Configuration des ports du gestionnaire firewalld sur le noeud
 	#
 	vrai=1
-	parefeuNoeuds && \
+	parefeuNoeudsMaster && \
 	vrai="0"
-	nom="Etape ${numetape} - Désactivation du gestionnaire firewalld sur le noeud "
+	nom="Etape ${numetape} - Configuration des ports du gestionnaire firewalld sur le noeud "
 	verif
  	#
   	#################################################
@@ -1017,12 +1047,12 @@ if [ "${node}" = "worker" ]
 then
 	#################################################
 	# 
-	# Désactivation du gestionnaire firewalld sur le noeud
+	# Configuration des ports du gestionnaire firewalld sur le noeud
 	#
 	vrai=1
-	parefeuNoeuds && \
+	parefeuNoeudsWorker && \
 	vrai="0"
-	nom="Etape ${numetape} - Désactivation du gestionnaire firewalld sur le noeud "
+	nom="Etape ${numetape} - Configuration des ports du gestionnaire firewalld sur le noeud "
 	verif
  	#################################################
 	#
