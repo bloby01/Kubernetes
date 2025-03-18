@@ -381,7 +381,7 @@ max-lease-time 7200;
 authoritative;
 subnet 172.21.0.0 netmask 255.255.255.0 {
   range 172.21.0.101 172.21.0.109;
-  option routers 172.21.0.100;
+  option routers 172.21.0.1;
   option broadcast-address 172.21.0.255;
   ddns-domainname "mon.dom.";
   ddns-rev-domainname "in-addr.arpa.";
