@@ -594,6 +594,9 @@ firewall-cmd --add-port=10256/tcp --permanent && \
 firewall-cmd --add-port=179/tcp --permanent && \
 firewall-cmd --add-port=4789/udp --permanent && \
 firewall-cmd --add-port=8080/tcp --permanent && \
+firewall-cmd --add-port=9099/tcp --permanent && \
+firewall-cmd --add-port=9091/tcp --permanent && \
+firewall-cmd --add-port=5473/tcp --permanent && \
 firewall-cmd --reload
 }
 parefeuNoeudsWorker(){
@@ -606,6 +609,9 @@ firewall-cmd --add-port=179/tcp --permanent && \
 firewall-cmd --add-port=4789/udp --permanent && \
 firewall-cmd --add-port=80/tcp --permanent && \
 firewall-cmd --add-port=443/tcp --permanent && \
+firewall-cmd --add-port=9099/tcp --permanent && \
+firewall-cmd --add-port=9091/tcp --permanent && \
+firewall-cmd --add-port=5473/tcp --permanent && \
 firewall-cmd --reload
 }
 ###################################################################################################
