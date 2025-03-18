@@ -600,6 +600,8 @@ firewall-cmd --add-port=5473/tcp --permanent && \
 firewall-cmd --add-port=7946/tcp --permanent && \
 firewall-cmd --add-port=7946/udp --permanent && \
 firewall-cmd --add-port=2042/tcp --permanent && \
+firewall-cmd --add-port=443/tcp --permanent && \
+firewall-cmd --add-port=4343/tcp --permanent && \
 firewall-cmd --reload
 }
 parefeuNoeudsWorker(){
@@ -618,6 +620,9 @@ firewall-cmd --add-port=5473/tcp --permanent && \
 firewall-cmd --add-port=7946/tcp --permanent && \
 firewall-cmd --add-port=7946/udp --permanent && \
 firewall-cmd --add-port=2042/tcp --permanent && \
+firewall-cmd --add-port=4343/tcp --permanent && \
+firewall-cmd --add-port=30000-32767/tcp --permanent && \
+firewall-cmd --add-port=30000-32767/udp --permanent && \
 firewall-cmd --reload
 }
 ###################################################################################################
