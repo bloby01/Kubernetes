@@ -653,7 +653,7 @@ if [ -b /dev/vdb ]
 	echo "/dev/postgresVG/postgres /srv/nfs/data xfs defaults 0 0" >> /etc/fstab
  	systemctl daemon-reload
   	mount /srv/nfs/data
-cat <<EOF > /etc/exports
+cat <<EOF | tee /etc/exports
 /srv/nfs/data	*(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)
 EOF
      	systemctl enable --now nfs-server
