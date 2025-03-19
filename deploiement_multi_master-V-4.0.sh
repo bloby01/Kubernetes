@@ -767,6 +767,10 @@ then
 	named && \
 	namedMonDom && \
 	namedRevers && \
+ 	mkdir -p /var/named/dnssec/
+  	cd /var/named/dnssec/
+	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE mon.dom
+	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK mon.dom
 	semanage permissive -a named_t && \
 	systemctl enable --now named.service && \
 	vrai="0"
