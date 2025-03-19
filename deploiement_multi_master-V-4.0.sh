@@ -646,7 +646,7 @@ if [ -b /dev/vdb ]
 	then
 	pvcreate /dev/vdb
 	vgcreate postgresVG /dev/vdb
-	lvcreate -n postgres -l 99% postgresVG
+	lvcreate -n postgres -l 100%FREE postgresVG
 	mkfs -t xfs /dev/postgresVG/postgres
  	mkdir -p /srv/nfs/data
   	chown -R nobody: /srv/nfs/data
