@@ -568,14 +568,15 @@ EOF
 # Ouverture du passage des flux IN sur les interfaces réseaux
 #
 parefeuLB(){
-firewall-cmd  --set-default-zone block && \
-firewall-cmd --add-interface=lo --zone=trusted && \
-firewall-cmd --add-port=6443/tcp --permanent && \
-firewall-cmd --add-port=22/tcp --permanent && \
-firewall-cmd --add-port=2049/tcp --permanent && \
-firewall-cmd --add-port=67/udp --permanent && \
-firewall-cmd --add-port=53/udp --permanent && \
-firewall-cmd --reload
+#firewall-cmd  --set-default-zone block && \
+#firewall-cmd --add-interface=lo --zone=trusted && \
+#firewall-cmd --add-port=6443/tcp --permanent && \
+#firewall-cmd --add-port=22/tcp --permanent && \
+#firewall-cmd --add-port=2049/tcp --permanent && \
+#firewall-cmd --add-port=67/udp --permanent && \
+#firewall-cmd --add-port=53/udp --permanent && \
+#firewall-cmd --reload
+systemctl disable --now firewalld
 }
 #################################################
 # 
@@ -583,47 +584,49 @@ firewall-cmd --reload
 # Ouverture du passage des flux IN sur les interfaces réseaux
 #
 parefeuNoeudsMaster(){
-firewall-cmd  --set-default-zone block && \
-firewall-cmd --add-interface=lo --zone=trusted && \
-firewall-cmd --add-port=6443/tcp --permanent && \
-firewall-cmd --add-port=22/tcp --permanent && \
-firewall-cmd --add-port=2379/tcp --permanent && \
-firewall-cmd --add-port=2380/tcp --permanent && \
-firewall-cmd --add-port=10250/tcp --permanent && \
-firewall-cmd --add-port=10256/tcp --permanent && \
-firewall-cmd --add-port=179/tcp --permanent && \
-firewall-cmd --add-port=4789/udp --permanent && \
-firewall-cmd --add-port=8080/tcp --permanent && \
-firewall-cmd --add-port=9099/tcp --permanent && \
-firewall-cmd --add-port=9091/tcp --permanent && \
-firewall-cmd --add-port=5473/tcp --permanent && \
-firewall-cmd --add-port=7946/tcp --permanent && \
-firewall-cmd --add-port=7946/udp --permanent && \
-firewall-cmd --add-port=2042/tcp --permanent && \
-firewall-cmd --add-port=443/tcp --permanent && \
-firewall-cmd --add-port=4343/tcp --permanent && \
-firewall-cmd --reload
+#firewall-cmd  --set-default-zone block && \
+#firewall-cmd --add-interface=lo --zone=trusted && \
+#firewall-cmd --add-port=6443/tcp --permanent && \
+#firewall-cmd --add-port=22/tcp --permanent && \
+#firewall-cmd --add-port=2379/tcp --permanent && \
+#firewall-cmd --add-port=2380/tcp --permanent && \
+#firewall-cmd --add-port=10250/tcp --permanent && \
+#firewall-cmd --add-port=10256/tcp --permanent && \
+#firewall-cmd --add-port=179/tcp --permanent && \
+#firewall-cmd --add-port=4789/udp --permanent && \
+#firewall-cmd --add-port=8080/tcp --permanent && \
+#firewall-cmd --add-port=9099/tcp --permanent && \
+#firewall-cmd --add-port=9091/tcp --permanent && \
+#firewall-cmd --add-port=5473/tcp --permanent && \
+#firewall-cmd --add-port=7946/tcp --permanent && \
+#firewall-cmd --add-port=7946/udp --permanent && \
+#firewall-cmd --add-port=2042/tcp --permanent && \
+#firewall-cmd --add-port=443/tcp --permanent && \
+#firewall-cmd --add-port=4343/tcp --permanent && \
+#firewall-cmd --reload
+systemctl disable --now firewalld
 }
 parefeuNoeudsWorker(){
-firewall-cmd  --set-default-zone block && \
-firewall-cmd --add-interface=lo --zone=trusted && \
-firewall-cmd --add-port=22/tcp --permanent && \
-firewall-cmd --add-port=10250/tcp --permanent && \
-firewall-cmd --add-port=10256/tcp --permanent && \
-firewall-cmd --add-port=179/tcp --permanent && \
-firewall-cmd --add-port=4789/udp --permanent && \
-firewall-cmd --add-port=80/tcp --permanent && \
-firewall-cmd --add-port=443/tcp --permanent && \
-firewall-cmd --add-port=9099/tcp --permanent && \
-firewall-cmd --add-port=9091/tcp --permanent && \
-firewall-cmd --add-port=5473/tcp --permanent && \
-firewall-cmd --add-port=7946/tcp --permanent && \
-firewall-cmd --add-port=7946/udp --permanent && \
-firewall-cmd --add-port=2042/tcp --permanent && \
-firewall-cmd --add-port=4343/tcp --permanent && \
-firewall-cmd --add-port=30000-32767/tcp --permanent && \
-firewall-cmd --add-port=30000-32767/udp --permanent && \
-firewall-cmd --reload
+#firewall-cmd  --set-default-zone block && \
+#firewall-cmd --add-interface=lo --zone=trusted && \
+#firewall-cmd --add-port=22/tcp --permanent && \
+#firewall-cmd --add-port=10250/tcp --permanent && \
+#firewall-cmd --add-port=10256/tcp --permanent && \
+#firewall-cmd --add-port=179/tcp --permanent && \
+#firewall-cmd --add-port=4789/udp --permanent && \
+#firewall-cmd --add-port=80/tcp --permanent && \
+#firewall-cmd --add-port=443/tcp --permanent && \
+#firewall-cmd --add-port=9099/tcp --permanent && \
+#firewall-cmd --add-port=9091/tcp --permanent && \
+#firewall-cmd --add-port=5473/tcp --permanent && \
+#firewall-cmd --add-port=7946/tcp --permanent && \
+#firewall-cmd --add-port=7946/udp --permanent && \
+#firewall-cmd --add-port=2042/tcp --permanent && \
+#firewall-cmd --add-port=4343/tcp --permanent && \
+#firewall-cmd --add-port=30000-32767/tcp --permanent && \
+#firewall-cmd --add-port=30000-32767/udp --permanent && \
+#firewall-cmd --reload
+systemctl disable --now firewalld
 }
 ###################################################################################################
 #                                                                                                 #
