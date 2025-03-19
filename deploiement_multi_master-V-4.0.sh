@@ -79,7 +79,7 @@ export numetape=0
 export NBR=0
 export appmaster="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appworker="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
-export appHAProxy="bash-completion wget haproxy bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
+export appHAProxy="bash-completion wget haproxy nfs-utils bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
 export VersionContainerD="2.0.0"
 export VersionRunC="1.2.2"
 export VersionCNI="1.6.0"
@@ -633,6 +633,28 @@ parefeuNoeudsWorker(){
 #firewall-cmd --reload
 systemctl disable --now firewalld
 }
+nfs(){
+if [ -f /dev/vdb ]
+	then
+	echo "le périphérique disque vdb est présent"
+	else
+		echo "Pas de disque /dev/vdb pour le volume lvm ..."
+		read tt
+		exit 1
+fi
+if [ -f /dev/vdb ]
+	then
+	pvcreate /dev/vdb
+	vgcreate postgresVG /dev/vdb
+	lvcreate -n postgres -l 99% postgresVG
+	mkfs -t xfs /dev/postgresVG/postgres
+ 	mkdir -p /srv/nfs/data
+  	chown -R nobody: /srv/nfs/data
+	echo "/dev/postgresVG/postgres /srv/nfs/data xfs defaults 0 0" >> /etc/fstab
+ 	systemctl daemon-reload
+  	mount /srv/nfs/data
+fi
+}
 ###################################################################################################
 #                                                                                                 #
 #                             Debut de la séquence d'Installation                                 #
@@ -718,6 +740,16 @@ then
 	dnf  install -y ${appHAProxy} && \
 	vrai="0"
 	nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy. "
+	verif
+	
+	#################################################
+	# Configuration et montage volume lvm NFS sur /dev/vdb
+	#
+	#
+	vrai="1"
+	nfs && \
+	vrai="0"
+	nom="Etape ${numetape} - Configuration et montage volume lvm NFS sur /dev/vdb. "
 	verif
 	
 	#################################################
