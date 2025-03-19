@@ -579,7 +579,9 @@ parefeuLB(){
 #firewall-cmd --add-port=67/udp --permanent && \
 #firewall-cmd --add-port=53/udp --permanent && \
 #firewall-cmd --reload
-systemctl disable --now firewalld
+firewall-cmd  --set-default-zone trusted && \
+firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+firewall-cmd --reload
 }
 #################################################
 # 
