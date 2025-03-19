@@ -634,7 +634,7 @@ parefeuNoeudsWorker(){
 systemctl disable --now firewalld
 }
 nfs(){
-if [ -f /dev/vdb ]
+if [ -b /dev/vdb ]
 	then
 	echo "le périphérique disque vdb est présent"
 	else
@@ -642,7 +642,7 @@ if [ -f /dev/vdb ]
 		read tt
 		exit 1
 fi
-if [ -f /dev/vdb ]
+if [ -b /dev/vdb ]
 	then
 	pvcreate /dev/vdb
 	vgcreate postgresVG /dev/vdb
