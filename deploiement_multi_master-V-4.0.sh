@@ -61,11 +61,14 @@ set -e
 # - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
 # - L'API est joignable par le loadBalancer sur l'adresse 172.21.0.100:6443     #
+# - Firewalld désactivé
+#-------------------------------------------------------------------------------#
+#			PAS ENCORE OPERATIONNEL					#
 # - Les parefeux  firewalld sont configurer pour ne laisser passer que   le     #
 #    trict minimum + 80 et 443 TCP sur les worker				#
 #################################################################################
-#
-#
+
+
 ###########################################################################################
 #                                                                               	  #
 #                      Déclaration des variables                                	  #
