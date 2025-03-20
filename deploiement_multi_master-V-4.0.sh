@@ -404,7 +404,9 @@ EOF
 #
 temps(){
 timedatectl set-timezone "Europe/Paris" && \
-timedatectl set-ntp true
+timedatectl set-ntp true && \
+systemctl restart chronyd && \
+chronyc tracking 
 }
 #######################################################################
 #
