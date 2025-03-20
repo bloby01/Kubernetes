@@ -325,10 +325,9 @@ cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
 EOF
-cd /var/named/dnssec/ \
-cat Kmon.dom*.key >> /var/named/mon.dom.db \
-chmod 660 /var/named/dnssec/*
-chown -R named:named /var/named/dnssec/
+cat /var/named/dnssec/Kmon.dom*.key >> /var/named/mon.dom.db && \
+chmod 660 /var/named/dnssec/* && \
+chown -R named:named /var/named/dnssec/ && \
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
