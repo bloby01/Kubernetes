@@ -230,7 +230,8 @@ mkdir /var/named/dnssec
 cd /var/named/dnssec/
 dnssec-keygen -a RSASHA256 -b 2048 -n ZONE /var/named/dnssec/mon.dom
 dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK /var/named/dnssec/mon.dom
-
+ls /var/named/dnssec/
+read tt
 rndc-confgen -a -r /dev/urandom
 chown root:named /etc/rndc.key
 chmod 660 /etc/rndc.key
@@ -285,7 +286,7 @@ zone "." IN {
 	type hint;
 	file "/var/named/named.ca";
 };
-include "/var/named/dnssec/*.key;
+include "/var/named/dnssec/;
 include "/etc/rndc.key";
 controls {
     inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { "rndc-key"; };
