@@ -747,9 +747,9 @@ then
  	mkdir -p /var/named/dnssec/ && \
   	cd /var/named/dnssec/ && \
 	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE mon.dom && \
-	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f ZSK mon.dom && \
+	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK mon.dom && \
 	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE 0.21.172.in-addr.arpa && \
-	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f ZSK 0.21.172.in-addr.arpa && \
+	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK 0.21.172.in-addr.arpa && \
  	chmod 660 /var/named/dnssec/* && \
 	chown -R named:named /var/named/dnssec/ && \
 	semanage permissive -a named_t && \
