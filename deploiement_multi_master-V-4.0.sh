@@ -345,10 +345,7 @@ ddns-update-style interim;
 ignore client-updates;
 update-static-leases on;
 log-facility local7;
-key "rndc-key" {
-	algorithm hmac-sha256;
-	secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-};
+include "/etc/rndc.key";
 zone mon.dom. {
   primary 172.21.0.100;
   key rndc-key;
@@ -755,6 +752,8 @@ then
 	chown -R named:named /var/named/dnssec/ && \
 	semanage permissive -a named_t && \
 	systemctl enable --now named.service && \
+ 	chown named:dhcpd /etc/rndc.key && \
+  	chmod 440 /etc/rndc.key && \
 	vrai="0"
 	nom="Etape ${numetape} - Configuration et demarrage de bind"
 	verif
