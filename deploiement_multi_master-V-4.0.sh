@@ -244,14 +244,14 @@ options {
 #	secroots-file   "/var/named/data/named.secroots";
 #	recursing-file  "/var/named/data/named.recursing";
 	allow-query     { any; };
-	allow-new-zones yes;
+#	allow-new-zones yes;
 #	recursion yes;
 	forwarders {8.8.8.8; 8.8.4.4; };
-	managed-keys-directory "/var/named/dynamic";
+#	managed-keys-directory "/var/named/dynamic";
 #	geoip-directory "/usr/share/GeoIP";
 	pid-file "/run/named/named.pid";
-	session-keyfile "/run/named/session.key";
-	include "/etc/crypto-policies/back-ends/bind.config";
+#	session-keyfile "/run/named/session.key";
+#	include "/etc/crypto-policies/back-ends/bind.config";
   	dnssec-validation auto;
     	key-directory "/var/named/dnssec";
 };
