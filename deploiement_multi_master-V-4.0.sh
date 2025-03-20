@@ -226,19 +226,27 @@ fi
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
 named(){
+mkdir /var/named/dnssec
+cd /var/named/dnssec/
+dnssec-keygen -a RSASHA256 -b 2048 -n ZONE /var/named/dnssec/mon.dom
+dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK /var/named/dnssec/mon.dom
+
+rndc-confgen -a -r /dev/urandom
+chown root:named /etc/rndc.key
+chmod 660 /etc/rndc.key
 chown root:dhcpd /var/named && \
 chown root:dhcpd /etc/named && \
-cat <<EOF | tee /var/named/rndc.conf
+#cat <<EOF | tee /var/named/rndc.conf
 # Start of rndc.conf
-key "rndc-key" {
-	algorithm hmac-sha256;
-	secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-};
-options {
-	default-key "rndc-key";
-	default-server 127.0.0.1;
-	default-port 953;
-};
+#key "rndc-key" {
+#	algorithm hmac-sha256;
+#	secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+#};
+#options {
+#	default-key "rndc-key";
+#	default-server 127.0.0.1;
+#	default-port 953;
+#};
 # End of rndc.conf
 # Use with the following in named.conf, adjusting the allow list as needed:
 # key "rndc-key" {
@@ -251,7 +259,7 @@ options {
 #               allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
 # };
 # End of named.conf
-EOF
+#EOF
 cat <<EOF | tee /etc/named.conf
 options {
 	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
@@ -277,6 +285,11 @@ zone "." IN {
 	type hint;
 	file "/var/named/named.ca";
 };
+include "/var/named/dnssec/*.key;
+include "/etc/rndc.key";
+controls {
+    inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { "rndc-key"; };
+};
 include "/etc/named.root.key";
 zone "mon.dom" in {
 	type master;
@@ -288,14 +301,14 @@ zone "mon.dom" in {
 	notify yes;
 	max-journal-size 50k;
 };
-key "rndc-key" {
-       algorithm hmac-sha256;
-       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-};
-controls {
-	inet 127.0.0.1 port 953
-		allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
-};
+#key "rndc-key" {
+#       algorithm hmac-sha256;
+#       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
+#};
+#controls {
+#	inet 127.0.0.1 port 953
+#		allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
+#};
 zone "0.21.172.in-addr.arpa" in {
 	type master;
 	inline-signing yes;
