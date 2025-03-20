@@ -252,7 +252,7 @@ options {
 	pid-file "/run/named/named.pid";
 	session-keyfile "/run/named/session.key";
 	include "/etc/crypto-policies/back-ends/bind.config";
- 	dnssec-enable yes;
+# 	dnssec-enable yes;
   	dnssec-validation auto;
     	key-directory "/var/named/dnssec";
 };
