@@ -227,7 +227,6 @@ fi
 #
 named(){
 mkdir /var/named/dnssec
-#cd /var/named/dnssec/
 #dnssec-keygen -a RSASHA256 -b 2048 -n ZONE /var/named/dnssec/mon.dom
 #dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK /var/named/dnssec/mon.dom
 ls /var/named/dnssec/
@@ -362,6 +361,10 @@ cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
 EOF
+cd /var/named/dnssec/ \
+cat Kmon.dom*.key >> /var/named/mon.dom.db \
+cat Kmon.dom*.key >> /var/named/0.21.172.in-addr.arpa.db \
+
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
