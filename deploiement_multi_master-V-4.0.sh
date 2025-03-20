@@ -227,39 +227,12 @@ fi
 #
 named(){
 mkdir /var/named/dnssec
-#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE /var/named/dnssec/mon.dom
-#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK /var/named/dnssec/mon.dom
-ls /var/named/dnssec/
-read tt
 rndc-confgen -a -r /dev/urandom
 chown root:named /etc/rndc.key
 chmod 660 /etc/rndc.key
 chown root:dhcpd /var/named && \
 chown root:dhcpd /etc/named && \
-#cat <<EOF | tee /var/named/rndc.conf
-# Start of rndc.conf
-#key "rndc-key" {
-#	algorithm hmac-sha256;
-#	secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-#};
-#options {
-#	default-key "rndc-key";
-#	default-server 127.0.0.1;
-#	default-port 953;
-#};
-# End of rndc.conf
-# Use with the following in named.conf, adjusting the allow list as needed:
-# key "rndc-key" {
-#       algorithm hmac-sha256;
-#       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-# };
-#
-# controls {
-#       inet 127.0.0.1 port 953
-#               allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
-# };
-# End of named.conf
-#EOF
+
 cat <<EOF | tee /etc/named.conf
 options {
 	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
@@ -285,7 +258,6 @@ zone "." IN {
 	type hint;
 	file "/var/named/named.ca";
 };
-#include "/var/named/dnssec/;
 include "/etc/rndc.key";
 controls {
     inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { "rndc-key"; };
@@ -301,14 +273,6 @@ zone "mon.dom" in {
 	notify yes;
 	max-journal-size 50k;
 };
-#key "rndc-key" {
-#       algorithm hmac-sha256;
-#       secret "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg=";
-#};
-#controls {
-#	inet 127.0.0.1 port 953
-#		allow { 127.0.0.1;172.21.0.100; } keys { "rndc-key"; };
-#};
 zone "0.21.172.in-addr.arpa" in {
 	type master;
 	inline-signing yes;
@@ -363,8 +327,8 @@ cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 EOF
 cd /var/named/dnssec/ \
 cat Kmon.dom*.key >> /var/named/mon.dom.db \
-cat Kmon.dom*.key >> /var/named/0.21.172.in-addr.arpa.db \
-
+chmod 660 /var/named/dnssec/*
+chown -R named:named /var/named/dnssec/
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
