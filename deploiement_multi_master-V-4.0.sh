@@ -325,9 +325,6 @@ cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
 @             NS      loadBalancer-k8s.mon.dom.
 100           PTR     loadBalancer-k8s.mon.dom.
 EOF
-cat /var/named/dnssec/Kmon.dom*.key >> /var/named/mon.dom.db && \
-chmod 660 /var/named/dnssec/* && \
-chown -R named:named /var/named/dnssec/ && \
 chown -R named:dhcpd /etc/named/ && \
 chmod 770 /etc/named && \
 chown -R named:dhcpd /var/named/ && \
@@ -751,6 +748,9 @@ then
   	cd /var/named/dnssec/
 	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE mon.dom
 	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK mon.dom
+ 	cat /var/named/dnssec/Kmon.dom*.key >> /var/named/mon.dom.db && \
+	chmod 660 /var/named/dnssec/* && \
+	chown -R named:named /var/named/dnssec/ && \
 	semanage permissive -a named_t && \
 	systemctl enable --now named.service && \
 	vrai="0"
