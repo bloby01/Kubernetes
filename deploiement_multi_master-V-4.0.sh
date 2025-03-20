@@ -247,12 +247,14 @@ options {
 	allow-new-zones yes;
 	recursion yes;
 	forwarders {8.8.8.8; 8.8.4.4; };
-	dnssec-validation yes;
 	managed-keys-directory "/var/named/dynamic";
 	geoip-directory "/usr/share/GeoIP";
 	pid-file "/run/named/named.pid";
 	session-keyfile "/run/named/session.key";
 	include "/etc/crypto-policies/back-ends/bind.config";
+ 	dnssec-enable yes;
+  	dnssec-validation auto;
+    	key-directory "/var/named/dnssec";
 };
 zone "." IN {
 	type hint;
