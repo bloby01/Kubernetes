@@ -1,4 +1,5 @@
 #!/bin/sh
+Probleme de creation de network avec virsh
 #########################################################################
 #									#
 # Outil de construction de VMs dans un environnement Linux KVM By	#
@@ -16,6 +17,8 @@
 systemHote(){
 dnf install -y qemu-kvm libvirt virt-install bridge-utils dnsmasq && \
 systemctl enable --now libvirtd
+if [  "nat-k8s"
+
 cat <<EOF | tee network-k8s.xml
 <network>
   <name>nat-k8s</name>
@@ -25,6 +28,7 @@ cat <<EOF | tee network-k8s.xml
   </ip>
 </network>
 EOF
+
 virsh net-define --file network-k8s.xml
 systemctl restart libvirtd
 virsh net-start --network nat-k8s
@@ -112,30 +116,8 @@ elif [ ${noeud} = "master" ]
 then
 	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
-	systemctl restart NetworkManager
 	export node="master"
- 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
-  	read vk8s
-   	export Version_k8s="$vk8s"
-		if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
-		then 
-			first="yes"
-			until [ "${Reseau}" == "calico" -o "${Reseau}" == "flannel" ]
-   			do
-      				echo -n "Quel type de réseau CNI voulez-vous déployer ? calico / flannel : "
-      				read Reseau
-	 		done
-		else
-			first="no"
-		fi
-elif [ ${noeud} = "loadBalancer" ]
-then
-	hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
-	export node="loadBalancer"
 fi && \
-vrai="0"
-nom="Etape ${numetape} - Construction du nom d hote à ${noeud}${x}-k8s.mon.dom"
-verif
 
 ############################################################################################
 #                                                                                          #
