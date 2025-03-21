@@ -45,13 +45,13 @@ qemu-img create -f qcow2 ${noeud}${x}.qcow2 ${tailleDisquePrincipal}G
 #	Download de l'iso
 #
 download(){
-if [ -f ~/rocky.iso ]
+if [ -f /home/user/rocky.iso ]
 then
-echo "le fichier iso de rocky est disponible : $(ls -lh ./rocky.iso)"
+echo "le fichier iso de rocky est disponible : $(ls -lh /home/user/rocky.iso)"
 sleep 4
 else
-wget -O ~/rocky.iso https://dl.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso
-isoRocky="~/rocky.iso"
+wget -O /home/user/rocky.iso https://dl.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso
+isoRocky="/home/user/rocky.iso"
 fi
 }
 #
