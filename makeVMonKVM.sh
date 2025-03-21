@@ -24,13 +24,6 @@ cat <<EOF | tee network-k8s.xml
   <ip address="172.21.0.1" netmask="255.255.255.0">
   </ip>
 </network>
-#<network>
-#  <name>nat-k8s</name>
-#  <bridge name="virbr1"/>
-#  <forward mode="nat"/>
-#  <ip address="172.21.0.1" netmask="255.255.255.0">
-#  </ip>
-#</network>
 EOF
 virsh net-define network-k8s.xml
 systemctl restart libvirtd
