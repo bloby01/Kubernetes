@@ -9,7 +9,7 @@ set -e
 #   Version calico		: 3.29.1
 #   Version minimal Kubelet	: 1.29
 #
-#   Script de déploiment kubernetes en multi-masters avec LB HAPROXY
+#   Script de déploiment kubernetes en multi-masters avec LB HAPROXY sur KVM
 #   By ste.cmc.merle@gmail.com
 #
 # Script destiné à faciliter le déploiement de cluster kubernetes en multi-master
@@ -120,7 +120,7 @@ virsh net-autostart nat-k8s
 #	Creation des disques pour les VMs
 #
 createDiskVms(){
-echo -n "quelle doit être la taille du disque principal de la VM ? : "
+echo -n "quelle doit être la taille du disque principal de la VM [ex: 20] ? : "
 read tailleDisquePrincipal
 qemu-img create -f qcow2 ${noeud}${x}.qcow2 ${tailleDisquePrincipal}G
 }
@@ -130,7 +130,22 @@ qemu-img create -f qcow2 ${noeud}${x}.qcow2 ${tailleDisquePrincipal}G
 #	Download de l'iso
 #
 download(){
+if [ -f rocky.iso ]
+then
+echo "le fichier iso de rocky est disponible : $(ls -lh rocky.iso)"
+sleep 4
+else
 wget -O rocky.iso https://dl.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso
+isoRocky=rocky.iso
+fi
+}
+#
+#################################################
+#
+#	Construction des VMs
+#
+constructionVM(){
+virt-install --name VM-${noeud}${x}.qcow2 --ram 3072 --vcpus 2 --disk path=${noeud}${x}.qcow2,format=qcow2 --cdrom ${isoRocky} --boot cdrom --os-type linux --os-variant rocky9 --network network=nat-k8s,model=virtio --graphics vnc --virt-type kvm --hvm
 }
 #################################################
 # 
@@ -684,8 +699,10 @@ fi
 #                             Debut de la séquence d'Installation                                 #
 #                                                                                                 #
 ###################################################################################################
-
-
+#
+#				Pre-requis systeme hôte
+#
+systemHote
 
 
 ############################################################################################
@@ -738,6 +755,18 @@ vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote à ${noeud}${x}-k8s.mon.dom"
 verif
 
+############################################################################################
+#                                                                                          #
+#                       Création des disques durs                                          #
+#                                                                                          #
+############################################################################################
+#clear
+# Création du disque dur 
+#createDiskVms
+# Téléchargement de l'iso
+#download
+# Construction de la VM et boot sur iso pour installation
+#constructionVM
 ############################################################################################
 #                                                                                          #
 #                       Déploiement du LB  HAProxy                                         #
