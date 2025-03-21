@@ -90,6 +90,40 @@ export VersionCalico="3.29.1"
 #                      Déclaration des fonctions                                	  #
 #                                                                               	  #
 ###########################################################################################
+#
+#################################################
+#
+#	Configuration des app de virtualisation sur le system hôte
+#
+systemHote(){
+dnf install -y qemu-kvm libvirt virt-install bridge-utils dnsmasq && \
+systemctl enable --now libvirtd
+cat <<EOF | tee network-k8s.xml
+<network>
+  <name>nat-k8s</name>
+  <bridge name="virbr1"/>
+  <forward mode="nat"/>
+  <ip address="172.21.0.1" netmask="255.255.255.0">
+#    <dhcp>
+#      <range start="172.21.0.100" end="172.21.0.200"/>
+#    </dhcp>
+  </ip>
+</network>
+EOF
+virsh net-define network-k8s.xml
+virsh net-start nat-k8s
+virsh net-autostart nat-k8s
+}
+#
+#################################################
+#
+#	Creation des disques pour les VMs
+#
+createDiskVms(){
+echo -n "quelle doit être la taille du disque principal de la VM ? : "
+read tailleDisquePrincipal
+qemu-img create -f qcow2 ${noeud}${x}.qcow2 ${tailleDisquePrincipal}G
+}
 #################################################
 # 
 #Fonction de vérification des étapes
@@ -615,7 +649,7 @@ if [ -b /dev/vdb ]
 	then
 	echo "le périphérique disque vdb est présent"
 	else
-		echo "Pas de disque /dev/vdb pour le volume lvm ..."
+		echo "Pas de disque additionnel /dev/vdb pour le volume lvm de NFS ..."
 		read tt
 		exit 1
 fi
