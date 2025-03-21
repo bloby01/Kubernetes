@@ -60,7 +60,7 @@ fi
 #	Construction des VMs
 #
 constructionVM(){
-virt-install --name VM-${noeud}${x}.qcow2 --ram 3072 --vcpus 2 --disk path=${noeud}${x}.qcow2,format=qcow2 --cdrom ${isoRocky} --boot cdrom --os-type linux --os-variant rocky9 --network network=nat-k8s,model=virtio --graphics vnc --virt-type kvm --hvm
+virt-install --name VM-${noeud}${x}.qcow2 --ram 3072 --vcpus 2 --disk path=${noeud}${x}.qcow2,format=qcow2 --cdrom ${isoRocky} --boot cdrom --os-variant rocky9 --network network=nat-k8s,model=virtio --graphics vnc --virt-type qemu --hvm
 }
 #################################################
 # 
