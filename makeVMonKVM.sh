@@ -100,7 +100,6 @@ systemHote
 #                       Paramètres communs LB HAProxy, master et worker                    #
 #                                                                                          #
 ############################################################################################
-clear
 until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "loadBalancer" ]
 do
 	echo -n 'Indiquez si cette machine doit être "loadBalancer ou master" ou "worker", mettre en toutes lettres votre réponse: '
