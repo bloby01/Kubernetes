@@ -51,7 +51,6 @@ echo "le fichier iso de rocky est disponible : $(ls -lh /home/user/rocky.iso)"
 sleep 4
 else
 wget -O /home/user/rocky.iso https://dl.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso
-isoRocky="/home/user/rocky.iso"
 fi
 }
 #
@@ -60,6 +59,7 @@ fi
 #	Construction des VMs
 #
 constructionVM(){
+isoRocky="/home/user/rocky.iso"
 virt-install --name VM-${noeud}${x}.qcow2 --ram 3072 --vcpus 2 --disk path=${noeud}${x}.qcow2,format=qcow2 --cdrom ${isoRocky} --boot cdrom --os-variant rocky9 --network network=nat-k8s,model=virtio --graphics vnc --virt-type qemu --hvm
 }
 #################################################
