@@ -27,8 +27,8 @@ cat <<EOF | tee network-k8s.xml
 EOF
 virsh net-define --file network-k8s.xml
 systemctl restart libvirtd
-virsh net-start nat-k8s
-virsh net-autostart nat-k8s
+virsh net-start --network nat-k8s
+virsh net-autostart --network nat-k8s
 }
 #
 #################################################
