@@ -124,6 +124,14 @@ echo -n "quelle doit être la taille du disque principal de la VM ? : "
 read tailleDisquePrincipal
 qemu-img create -f qcow2 ${noeud}${x}.qcow2 ${tailleDisquePrincipal}G
 }
+#
+#################################################
+#
+#	Download de l'iso
+#
+download(){
+wget -O rocky.iso https://dl.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso
+}
 #################################################
 # 
 #Fonction de vérification des étapes
