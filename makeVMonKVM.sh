@@ -16,7 +16,7 @@ Probleme de creation de network avec virsh
 #
 systemHote(){
 dnf install -y epel-release && \
-dnf install -y qemu-kvm libvirt virt-install bridge-utils dnsmasq && \
+dnf install -y qemu-kvm libvirt virt-install bridge-utils dnsmasq virt-viewer && \
 systemctl enable --now libvirtd
 if [  "nat-k8s"
 
@@ -57,7 +57,7 @@ then
 echo "le fichier iso de rocky est disponible : $(ls -lh /home/user/rocky.iso)"
 sleep 4
 else
-wget -O /home/user/rocky.iso https://dl.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-boot.iso
+wget -O /home/user/rocky.iso https://dl.rockylinux.org/pub/rocky/10/isos/x86_64/Rocky-10-latest-x86_64-boot.iso
 fi
 }
 #
