@@ -32,6 +32,7 @@ EOF
 
 virsh net-define --file network-k8s.xml
 systemctl restart libvirtd
+systemctl enable libvirtd
 virsh net-start --network nat-k8s
 virsh net-autostart --network nat-k8s
 }
