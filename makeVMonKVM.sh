@@ -69,13 +69,12 @@ constructionVM(){
 isoRocky="/home/user/rocky.iso"
 virt-install \
   --name loadbalancer \
-  --memory 1024 \
-  --vcpus 1 \
+  --memory 2024 \
+  --vcpus 2 \
   --disk path=/VMs/loadbalancer.qcow2,format=qcow2,bus=virtio \
   --cdrom /VMs/rockylinux10.iso \
   --network network=prod-k8s,model=virtio \
   --graphics vnc \
-  --os-type linux \
   --os-variant rocky10 \
   --virt-type kvm
 #virt-install --name VM-${noeud}${x} --ram 3072 --vcpus 2 --disk path=${noeud}${x}.qcow2,format=qcow2 --cdrom ${isoRocky} --boot cdrom --os-variant rocky9 --network network=nat-k8s,model=virtio --graphics vnc --virt-type qemu --hvm
