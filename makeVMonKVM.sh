@@ -15,6 +15,7 @@ Probleme de creation de network avec virsh
 #	Configuration des app de virtualisation sur le system hôte
 #
 systemHote(){
+dnf install -y epel-release && \
 dnf install -y qemu-kvm libvirt virt-install bridge-utils dnsmasq && \
 systemctl enable --now libvirtd
 if [  "nat-k8s"
