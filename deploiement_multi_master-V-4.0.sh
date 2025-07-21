@@ -79,7 +79,7 @@ export numetape=0
 export NBR=0
 export appmaster="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appworker="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
-export appHAProxy="bash-completion wget haproxy nfs-utils bind bind-utils iproute-tc policycoreutils-python-utils dhcp-server"
+export appHAProxy="bash-completion wget haproxy nfs-utils bind bind-utils iproute-tc policycoreutils-python-utils kea-dhcp4-server"
 export VersionContainerD="2.0.0"
 export VersionRunC="1.2.2"
 export VersionCNI="1.6.0"
@@ -338,32 +338,101 @@ chmod -R 770 /var/named/dynamic
 # Fonction de configuration des parametres communs du dhcp
 #
 dhcp(){
-cat <<EOF | tee /etc/dhcp/dhcpd.conf
-ddns-updates on;
-ddns-update-style interim;
-ignore client-updates;
-update-static-leases on;
-log-facility local7;
-include "/etc/rndc.key";
-zone mon.dom. {
-  primary 172.21.0.100;
-  key rndc-key;
+cat <<EOF | tee /etc/kea/kea-dhcp4.conf
+{
+  "Dhcp4": {
+    "interfaces-config": {
+      "interfaces": [ "*" ]
+    },
+    "lease-database": {
+      "type": "memfile",
+      "persist": true,
+      "name": "/var/lib/kea/dhcp4.leases"
+    },
+    "option-data": [
+      {
+        "name": "domain-name",
+        "data": "mon.dom"
+      },
+      {
+        "name": "domain-name-servers",
+        "data": "172.21.0.100"
+      }
+    ],
+    "valid-lifetime": 600,
+    "renew-timer": 300,
+    "rebind-timer": 525,
+    "subnet4": [
+      {
+        "subnet": "172.21.0.0/24",
+        "pools": [
+          {
+            "pool": "172.21.0.101 - 172.21.0.109"
+          }
+        ],
+        "option-data": [
+          {
+            "name": "routers",
+            "data": "172.21.0.100"
+          },
+          {
+            "name": "broadcast-address",
+            "data": "172.21.0.255"
+          }
+        ],
+        "ddns": {
+          "hostname": true,
+          "qualifying-suffix": "mon.dom.",
+          "reverse-dns": true
+        }
+      }
+    ],
+    "loggers": [
+      {
+        "name": "kea-dhcp4",
+        "output_options": [
+          {
+            "output": "/var/log/kea-dhcp4.log",
+            "pattern": "%d{%Y-%m-%d %H:%M:%S.%q} %m\n"
+          }
+        ],
+        "severity": "INFO",
+        "debuglevel": 0
+      }
+    ],
+    "dhcp-ddns": {
+      "enable-updates": true,
+      "qualifying-suffix": "mon.dom.",
+      "server-ip": "172.21.0.100",
+      "server-port": 53001,
+      "sender-ip": "0.0.0.0",
+      "sender-port": 0,
+      "max-queue-size": 1024,
+      "ncr-protocol": "UDP",
+      "ncr-format": "JSON",
+      "tsig-keys": [
+        {
+          "name": "rndc-key",
+          "algorithm": "HMAC-SHA256",
+          "secret": "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg="
+        }
+      ]
+    }
+  },
+  "Logging": {
+    "loggers": [
+      {
+        "name": "kea-dhcp4",
+        "severity": "INFO",
+        "output_options": [
+          {
+            "output": "syslog"
+          }
+        ]
+      }
+    ]
+  }
 }
-zone 0.21.172.in-addr.arpa. {
-  primary 172.21.0.100;
-  key rndc-key;
-}
-option domain-name "mon.dom";
-option domain-name-servers 172.21.0.100;
-default-lease-time 600;
-max-lease-time 7200;
-authoritative;
-subnet 172.21.0.0 netmask 255.255.255.0 {
-  range 172.21.0.101 172.21.0.109;
-  option routers 172.21.0.1;
-  option broadcast-address 172.21.0.255;
-  ddns-domainname "mon.dom.";
-  ddns-rev-domainname "in-addr.arpa.";
 }
 EOF
 }
