@@ -880,7 +880,7 @@ then
 	#
 	vrai="1"
 	semanage permissive -a dhcpd_t && \
-	systemctl enable  --now  dhcpd.service && \
+	systemctl enable  --now  kea-dhcp4-server && \
 	vrai="0"
 	nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
 	verif
