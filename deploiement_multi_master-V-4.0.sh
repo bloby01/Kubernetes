@@ -3,9 +3,9 @@ set -e
 #   Version script		: 4.0
 #   Deploiement sur Rocky Linux : 9
 #   Version kubelet		: 1.32
-#   Version Containerd		: 2.0.0
-#   Version RunC 		: 1.2.2
-#   Version CNI-Plugin		: 1.6.0
+#   Version Containerd		: 2.1.3
+#   Version RunC 		: 1.3.0
+#   Version CNI-Plugin		: 1.7.1
 #   Version calico		: 3.29.1
 #   Version minimal Kubelet	: 1.29
 #
@@ -14,7 +14,6 @@ set -e
 #
 # Script destiné à faciliter le déploiement de cluster kubernetes en multi-master
 # Il est à exécuter dans le cadre d'une formation.
-# Il ne doit pas être exploité en l'état pour un déploiement en production.
 #
 #
 #
@@ -22,7 +21,7 @@ set -e
 #                                                                               #
 #                       LABS  Kubernetes                                        #
 #                                                                               #
-#                         LB DHCPD NAMED                                        #
+#                         	LB	                                        #
 #			172.21.0.100/24						#
 #			       |						#				
 #                      master1 |                                                #
@@ -48,14 +47,14 @@ set -e
 #                                                                               #
 #################################################################################
 #                                                                               #
-# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 9        #
+# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 10        #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
 # - Le script requière :		        				#
-#	*  l'hyperviseur KVM (le cluster fonctionne dans un réseau privé NAT    #
-#           sans dhcp sur le Network kvm)   					#  
-#	*  Le loadBalancer est externe au cluster :			        #
+#	*  l'hyperviseur KVM: le cluster fonctionne dans un réseau privé NAT    #
+#           sans dhcp sur le réseau k8s   					#  
+#	*  Le loadBalancer est externe au cluster, il fonctionne sur réseau k8s #
 #       	- L'adresse IP du loadbalancer    :   172.21.0.100/24           #
-#   	*  Les adresses/noms des noeuds sont automatiquement attribuées		#
+#   	*  Les adresses/noms des noeuds sont attribuées	en statiques	#
 # - Le réseau overlay est gérer par VxLAN à l'aide de Calico                    #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
 # - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
