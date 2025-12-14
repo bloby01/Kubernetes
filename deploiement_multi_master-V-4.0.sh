@@ -50,14 +50,15 @@ set -e
 #                                                                               #
 #################################################################################
 #                                                                               #
-# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 10        #
+# - Le système sur lequel s'exécute ce script doit être un Rocky Linux 10       #
 # - Le compte root doit etre utilisé pour exécuter ce Script                    #
-# - Le script requière :		        				#
-#	*  l'hyperviseur KVM: le cluster fonctionne dans un réseau privé NAT    #
-#           sans dhcp sur le réseau k8s   					#  
-#	*  Le loadBalancer est externe au cluster, il fonctionne sur réseau k8s #
-#       	- L'adresse IP du loadbalancer    :   172.21.0.100/24           #
-#   	*  Les adresses/noms des noeuds sont attribuées	en statiques	#
+# - Le script requière :		        										#
+#	*  Hyperviseur virtualbox: Le cluster fonctionne dans un réseau privé NAT   #
+#           sans dhcp sur le réseau k8s   					     				#  
+#	*  Le loadBalancer est externe au cluster, il fonctionne sur réseau k8s 	#
+#       	- L'adresse IP du loadbalancer    :   172.21.0.100/24          		#
+#   	*  Les adresses/noms des noeuds sont attribuées	en statiques			#
+#			La résolution de nom est réaliser via fichier hosts					#
 # - Le réseau overlay est gérer par VxLAN à l'aide de Calico                    #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
 # - Le LABS est établie avec un maximum de 3 noeuds masters & 3 noeuds workers  #
