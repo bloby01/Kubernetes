@@ -149,10 +149,10 @@ EOF
 containerd(){
 if [ -f containerd-${VersionContainerD}-linux-amd64.tar.gz ]
 then
-	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
+	tar Cxzf /usr/local/bin/ containerd-${VersionContainerD}-linux-amd64.tar.gz
 else
 	wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
-	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
+	tar Cxzf /usr/local/bin/ containerd-${VersionContainerD}-linux-amd64.tar.gz
 fi
 mkdir -p /usr/local/lib/systemd/system/
 cat <<EOF | tee /usr/local/lib/systemd/system/containerd.service
