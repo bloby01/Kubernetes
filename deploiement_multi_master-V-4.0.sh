@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 #   Version script		: 4.0
-#   Deploiement sur Rocky Linux : 9
+#   Deploiement sur Rocky Linux : 10
 #   Version kubelet		: 1.34
 #   Version Containerd  : 2.2.0
 #   Version RunC 		: 1.4.0
