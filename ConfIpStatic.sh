@@ -48,9 +48,9 @@ esac
 if [ -d ./Kubernetes ]
 then
 cd Kubernetes
-sh 
+sh deploiement_multi_master-V-4.0.sh
 else
 git clone https://github.com/bloby01/Kubernetes
 cd Kubernetes
-sh 
+sh deploiement_multi_master-V-4.0.sh
 fi
