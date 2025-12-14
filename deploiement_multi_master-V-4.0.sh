@@ -680,23 +680,23 @@ firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 firewall-cmd --reload
 }
 nfs(){
-if [ -b /dev/vdb ]
+if [ -b /dev/sdb ]
 	then
-	echo "le périphérique disque vdb est présent"
+	echo "le périphérique disque sdb est présent"
 	else
-		echo "Pas de disque additionnel /dev/vdb pour le volume lvm de NFS ..."
+		echo "Pas de disque additionnel /dev/sdb pour le volume lvm de NFS, faire entré pour sortir ..."
 		read tt
 		exit 1
 fi
-if [ -b /dev/vdb ]
+if [ -b /dev/sdb ]
 	then
-	pvcreate /dev/vdb
-	vgcreate postgresVG /dev/vdb
-	lvcreate -n postgres -l 100%FREE postgresVG
-	mkfs -t xfs /dev/postgresVG/postgres
+	pvcreate /dev/sdb
+	vgcreate dataVG /dev/sdb
+	lvcreate -n volume1 -l 100%FREE dataVG
+	mkfs -t xfs /dev/dataVG/volume1
  	mkdir -p /srv/nfs/data
   	chown -R nobody: /srv/nfs/data
-	echo "/dev/postgresVG/postgres /srv/nfs/data xfs defaults 0 0" >> /etc/fstab
+	echo "/dev/dataVG/volume1 /srv/nfs/data xfs defaults 0 0" >> /etc/fstab
  	systemctl daemon-reload
   	mount /srv/nfs/data
 cat <<EOF | tee /etc/exports
