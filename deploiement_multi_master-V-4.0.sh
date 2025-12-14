@@ -708,7 +708,7 @@ fi
 }
 mkhosts () {
 cat <<EOF | tee /etc/hosts
-127.0.0.1 localhost
+127.0.0.1 localhost localhost.localdomain
 172.21.0.100 loadbalancer-k8s.mon.dom
 172.21.0.101 master1-k8s.mon.dom traefik.mon.dom w1.mon.dom  w2.mon.dom
 172.21.0.102 master2-k8s.mon.dom
