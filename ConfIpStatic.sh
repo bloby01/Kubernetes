@@ -1,12 +1,13 @@
 #!/bin/bash
 clear
 echo " Bienvenue dans le script d'installation IP du noeud"
-echo -n "Choisir  - A - pour configurer l'adressage IP de  master1"
-echo -n "Choisir  - B - pour configurer l'adressage IP de  master2"
-echo -n "Choisir  - C - pour configurer l'adressage IP de  master3"
-echo -n "Choisir  - 1 - pour configurer l'adressage IP de  worker1"
-echo -n "Choisir  - 2 - pour configurer l'adressage IP de  worker2"
-echo -n "Choisir  - 3 - pour configurer l'adressage IP de  worker3"
+echo "Choisir  - A - pour configurer l'adressage IP de  master1"
+echo "Choisir  - B - pour configurer l'adressage IP de  master2"
+echo "Choisir  - C - pour configurer l'adressage IP de  master3"
+echo "Choisir  - 1 - pour configurer l'adressage IP de  worker1"
+echo "Choisir  - 2 - pour configurer l'adressage IP de  worker2"
+echo "Choisir  - 3 - pour configurer l'adressage IP de  worker3"
+echo -n "Votre choix ? : "
 read choix
 case $choix in
     A)
