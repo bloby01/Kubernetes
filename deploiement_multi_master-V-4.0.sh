@@ -75,8 +75,8 @@ set -e
 #
 export numetape=0
 export NBR=0
-export appmaster="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni"
-export appworker="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni"
+export appmaster="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni openssl"
+export appworker="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni openssl"
 export appHAProxy="bash-completion wget haproxy nfs-utils bind-utils iproute-tc policycoreutils-python-utils"
 export VersionContainerD="2.2.0"
 export VersionRunC="1.4.0"
