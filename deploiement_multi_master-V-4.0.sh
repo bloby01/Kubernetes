@@ -9,7 +9,7 @@ set -e
 #   Version calico		: 3.31.2
 #   Version minimal Kubelet	: 1.29
 #
-#   Script de déploiment kubernetes en multi-masters avec LB HAPROXY sur KVM
+#   Script de déploiment kubernetes en multi-masters avec LB HAPROXY sur virtualbox
 #   By ste.cmc.merle@gmail.com
 #
 # Script destiné à faciliter le déploiement de cluster kubernetes en multi-master
