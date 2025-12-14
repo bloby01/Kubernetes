@@ -1,4 +1,9 @@
 #!/bin/bash
+
+echo -n "Voulez vous exécuter le script initial de configuration IP ? [yes/no] : "
+read rep
+if [ "$rep" = "yes" -o "$rep" = "YES" -o "$rep" = "y" -o "$rep" = "Y" ]
+then
 clear
 echo " Bienvenue dans le script d'installation IP du noeud"
 echo "Choisir  - A - pour configurer l'adressage IP de  master1"
@@ -45,10 +50,10 @@ case $choix in
         sh ./ConfIpStatic.sh
         ;;
 esac
-
-echo -n "Voulez vous exécuter le script initial de configuration IP ? [yes/no] : "
-read rep
-if [ "$rep" = "yes" -o "$rep" = "YES" -o "$rep" = "y" -o "$rep" = "Y" ]
+fi
+echo -n "Voulez vous installer Kubernetes ? [yes/no] : "
+read repKub
+if [ "$repKub" = "yes" -o "$repKub" = "YES" -o "$repKub" = "y" -o "$repKub" = "Y" ]
 then
 	if [ -d ./Kubernetes ]
 	then
