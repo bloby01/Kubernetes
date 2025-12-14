@@ -45,12 +45,18 @@ case $choix in
         sh ./ConfIpStatic.sh
         ;;
 esac
-if [ -d ./Kubernetes ]
+
+echo -n "Voulez vous exécuter le script initial de configuration IP ? [yes/no] : "
+read rep
+if [ "$rep" = "yes" -o "$rep" = "YES" -o "$rep" = "y" -o "$rep" = "Y" ]
 then
-cd Kubernetes
-sh deploiement_multi_master-V-4.0.sh
-else
-git clone https://github.com/bloby01/Kubernetes
-cd Kubernetes
-sh deploiement_multi_master-V-4.0.sh
+	if [ -d ./Kubernetes ]
+	then
+	cd Kubernetes
+	sh deploiement_multi_master-V-4.0.sh
+	else
+	git clone https://github.com/bloby01/Kubernetes
+	cd Kubernetes
+	sh deploiement_multi_master-V-4.0.sh
+	fi
 fi
