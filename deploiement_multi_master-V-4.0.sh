@@ -800,6 +800,7 @@ elif [ ${noeud} = "loadBalancer" ]
 then
 	hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
 	export node="loadBalancer"
+	mkhosts
 fi && \
 vrai="0"
 nom="Etape ${numetape} - Construction du nom d hote à ${noeud}${x}-k8s.mon.dom"
