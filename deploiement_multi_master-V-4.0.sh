@@ -31,16 +31,16 @@ set -e
 #                  |      |      master2 (172.21.0.102/24)                      #
 #                  |      |       |     master3 (172.21.0.103/24)               #
 #                  |      |       |     |                                       #
-#                  |_____ |       |     |                                       #
-#                        |-----------------|                                    #
-#      				     |  switch  interne|           			                #
+#                  |      |       |     |                                       #
+#                  |      _________________                                     #
+#      			   |_____|  switch  interne|           			                #
 #		                 |   172.21.0.0/24 |									#
-#                        |-----------------|                                    #
-#                        |     |      |                                         #
-#                        |     |      |                                         #
-#    (172.21.0.104/24)worker1  |      |                                         #
-#    		(172.21.0.105/24)worker2  |                                         #
-#           	 (172.21.0.106/24)worker3                                       #
+#                        |_________________|                                    #
+#                         |     |      |                                        #
+#                         |     |      |                                        #
+#     (172.21.0.104/24)worker1  |      |                                        #
+#     		(172.21.0.105/24)worker2   |                                        #
+#             	 (172.21.0.106/24)worker3                                       #
 #                                                                               #
 #                                                                               #
 #                                                                               #			
@@ -60,14 +60,9 @@ set -e
 #   	*  Les adresses/noms des noeuds sont attribuées	en statiques	#
 # - Le réseau overlay est gérer par VxLAN à l'aide de Calico                    #
 # - Les systèmes sont synchronisés sur le serveur de temps zone Europe/Paris    #
-# - Les services NAMED et DHCPD sont installés sur le loadBalancer		#
-# - Le LABS est établie avec un maximum de 3 noeuds masters & 6 noeuds workers  #
+# - Le LABS est établie avec un maximum de 3 noeuds masters & 3 noeuds workers  #
 # - L'API est joignable par le loadBalancer sur l'adresse 172.21.0.100:6443     #
-# - Firewalld désactivé
-#-------------------------------------------------------------------------------#
-#			PAS ENCORE OPERATIONNEL					#
-# - Les parefeux  firewalld sont configurer pour ne laisser passer que   le     #
-#    trict minimum + 80 et 443 TCP sur les worker				#
+# - Firewalld en trusted
 #################################################################################
 
 
@@ -742,7 +737,7 @@ done
 vrai="1"
 if [ ${noeud} = "worker" ]
 then
-	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
+	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
 	if [ "$HOSTNAME" = "worker1-k8s.mon.dom" ]
 	then
