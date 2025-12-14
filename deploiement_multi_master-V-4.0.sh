@@ -75,9 +75,9 @@ set -e
 #
 export numetape=0
 export NBR=0
-export appmaster="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
-export appworker="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
-export appHAProxy="bash-completion wget haproxy nfs-utils bind bind-utils iproute-tc policycoreutils-python-utils kea-dhcp4-server"
+export appmaster="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni"
+export appworker="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni"
+export appHAProxy="bash-completion wget haproxy nfs-utils bind-utils iproute-tc policycoreutils-python-utils"
 export VersionContainerD="2.2.0"
 export VersionRunC="1.4.0"
 export VersionCNI="1.9.0"
@@ -139,7 +139,6 @@ baseurl=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/
 enabled=1
 gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/repodata/repomd.xml.key
-exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 }
 #################################################
