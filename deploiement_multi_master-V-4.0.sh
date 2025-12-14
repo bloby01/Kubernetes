@@ -2,11 +2,11 @@
 set -e
 #   Version script		: 4.0
 #   Deploiement sur Rocky Linux : 9
-#   Version kubelet		: 1.32
-#   Version Containerd		: 2.1.3
-#   Version RunC 		: 1.3.0
-#   Version CNI-Plugin		: 1.7.1
-#   Version calico		: 3.29.1
+#   Version kubelet		: 1.34
+#   Version Containerd  : 2.2.0
+#   Version RunC 		: 1.4.0
+#   Version CNI-Plugin	: 1.9.0
+#   Version calico		: 3.31.2
 #   Version minimal Kubelet	: 1.29
 #
 #   Script de déploiment kubernetes en multi-masters avec LB HAPROXY sur KVM
@@ -20,24 +20,27 @@ set -e
 #################################################################################
 #                                                                               #
 #                       LABS  Kubernetes                                        #
-#                                                                               #
-#                         	LB	                                        #
-#			172.21.0.100/24						#
-#			       |						#				
-#                      master1 |                                                #
-#                        |     | master2                                        #
-#                        |     |  |     master3                                 #
-#                        |     |  |     |                                       #
-#                        |     |  |     |                                       #
-#                      -------------------                                      #
-#   INTERNET -- NAT ---|  switch  interne|-------Client kubectl                 #
-#		       |   172.21.0.0/24 |					#
-#                      |-----------------|                                      #
+#       INTERNET																#
+#            |																	#
+#  Client kubectl -|    														#
+#            192.168.x.x/xx														#
+#            	  LB NAT			    	      		                        #
+#			172.21.0.100/24														#
+#			       |															#				
+#                  |    master1 (172.21.0.101/24)                               #
+#                  |      |      master2 (172.21.0.102/24)                      #
+#                  |      |       |     master3 (172.21.0.103/24)               #
+#                  |      |       |     |                                       #
+#                  |_____ |       |     |                                       #
+#                        |-----------------|                                    #
+#      				     |  switch  interne|           			                #
+#		                 |   172.21.0.0/24 |									#
+#                        |-----------------|                                    #
 #                        |     |      |                                         #
 #                        |     |      |                                         #
-#                     worker1  |      |                                         #
-#                            worker2  |                                         #
-#                                 worker3                                       #
+#    (172.21.0.104/24)worker1  |      |                                         #
+#    		(172.21.0.105/24)worker2  |                                         #
+#           	 (172.21.0.106/24)worker3                                       #
 #                                                                               #
 #                                                                               #
 #                                                                               #			
@@ -79,10 +82,10 @@ export NBR=0
 export appmaster="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubelet kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appworker="bash-completion wget tar bind-utils nfs-utils kubelet iproute-tc kubeadm kubectl cri-tools kubernetes-cni --disableexcludes=kubernetes"
 export appHAProxy="bash-completion wget haproxy nfs-utils bind bind-utils iproute-tc policycoreutils-python-utils kea-dhcp4-server"
-export VersionContainerD="2.0.0"
-export VersionRunC="1.2.2"
-export VersionCNI="1.6.0"
-export VersionCalico="3.29.1"
+export VersionContainerD="2.2.0"
+export VersionRunC="1.4.0"
+export VersionCNI="1.9.0"
+export VersionCalico="3.31.2"
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
@@ -122,11 +125,11 @@ ChoixReseau(){
 
 #Fonction de contrôle du SELinux
 #
-SELinux(){
-	setenforce 0 && \
-	sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
-	grubby --update-kernel ALL --args selinux=0
-}
+#SELinux(){
+#	setenforce 0 && \
+#	sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
+#	grubby --update-kernel ALL --args selinux=0
+#}
 #################################################
 # 
 
@@ -223,218 +226,218 @@ fi
 
 # Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
 #
-named(){
-mkdir /var/named/dnssec
-rndc-confgen -a -r /dev/urandom
-chown root:named /etc/rndc.key
-chmod 660 /etc/rndc.key
-chown root:dhcpd /var/named && \
-chown root:dhcpd /etc/named && \
+#named(){
+#mkdir /var/named/dnssec
+#rndc-confgen -a -r /dev/urandom
+#chown root:named /etc/rndc.key
+#chmod 660 /etc/rndc.key
+#chown root:dhcpd /var/named && \
+#chown root:dhcpd /etc/named && \
 
-cat <<EOF | tee /etc/named.conf
-options {
-	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
-	listen-on-v6 port 53 { ::1; };
-	directory       "/etc/named";
-	dump-file       "/var/named/data/cache_dump.db";
-	statistics-file "/var/named/data/named_stats.txt";
-	memstatistics-file "/var/named/data/named_mem_stats.txt";
-	secroots-file   "/var/named/data/named.secroots";
-	recursing-file  "/var/named/data/named.recursing";
-	allow-query     { any; };
-	allow-new-zones yes;
-	recursion yes;
-	forwarders {8.8.8.8; 8.8.4.4; };
-	managed-keys-directory "/var/named/dynamic";
-	geoip-directory "/usr/share/GeoIP";
-	pid-file "/run/named/named.pid";
-	session-keyfile "/run/named/session.key";
- 	include "/etc/crypto-policies/back-ends/bind.config";
-  	dnssec-validation auto;
-    	key-directory "/var/named/dnssec";
-};
-zone "." IN {
-	type hint;
-	file "/var/named/named.ca";
-};
-include "/etc/rndc.key";
-controls {
-    inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { "rndc-key"; };
-};
-include "/etc/named.root.key";
-zone "mon.dom" in {
-	type master;
-	inline-signing yes;
-	auto-dnssec maintain;
-	file "/var/named/mon.dom.db";
-	allow-update { key "rndc-key"; };
-	allow-query { any;};
-	notify yes;
-	max-journal-size 50k;
-};
-zone "0.21.172.in-addr.arpa" in {
-	type master;
-	inline-signing yes;
-	auto-dnssec maintain;
-	file "/var/named/0.21.172.in-addr.arpa.db";
-	allow-update { key "rndc-key"; };
-	allow-query { any;};
-	notify yes;
-	max-journal-size 50k;
-};
-EOF
-}
+#cat <<EOF | tee /etc/named.conf
+#options {
+#	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
+#	listen-on-v6 port 53 { ::1; };
+#	directory       "/etc/named";
+#	dump-file       "/var/named/data/cache_dump.db";
+#	statistics-file "/var/named/data/named_stats.txt";
+#	memstatistics-file "/var/named/data/named_mem_stats.txt";
+#	secroots-file   "/var/named/data/named.secroots";
+#	recursing-file  "/var/named/data/named.recursing";
+#	allow-query     { any; };
+#	allow-new-zones yes;
+#	recursion yes;
+#	forwarders {8.8.8.8; 8.8.4.4; };
+#	managed-keys-directory "/var/named/dynamic";
+#	geoip-directory "/usr/share/GeoIP";
+#	pid-file "/run/named/named.pid";
+#	session-keyfile "/run/named/session.key";
+# 	include "/etc/crypto-policies/back-ends/bind.config";
+#  	dnssec-validation auto;
+#    	key-directory "/var/named/dnssec";
+#};
+#zone "." IN {
+#	type hint;
+#	file "/var/named/named.ca";
+#};
+#include "/etc/rndc.key";
+#controls {
+#    inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { "rndc-key"; };
+#};
+#include "/etc/named.root.key";
+#zone "mon.dom" in {
+#	type master;
+#	inline-signing yes;
+#	auto-dnssec maintain;
+#	file "/var/named/mon.dom.db";
+#	allow-update { key "rndc-key"; };
+#	allow-query { any;};
+#	notify yes;
+#	max-journal-size 50k;
+#};
+#zone "0.21.172.in-addr.arpa" in {
+#	type master;
+#	inline-signing yes;
+#	auto-dnssec maintain;
+#	file "/var/named/0.21.172.in-addr.arpa.db";
+#	allow-update { key "rndc-key"; };
+#	allow-query { any;};
+#	notify yes;
+#	max-journal-size 50k;
+#};
+#EOF
+#}
 #################################################
 # 
 
 # Fonction de configuration de la zone direct mon.dom
 #
-namedMonDom(){
-cat <<EOF | tee /var/named/mon.dom.db
-\$TTL 300
-@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
-	      1       ; serial
-	      600      ; refresh
-	      900      ; retry
-	      3600      ; expire
-	      300 )    ; minimum
-@             NS      loadBalancer-k8s.mon.dom.
-loadBalancer-k8s   A       172.21.0.100
-traefik     CNAME   worker1-k8s.mon.dom.
-w1          CNAME   worker2-k8s.mon.dom.
-w2          CNAME   worker3-k8s.mon.dom.
-w3          CNAME   worker1-k8s.mon.dom.
-w4          CNAME   worker2-k8s.mon.dom.
-EOF
-}
+#namedMonDom(){
+#cat <<EOF | tee /var/named/mon.dom.db
+#\$TTL 300
+#@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
+#	      1       ; serial
+#	      600      ; refresh
+#	      900      ; retry
+#	      3600      ; expire
+#	      300 )    ; minimum
+#@             NS      loadBalancer-k8s.mon.dom.
+#loadBalancer-k8s   A       172.21.0.100
+#traefik     CNAME   worker1-k8s.mon.dom.
+#w1          CNAME   worker2-k8s.mon.dom.
+#w2          CNAME   worker3-k8s.mon.dom.
+#w3          CNAME   worker1-k8s.mon.dom.
+#w4          CNAME   worker2-k8s.mon.dom.
+#EOF
+#}
 #################################################
 # 
 
 # Fonction de configuration de la zone reverse named
 #
-namedRevers(){
-cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
-\$TTL 300
-@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
-	      1       ; serial
-	      600      ; refresh
-	      900      ; retry
-	      3600      ; expire
-	      300 )    ; minimum
-@             NS      loadBalancer-k8s.mon.dom.
-100           PTR     loadBalancer-k8s.mon.dom.
-EOF
-chown -R named:dhcpd /etc/named/ && \
-chmod 770 /etc/named && \
-chown -R named:dhcpd /var/named/ && \
-chmod 660 /var/named/mon.dom.db && \
-chmod 660 /var/named/0.21.172.in-addr.arpa.db && \
-chmod -R 770 /var/named/dynamic
-}
-#################################################
+#namedRevers(){
+#cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
+#\$TTL 300
+#@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
+#	      1       ; serial
+#	      600      ; refresh
+#	      900      ; retry
+#	      3600      ; expire
+#	      300 )    ; minimum
+#@             NS      loadBalancer-k8s.mon.dom.
+#100           PTR     loadBalancer-k8s.mon.dom.
+#EOF
+#chown -R named:dhcpd /etc/named/ && \
+#chmod 770 /etc/named && \
+#chown -R named:dhcpd /var/named/ && \
+#chmod 660 /var/named/mon.dom.db && \
+#chmod 660 /var/named/0.21.172.in-addr.arpa.db && \
+#chmod -R 770 /var/named/dynamic
+#}
+##################################################
 # 
 
 # Fonction de configuration des parametres communs du dhcp
 #
-dhcp(){
-cat <<EOF | tee /etc/kea/kea-dhcp4.conf
-{
-  "Dhcp4": {
-    "interfaces-config": {
-      "interfaces": [ "*" ]
-    },
-    "lease-database": {
-      "type": "memfile",
-      "persist": true,
-      "name": "/var/lib/kea/dhcp4.leases"
-    },
-    "option-data": [
-      {
-        "name": "domain-name",
-        "data": "mon.dom"
-      },
-      {
-        "name": "domain-name-servers",
-        "data": "172.21.0.100"
-      }
-    ],
-    "valid-lifetime": 600,
-    "renew-timer": 300,
-    "rebind-timer": 525,
-    "subnet4": [
-      {
-        "subnet": "172.21.0.0/24",
-        "pools": [
-          {
-            "pool": "172.21.0.101 - 172.21.0.109"
-          }
-        ],
-        "option-data": [
-          {
-            "name": "routers",
-            "data": "172.21.0.100"
-          },
-          {
-            "name": "broadcast-address",
-            "data": "172.21.0.255"
-          }
-        ],
-        "ddns": {
-          "hostname": true,
-          "qualifying-suffix": "mon.dom.",
-          "reverse-dns": true
-        }
-      }
-    ],
-    "loggers": [
-      {
-        "name": "kea-dhcp4",
-        "output_options": [
-          {
-            "output": "/var/log/kea-dhcp4.log",
-            "pattern": "%d{%Y-%m-%d %H:%M:%S.%q} %m\n"
-          }
-        ],
-        "severity": "INFO",
-        "debuglevel": 0
-      }
-    ],
-    "dhcp-ddns": {
-      "enable-updates": true,
-      "qualifying-suffix": "mon.dom.",
-      "server-ip": "172.21.0.100",
-      "server-port": 53001,
-      "sender-ip": "0.0.0.0",
-      "sender-port": 0,
-      "max-queue-size": 1024,
-      "ncr-protocol": "UDP",
-      "ncr-format": "JSON",
-      "tsig-keys": [
-        {
-          "name": "rndc-key",
-          "algorithm": "HMAC-SHA256",
-          "secret": "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg="
-        }
-      ]
-    }
-  },
-  "Logging": {
-    "loggers": [
-      {
-        "name": "kea-dhcp4",
-        "severity": "INFO",
-        "output_options": [
-          {
-            "output": "syslog"
-          }
-        ]
-      }
-    ]
-  }
-}
-}
-EOF
-}
+#dhcp(){
+#cat <<EOF | tee /etc/kea/kea-dhcp4.conf
+#{
+#  "Dhcp4": {
+#    "interfaces-config": {
+#      "interfaces": [ "*" ]
+#    },
+#    "lease-database": {
+#      "type": "memfile",
+#      "persist": true,
+#      "name": "/var/lib/kea/dhcp4.leases"
+#    },
+#    "option-data": [
+#      {
+#        "name": "domain-name",
+#        "data": "mon.dom"
+#      },
+#      {
+#        "name": "domain-name-servers",
+#        "data": "172.21.0.100"
+#      }
+#    ],
+#    "valid-lifetime": 600,
+#    "renew-timer": 300,
+#    "rebind-timer": 525,
+#    "subnet4": [
+#      {
+#        "subnet": "172.21.0.0/24",
+#        "pools": [
+#          {
+#            "pool": "172.21.0.101 - 172.21.0.109"
+#          }
+#        ],
+#        "option-data": [
+#          {
+#            "name": "routers",
+#            "data": "172.21.0.100"
+#          },
+#          {
+#            "name": "broadcast-address",
+#            "data": "172.21.0.255"
+#          }
+#        ],
+#        "ddns": {
+#          "hostname": true,
+#          "qualifying-suffix": "mon.dom.",
+#          "reverse-dns": true
+#        }
+#      }
+#    ],
+#    "loggers": [
+#      {
+#        "name": "kea-dhcp4",
+#        "output_options": [
+#          {
+#            "output": "/var/log/kea-dhcp4.log",
+#            "pattern": "%d{%Y-%m-%d %H:%M:%S.%q} %m\n"
+#          }
+#        ],
+#        "severity": "INFO",
+#        "debuglevel": 0
+#      }
+#    ],
+#    "dhcp-ddns": {
+#      "enable-updates": true,
+#      "qualifying-suffix": "mon.dom.",
+#      "server-ip": "172.21.0.100",
+#      "server-port": 53001,
+#      "sender-ip": "0.0.0.0",
+#      "sender-port": 0,
+#      "max-queue-size": 1024,
+#      "ncr-protocol": "UDP",
+#      "ncr-format": "JSON",
+#      "tsig-keys": [
+#        {
+#          "name": "rndc-key",
+#          "algorithm": "HMAC-SHA256",
+#          "secret": "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg="
+#        }
+#      ]
+#    }
+#  },
+#  "Logging": {
+#    "loggers": [
+#      {
+#        "name": "kea-dhcp4",
+#        "severity": "INFO",
+#        "output_options": [
+#          {
+#            "output": "syslog"
+#          }
+#        ]
+#      }
+#    ]
+#  }
+#}
+#}
+#EOF
+#}
 #################################################
 # 
 
@@ -653,7 +656,9 @@ parefeuNoeudsMaster(){
 #firewall-cmd --add-port=443/tcp --permanent && \
 #firewall-cmd --add-port=4343/tcp --permanent && \
 #firewall-cmd --reload
-systemctl disable --now firewalld
+firewall-cmd  --set-default-zone trusted && \
+firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+firewall-cmd --reload
 }
 parefeuNoeudsWorker(){
 #firewall-cmd  --set-default-zone block && \
@@ -675,7 +680,9 @@ parefeuNoeudsWorker(){
 #firewall-cmd --add-port=30000-32767/tcp --permanent && \
 #firewall-cmd --add-port=30000-32767/udp --permanent && \
 #firewall-cmd --reload
-systemctl disable --now firewalld
+firewall-cmd  --set-default-zone trusted && \
+firewall-cmd --add-interface=lo --zone=trusted --permanent && \
+firewall-cmd --reload
 }
 nfs(){
 if [ -b /dev/vdb ]
@@ -704,62 +711,104 @@ EOF
       	exportfs -rav
 fi
 }
+mkhosts () {
+cat <<EOF | tee /etc/hosts
+127.0.0.1 localhost
+172.21.0.100 loadbalancer-k8s.mon.dom
+172.21.0.101 master1-k8s.mon.dom traefik.mon.dom w1.mon.dom  w2.mon.dom
+172.21.0.102 master2-k8s.mon.dom
+172.21.0.103 master3-k8s.mon.dom
+172.21.0.104 worker1-k8s.mon.dom
+172.21.0.105 worker2-k8s.mon.dom
+172.21.0.106 worker3-k8s.mon.dom
+EOF
+}
 ###################################################################################################
 #                                                                                                 #
 #                             Debut de la séquence d'Installation                                 #
 #                                                                                                 #
 ###################################################################################################
-#		Appel du script de construction de VMs
-sh ./makeVMonKVM.sh
 ############################################################################################
 #                                                                                          #
 #                       Paramètres communs LB HAProxy, master et worker                    #
 #                                                                                          #
 ############################################################################################
-#clear
-#until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "loadBalancer" ]
-#do
-#	echo -n 'Indiquez si cette machine doit être "loadBalancer ou master" ou "worker", mettre en toutes lettres votre réponse: '
-#	read noeud
-#done
-#vrai="1"
-#if [ ${noeud} = "worker" ]
-#then
-#	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
-#	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
-#	systemctl restart NetworkManager
-#	export node="worker"
-# 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
-#  	read vk8s
-#   	export Version_k8s="$vk8s"
-#elif [ ${noeud} = "master" ]
-#then
-#	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
-#	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
-#	systemctl restart NetworkManager
-#	export node="master"
-# 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
-#  	read vk8s
-#   	export Version_k8s="$vk8s"
-#		if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
-#		then 
-#			first="yes"
-#			until [ "${Reseau}" == "calico" -o "${Reseau}" == "flannel" ]
-#   			do
-#      				echo -n "Quel type de réseau CNI voulez-vous déployer ? calico / flannel : "
-#      				read Reseau
-#	 		done
-#		else
-#			first="no"
-#		fi
-#elif [ ${noeud} = "loadBalancer" ]
-#then
-#	hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
-#	export node="loadBalancer"
-#fi && \
-#vrai="0"
-#nom="Etape ${numetape} - Construction du nom d hote à ${noeud}${x}-k8s.mon.dom"
-#verif
+clear
+until [ "${noeud}" = "worker" -o "${noeud}" = "master" -o "${noeud}" = "loadBalancer" ]
+do
+	echo -n 'Indiquez si cette machine doit être "loadBalancer ou master" ou "worker", mettre en toutes lettres votre réponse: '
+	read noeud
+done
+vrai="1"
+if [ ${noeud} = "worker" ]
+then
+	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 6 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
+	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
+	if [ "$HOSTNAME" = "worker1-k8s.mon.dom" ]
+	then
+    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.104/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
+	nmcli connection up enp0s3
+	mkhosts
+	elif  [ "$HOSTNAME" = "worker2-k8s.mon.dom" ]
+	then
+    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.105/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
+	nmcli connection up enp0s3
+	mkhosts
+	elif  [ "$HOSTNAME" = "worker3-k8s.mon.dom" ]
+	then
+    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.106/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
+	nmcli connection up enp0s3
+	mkhosts
+	fi
+	systemctl restart NetworkManager
+	export node="worker"
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
+  	read vk8s
+   	export Version_k8s="$vk8s"
+elif [ ${noeud} = "master" ]
+then
+	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
+	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
+	if [ "$HOSTNAME" = "master1-k8s.mon.dom" ]
+	then
+    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.101/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
+	nmcli connection up enp0s3
+	mkhosts
+	elif  [ "$HOSTNAME" = "master2-k8s.mon.dom" ]
+	then
+    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.102/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
+	nmcli connection up enp0s3
+	mkhosts
+	elif  [ "$HOSTNAME" = "master3-k8s.mon.dom" ]
+	then
+    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.103/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
+	nmcli connection up enp0s3
+	mkhosts
+	fi
+	systemctl restart NetworkManager
+	export node="master"
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
+  	read vk8s
+   	export Version_k8s="$vk8s"
+		if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
+		then 
+			first="yes"
+			until [ "${Reseau}" == "calico" -o "${Reseau}" == "flannel" ]
+   			do
+      				echo -n "Quel type de réseau CNI voulez-vous déployer ? calico / flannel : "
+      				read Reseau
+	 		done
+		else
+			first="no"
+		fi
+elif [ ${noeud} = "loadBalancer" ]
+then
+	hostnamectl  set-hostname  loadBalancer-k8s.mon.dom
+	export node="loadBalancer"
+fi && \
+vrai="0"
+nom="Etape ${numetape} - Construction du nom d hote à ${noeud}${x}-k8s.mon.dom"
+verif
 #
 ############################################################################################
 #                                                                                          #
@@ -804,26 +853,26 @@ then
 	# Configuration et démarrage du serveur BIND9.
 	#
 	#
-	vrai="1"
-	echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
-	named && \
-	namedMonDom && \
-	namedRevers && \
- 	mkdir -p /var/named/dnssec/ && \
-  	cd /var/named/dnssec/ && \
-	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE mon.dom && \
-	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK mon.dom && \
-	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE 0.21.172.in-addr.arpa && \
-	dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK 0.21.172.in-addr.arpa && \
- 	chmod 660 /var/named/dnssec/* && \
-	chown -R named:named /var/named/dnssec/ && \
-	semanage permissive -a named_t && \
-	systemctl enable --now named.service && \
- 	chown named:dhcpd /etc/rndc.key && \
-  	chmod 440 /etc/rndc.key && \
-	vrai="0"
-	nom="Etape ${numetape} - Configuration et demarrage de bind"
-	verif
+	#vrai="1"
+	#echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
+	#named && \
+	#namedMonDom && \
+	#namedRevers && \
+ 	#mkdir -p /var/named/dnssec/ && \
+  	#cd /var/named/dnssec/ && \
+	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE mon.dom && \
+	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK mon.dom && \
+	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE 0.21.172.in-addr.arpa && \
+	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK 0.21.172.in-addr.arpa && \
+ 	#chmod 660 /var/named/dnssec/* && \
+	#chown -R named:named /var/named/dnssec/ && \
+	#semanage permissive -a named_t && \
+	#systemctl enable --now named.service && \
+ 	#chown named:dhcpd /etc/rndc.key && \
+  	#chmod 440 /etc/rndc.key && \
+	#vrai="0"
+	#nom="Etape ${numetape} - Configuration et demarrage de bind"
+	#verif
 	
 	#################################################
 	# 
@@ -863,26 +912,26 @@ then
 	# configuration du dhcp avec inscription dans le DNS
 	#
 	#
-	vrai="1"
-	dhcp && \
-        ip link show
-        echo -n "Renseigner le nom de la carte réseau : "
-        read Carte
-        sed -i 's/.pid/& '${Carte}'/' /usr/lib/systemd/system/dhcpd.service && \
-	vrai="0"
-	nom="Etape ${numetape} - Installation et configuration du service DHCP sur loadBalancer-k8s.mon.dom"
-	verif
+	#vrai="1"
+	#dhcp && \
+    #    ip link show
+    #    echo -n "Renseigner le nom de la carte réseau : "
+    #    read Carte
+    #    sed -i 's/.pid/& '${Carte}'/' /usr/lib/systemd/system/dhcpd.service && \
+	#vrai="0"
+	#nom="Etape ${numetape} - Installation et configuration du service DHCP sur loadBalancer-k8s.mon.dom"
+	#verif
 	################################################
 	#
 	# modification des droits SELINUX sur dhcpd et start du service
 	#
 	#
-	vrai="1"
-	semanage permissive -a dhcpd_t && \
-	systemctl enable  --now  kea-dhcp4-server && \
-	vrai="0"
-	nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
-	verif
+	#vrai="1"
+	#semanage permissive -a dhcpd_t && \
+	#systemctl enable  --now  kea-dhcp4-server && \
+	#vrai="0"
+	#nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
+	#verif
 fi
 
 ############################################################################################
@@ -958,11 +1007,11 @@ then
 	# 
 	# Configuration SELinux à permissive.
 	#
-	vrai="1"
-	SELinux && \
-	vrai="0"
-	nom="Etape ${numetape} - Configuration du SElinux à : disabled "
-	verif
+	#vrai="1"
+	#SELinux && \
+	#vrai="0"
+	#nom="Etape ${numetape} - Configuration du SElinux à : disabled "
+	#verif
 	#################################################
 	# 
 	# Configuration du temps.
@@ -1191,11 +1240,11 @@ then
 	# 
 	# Configuration SELinux à permissive.
 	#
-	vrai="1"
-	SELinux && \
-	vrai="0"
-	nom="Etape ${numetape} - Configuration du SElinux à : disabled "
-	verif
+	#vrai="1"
+	#SELinux && \
+	#vrai="0"
+	#nom="Etape ${numetape} - Configuration du SElinux à : disabled "
+	#verif
 	#################################################
 	# 
 	# Installation du repo de Kubernetes
