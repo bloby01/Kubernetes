@@ -739,22 +739,7 @@ if [ ${noeud} = "worker" ]
 then
 	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "7" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
-	if [ "$HOSTNAME" = "worker1-k8s.mon.dom" ]
-	then
-    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.104/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
-	nmcli connection up enp0s3
 	mkhosts
-	elif  [ "$HOSTNAME" = "worker2-k8s.mon.dom" ]
-	then
-    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.105/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
-	nmcli connection up enp0s3
-	mkhosts
-	elif  [ "$HOSTNAME" = "worker3-k8s.mon.dom" ]
-	then
-    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.106/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
-	nmcli connection up enp0s3
-	mkhosts
-	fi
 	systemctl restart NetworkManager
 	export node="worker"
  	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
@@ -764,22 +749,7 @@ elif [ ${noeud} = "master" ]
 then
 	x=0 ; until [ "${x}" -gt "0" -a "${x}" -lt "4" ] ; do echo -n "Mettez un numéro de ${noeud} à installer - 1 à 3 ... pour ${noeud}1-k8s.mon.dom, mettre: 1 : " ; read x ; done
 	hostnamectl  set-hostname  ${noeud}${x}-k8s.mon.dom
-	if [ "$HOSTNAME" = "master1-k8s.mon.dom" ]
-	then
-    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.101/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
-	nmcli connection up enp0s3
 	mkhosts
-	elif  [ "$HOSTNAME" = "master2-k8s.mon.dom" ]
-	then
-    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.102/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
-	nmcli connection up enp0s3
-	mkhosts
-	elif  [ "$HOSTNAME" = "master3-k8s.mon.dom" ]
-	then
-    nmcli connection modify enp0s3 ipv4.addresses 172.21.0.103/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
-	nmcli connection up enp0s3
-	mkhosts
-	fi
 	systemctl restart NetworkManager
 	export node="master"
  	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
