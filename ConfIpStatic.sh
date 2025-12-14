@@ -45,3 +45,12 @@ case $choix in
         sh ./ConfIpStatic.sh
         ;;
 esac
+if [ -d ./Kubernetes ]
+then
+cd Kubernetes
+sh 
+else
+git clone https://github.com/bloby01/Kubernetes
+cd Kubernetes
+sh 
+fi
