@@ -684,7 +684,7 @@ if [ -b /dev/sdb ]
 	then
 	echo "le périphérique disque sdb est présent"
 	else
-		echo "Pas de disque additionnel /dev/sdb pour le volume lvm de NFS, faire entré pour sortir ..."
+		echo "Pas de disque additionnel /dev/sdb pour le volume lvm de NFS, faire valider pour sortir et ajouter un disque à la machine ..."
 		read tt
 		exit 1
 fi
