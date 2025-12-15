@@ -151,7 +151,7 @@ if [ -f containerd-${VersionContainerD}-linux-amd64.tar.gz ]
 then
 	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
 else
-	wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz && \
+	scp root@master1-k8s.mon.dom:Kubernetes/containerd-${VersionContainerD}-linux-amd64.tar.gz .
 	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
 fi
 mkdir -p /usr/local/lib/systemd/system/
@@ -203,17 +203,18 @@ if [ -f runc.amd64 ]
 then
 	install -m  755 runc.amd64  /usr/local/bin/runc
 else
-	wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
+	scp root@master1-k8s.mon.dom:Kubernetes/runc.amd64 . && \
 	install -m  755 runc.amd64  /usr/local/bin/runc
 fi
+
 if [ -f cni-plugins-linux-amd64-v${VersionCNI}.tgz ]
 then
-mkdir -p /opt/cni/bin && \
-tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
+	mkdir -p /opt/cni/bin && \
+	tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 else
-wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
-mkdir -p /opt/cni/bin && \
-tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
+	scp root@master1-k8s.mon.dom:Kubernetes/cni-plugins-linux-amd64-v${VersionCNI}.tgz . && \
+	mkdir -p /opt/cni/bin && \
+	tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 fi
 }
 #################################################
