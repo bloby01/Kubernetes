@@ -1,5 +1,9 @@
 #!/bin/sh
 set -e
+#												FONCTIONNEL !
+#
+# vm de bases: https://drive.google.com/file/d/1bj-_BYa25Ms36Qy1aEb82C29UKZ3aTlD/view?usp=sharing
+#
 #   Version script		: 4.0
 #   Deploiement sur Rocky Linux : 10
 #   Version kubelet		: 1.34
