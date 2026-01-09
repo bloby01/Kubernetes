@@ -213,7 +213,7 @@ else
 	scp root@master1-k8s.mon.dom:Kubernetes/runc.amd64 . && \
 	install -m  755 runc.amd64  /usr/local/bin/runc
 fi
-
+wget https://github.com/containernetworking/plugins/releases/download/v${VersionCNI}/cni-plugins-linux-amd64-v${VersionCNI}.tgz && \
 if [ -f cni-plugins-linux-amd64-v${VersionCNI}.tgz ]
 then
 	mkdir -p /opt/cni/bin && \
