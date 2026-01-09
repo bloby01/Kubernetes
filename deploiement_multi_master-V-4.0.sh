@@ -205,6 +205,7 @@ WantedBy=multi-user.target
 EOF
 systemctl daemon-reload && \
 systemctl enable --now containerd && \
+wget https://github.com/opencontainers/runc/releases/download/v${VersionRunC}/runc.amd64 && \
 if [ -f runc.amd64 ]
 then
 	install -m  755 runc.amd64  /usr/local/bin/runc
