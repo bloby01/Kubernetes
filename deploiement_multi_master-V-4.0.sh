@@ -150,6 +150,7 @@ EOF
 
 # Fonction d'installation de containerd en derniere version stable
 #
+#################################################
 containerd(){
 if [ -f containerd-${VersionContainerD}-linux-amd64.tar.gz ]
 then
@@ -221,237 +222,21 @@ else
 	tar Cxzf /opt/cni/bin/ cni-plugins-linux-amd64-v${VersionCNI}.tgz
 fi
 }
+
 #################################################
 # 
-
-# Fonction de configuration de /etc/named.conf & /etc/named/rndc.conf
-#
-#named(){
-#mkdir /var/named/dnssec
-#rndc-confgen -a -r /dev/urandom
-#chown root:named /etc/rndc.key
-#chmod 660 /etc/rndc.key
-#chown root:dhcpd /var/named && \
-#chown root:dhcpd /etc/named && \
-
-#cat <<EOF | tee /etc/named.conf
-#options {
-#	listen-on port 53 { 172.21.0.100; 127.0.0.1; };
-#	listen-on-v6 port 53 { ::1; };
-#	directory       "/etc/named";
-#	dump-file       "/var/named/data/cache_dump.db";
-#	statistics-file "/var/named/data/named_stats.txt";
-#	memstatistics-file "/var/named/data/named_mem_stats.txt";
-#	secroots-file   "/var/named/data/named.secroots";
-#	recursing-file  "/var/named/data/named.recursing";
-#	allow-query     { any; };
-#	allow-new-zones yes;
-#	recursion yes;
-#	forwarders {8.8.8.8; 8.8.4.4; };
-#	managed-keys-directory "/var/named/dynamic";
-#	geoip-directory "/usr/share/GeoIP";
-#	pid-file "/run/named/named.pid";
-#	session-keyfile "/run/named/session.key";
-# 	include "/etc/crypto-policies/back-ends/bind.config";
-#  	dnssec-validation auto;
-#    	key-directory "/var/named/dnssec";
-#};
-#zone "." IN {
-#	type hint;
-#	file "/var/named/named.ca";
-#};
-#include "/etc/rndc.key";
-#controls {
-#    inet 127.0.0.1 port 953 allow { 127.0.0.1; } keys { "rndc-key"; };
-#};
-#include "/etc/named.root.key";
-#zone "mon.dom" in {
-#	type master;
-#	inline-signing yes;
-#	auto-dnssec maintain;
-#	file "/var/named/mon.dom.db";
-#	allow-update { key "rndc-key"; };
-#	allow-query { any;};
-#	notify yes;
-#	max-journal-size 50k;
-#};
-#zone "0.21.172.in-addr.arpa" in {
-#	type master;
-#	inline-signing yes;
-#	auto-dnssec maintain;
-#	file "/var/named/0.21.172.in-addr.arpa.db";
-#	allow-update { key "rndc-key"; };
-#	allow-query { any;};
-#	notify yes;
-#	max-journal-size 50k;
-#};
-#EOF
-#}
-#################################################
-# 
-
-# Fonction de configuration de la zone direct mon.dom
-#
-#namedMonDom(){
-#cat <<EOF | tee /var/named/mon.dom.db
-#\$TTL 300
-#@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
-#	      1       ; serial
-#	      600      ; refresh
-#	      900      ; retry
-#	      3600      ; expire
-#	      300 )    ; minimum
-#@             NS      loadBalancer-k8s.mon.dom.
-#loadBalancer-k8s   A       172.21.0.100
-#traefik     CNAME   worker1-k8s.mon.dom.
-#w1          CNAME   worker2-k8s.mon.dom.
-#w2          CNAME   worker3-k8s.mon.dom.
-#w3          CNAME   worker1-k8s.mon.dom.
-#w4          CNAME   worker2-k8s.mon.dom.
-#EOF
-#}
-#################################################
-# 
-
-# Fonction de configuration de la zone reverse named
-#
-#namedRevers(){
-#cat <<EOF | tee /var/named/0.21.172.in-addr.arpa.db
-#\$TTL 300
-#@       IN SOA  loadBalancer-k8s.mon.dom. root.loadBalancer-k8s.mon.dom. (
-#	      1       ; serial
-#	      600      ; refresh
-#	      900      ; retry
-#	      3600      ; expire
-#	      300 )    ; minimum
-#@             NS      loadBalancer-k8s.mon.dom.
-#100           PTR     loadBalancer-k8s.mon.dom.
-#EOF
-#chown -R named:dhcpd /etc/named/ && \
-#chmod 770 /etc/named && \
-#chown -R named:dhcpd /var/named/ && \
-#chmod 660 /var/named/mon.dom.db && \
-#chmod 660 /var/named/0.21.172.in-addr.arpa.db && \
-#chmod -R 770 /var/named/dynamic
-#}
-##################################################
-# 
-
-# Fonction de configuration des parametres communs du dhcp
-#
-#dhcp(){
-#cat <<EOF | tee /etc/kea/kea-dhcp4.conf
-#{
-#  "Dhcp4": {
-#    "interfaces-config": {
-#      "interfaces": [ "*" ]
-#    },
-#    "lease-database": {
-#      "type": "memfile",
-#      "persist": true,
-#      "name": "/var/lib/kea/dhcp4.leases"
-#    },
-#    "option-data": [
-#      {
-#        "name": "domain-name",
-#        "data": "mon.dom"
-#      },
-#      {
-#        "name": "domain-name-servers",
-#        "data": "172.21.0.100"
-#      }
-#    ],
-#    "valid-lifetime": 600,
-#    "renew-timer": 300,
-#    "rebind-timer": 525,
-#    "subnet4": [
-#      {
-#        "subnet": "172.21.0.0/24",
-#        "pools": [
-#          {
-#            "pool": "172.21.0.101 - 172.21.0.109"
-#          }
-#        ],
-#        "option-data": [
-#          {
-#            "name": "routers",
-#            "data": "172.21.0.100"
-#          },
-#          {
-#            "name": "broadcast-address",
-#            "data": "172.21.0.255"
-#          }
-#        ],
-#        "ddns": {
-#          "hostname": true,
-#          "qualifying-suffix": "mon.dom.",
-#          "reverse-dns": true
-#        }
-#      }
-#    ],
-#    "loggers": [
-#      {
-#        "name": "kea-dhcp4",
-#        "output_options": [
-#          {
-#            "output": "/var/log/kea-dhcp4.log",
-#            "pattern": "%d{%Y-%m-%d %H:%M:%S.%q} %m\n"
-#          }
-#        ],
-#        "severity": "INFO",
-#        "debuglevel": 0
-#      }
-#    ],
-#    "dhcp-ddns": {
-#      "enable-updates": true,
-#      "qualifying-suffix": "mon.dom.",
-#      "server-ip": "172.21.0.100",
-#      "server-port": 53001,
-#      "sender-ip": "0.0.0.0",
-#      "sender-port": 0,
-#      "max-queue-size": 1024,
-#      "ncr-protocol": "UDP",
-#      "ncr-format": "JSON",
-#      "tsig-keys": [
-#        {
-#          "name": "rndc-key",
-#          "algorithm": "HMAC-SHA256",
-#          "secret": "NhuVu5l48qkjmAL32GRfIy/rzcGtSLeRyMxki+GRuyg="
-#        }
-#      ]
-#    }
-#  },
-#  "Logging": {
-#    "loggers": [
-#      {
-#        "name": "kea-dhcp4",
-#        "severity": "INFO",
-#        "output_options": [
-#          {
-#            "output": "syslog"
-#          }
-#        ]
-#      }
-#    ]
-#  }
-#}
-#}
-#EOF
-#}
-#################################################
-# 
-
 # Fonction  de configuration du swap à off
 #
+#################################################
 Swap(){
 swapoff   -a && \
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 }
-######################################################################
+####################################################
 #
-
 # Fonction de configuration du module bridge
 #
+####################################################
 moduleBr(){
 modprobe  br_netfilter && \
 cat <<EOF | tee /etc/rc.modules
@@ -467,48 +252,48 @@ net.bridge.bridge-nf-call-ip6tables=1
 net.ipv4.ip_forward=1
 EOF
 }
-#######################################################################
+#######################################################
 #
-
 # Fonction de serveur de temps
 #
+#######################################################
 temps(){
 timedatectl set-timezone "Europe/Paris" && \
 timedatectl set-ntp true && \
 systemctl restart chronyd && \
 chronyc tracking 
 }
-#######################################################################
+########################################################
 #
-
 # Fonction de création des clés pour ssh-copy-id
 #
+########################################################
 CopyIdRootSrvSupp(){
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
-#######################################################################
+#########################################################
 #
-
 # Fonction de création des clés pour ssh-copy-id
 #
+#########################################################
 CopyIdRoot(){
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@master1-k8s.mon.dom
 }
-#######################################################################
+###########################################################
 #
-
 # Fonction de création des clés pour ssh-copy-id
 #
+###########################################################
 CopyIdLB(){
 ssh-keygen -b 4096 -t rsa -f ~/.ssh/id_rsa -P "" && \
 ssh-copy-id -i ~/.ssh/id_rsa.pub root@loadBalancer-k8s.mon.dom
 }
-#######################################################################
+##############################################################
 #
-
 # Fonction de récupération du token et sha256 de cacert
 #
+##############################################################
 RecupToken(){
 alias master1="ssh root@master1-k8s.mon.dom" && \
 scp root@master1-k8s.mon.dom:noeudsupplementaires.txt ~/. && \
@@ -525,11 +310,11 @@ export CertsKey=$(grep certificate-key ~/noeudsupplementaires.txt | head -1) && 
 export tokencaworker=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'` && \
 export tokensha=`master1 openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'`
 }
-#################################################
+#############################################################
 # 
-
 # Démarrage du service kubelet
 #
+#############################################################
 StartServiceKubelet(){
 mkdir -p /var/lib/kubelet/ && \
 cat <<EOF | tee /var/lib/kubelet/config.yaml
@@ -548,11 +333,11 @@ EOF
 systemctl daemon-reload && \
 systemctl enable --now kubelet
 }
-#####################################################################
+################################################################
 #
-
 # configuration du service haproxy
 #
+################################################################
 ConfHaProxy(){
 cat <<EOF | tee /etc/haproxy/haproxy.cfg
 global
@@ -614,76 +399,35 @@ EOF
 }
 #################################################
 # 
-
 # Ouverture du passage des flux IN sur les interfaces réseaux
 #
+#################################################
 parefeuLB(){
-#firewall-cmd  --set-default-zone block && \
-#firewall-cmd --add-interface=lo --zone=trusted && \
-#firewall-cmd --add-port=6443/tcp --permanent && \
-#firewall-cmd --add-port=22/tcp --permanent && \
-#firewall-cmd --add-port=2049/tcp --permanent && \
-#firewall-cmd --add-port=67/udp --permanent && \
-#firewall-cmd --add-port=53/udp --permanent && \
-#firewall-cmd --reload
 firewall-cmd  --set-default-zone trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 firewall-cmd --reload
 }
 #################################################
 # 
-
 # Ouverture du passage des flux IN sur les interfaces réseaux
 #
+#################################################
 parefeuNoeudsMaster(){
-#firewall-cmd  --set-default-zone block && \
-#firewall-cmd --add-interface=lo --zone=trusted && \
-#firewall-cmd --add-port=6443/tcp --permanent && \
-#firewall-cmd --add-port=22/tcp --permanent && \
-#firewall-cmd --add-port=2379/tcp --permanent && \
-#firewall-cmd --add-port=2380/tcp --permanent && \
-#firewall-cmd --add-port=10250/tcp --permanent && \
-#firewall-cmd --add-port=10256/tcp --permanent && \
-#firewall-cmd --add-port=179/tcp --permanent && \
-#firewall-cmd --add-port=4789/udp --permanent && \
-#firewall-cmd --add-port=8080/tcp --permanent && \
-#firewall-cmd --add-port=9099/tcp --permanent && \
-#firewall-cmd --add-port=9091/tcp --permanent && \
-#firewall-cmd --add-port=5473/tcp --permanent && \
-#firewall-cmd --add-port=7946/tcp --permanent && \
-#firewall-cmd --add-port=7946/udp --permanent && \
-#firewall-cmd --add-port=2042/tcp --permanent && \
-#firewall-cmd --add-port=443/tcp --permanent && \
-#firewall-cmd --add-port=4343/tcp --permanent && \
-#firewall-cmd --reload
 firewall-cmd  --set-default-zone trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 firewall-cmd --reload
 }
+
 parefeuNoeudsWorker(){
-#firewall-cmd  --set-default-zone block && \
-#firewall-cmd --add-interface=lo --zone=trusted && \
-#firewall-cmd --add-port=22/tcp --permanent && \
-#firewall-cmd --add-port=10250/tcp --permanent && \
-#firewall-cmd --add-port=10256/tcp --permanent && \
-#firewall-cmd --add-port=179/tcp --permanent && \
-#firewall-cmd --add-port=4789/udp --permanent && \
-#firewall-cmd --add-port=80/tcp --permanent && \
-#firewall-cmd --add-port=443/tcp --permanent && \
-#firewall-cmd --add-port=9099/tcp --permanent && \
-#firewall-cmd --add-port=9091/tcp --permanent && \
-#firewall-cmd --add-port=5473/tcp --permanent && \
-#firewall-cmd --add-port=7946/tcp --permanent && \
-#firewall-cmd --add-port=7946/udp --permanent && \
-#firewall-cmd --add-port=2042/tcp --permanent && \
-#firewall-cmd --add-port=4343/tcp --permanent && \
-#firewall-cmd --add-port=30000-32767/tcp --permanent && \
-#firewall-cmd --add-port=30000-32767/udp --permanent && \
-#firewall-cmd --reload
 firewall-cmd  --set-default-zone trusted && \
 firewall-cmd --add-interface=lo --zone=trusted --permanent && \
 firewall-cmd --reload
 }
+#################################################
+# 
+# fonction de configuration NFS
+#
+#################################################
 nfs(){
 if [ -b /dev/sdb ]
 	then
@@ -711,6 +455,11 @@ EOF
       	exportfs -rav
 fi
 }
+#################################################
+# 
+# Fonction de configuration /etc/hosts
+#
+#################################################
 mkhosts () {
 cat <<EOF | tee /etc/hosts
 127.0.0.1 localhost localhost.localdomain
@@ -723,11 +472,13 @@ cat <<EOF | tee /etc/hosts
 172.21.0.106 worker3-k8s.mon.dom
 EOF
 }
-###################################################################################################
-#                                                                                                 #
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #                             Debut de la séquence d'Installation                                 #
 #                                                                                                 #
-###################################################################################################
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+
 ############################################################################################
 #                                                                                          #
 #                       Paramètres communs LB HAProxy, master et worker                    #
@@ -798,7 +549,6 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Regles de firewall à trusted"
 	verif
-
 	################################################ 
 	# installation des applications.
 	#
@@ -808,7 +558,6 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Installation des outils et services sur le LB HA Proxy. "
 	verif
-	
 	#################################################
 	# Configuration et montage volume lvm NFS sur /dev/vdb
 	#
@@ -818,33 +567,6 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Configuration et montage volume lvm NFS sur /dev/vdb. "
 	verif
-	
-	#################################################
-	# 
-	# Configuration et démarrage du serveur BIND9.
-	#
-	#
-	#vrai="1"
-	#echo 'OPTIONS="-4"' >> /etc/sysconfig/named && \
-	#named && \
-	#namedMonDom && \
-	#namedRevers && \
- 	#mkdir -p /var/named/dnssec/ && \
-  	#cd /var/named/dnssec/ && \
-	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE mon.dom && \
-	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK mon.dom && \
-	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE 0.21.172.in-addr.arpa && \
-	#dnssec-keygen -a RSASHA256 -b 2048 -n ZONE -f KSK 0.21.172.in-addr.arpa && \
- 	#chmod 660 /var/named/dnssec/* && \
-	#chown -R named:named /var/named/dnssec/ && \
-	#semanage permissive -a named_t && \
-	#systemctl enable --now named.service && \
- 	#chown named:dhcpd /etc/rndc.key && \
-  	#chmod 440 /etc/rndc.key && \
-	#vrai="0"
-	#nom="Etape ${numetape} - Configuration et demarrage de bind"
-	#verif
-	
 	#################################################
 	# 
 	# Configuration et demarrage du LB HAProxy
@@ -857,7 +579,6 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Configuration du LB HAProxy. "
 	verif
-	
 	#################################################
 	# 
 	# Configuration du temps.
@@ -878,31 +599,6 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Mise en place du NAT"
 	verif
-	#################################################
-	# 
-	# configuration du dhcp avec inscription dans le DNS
-	#
-	#
-	#vrai="1"
-	#dhcp && \
-    #    ip link show
-    #    echo -n "Renseigner le nom de la carte réseau : "
-    #    read Carte
-    #    sed -i 's/.pid/& '${Carte}'/' /usr/lib/systemd/system/dhcpd.service && \
-	#vrai="0"
-	#nom="Etape ${numetape} - Installation et configuration du service DHCP sur loadBalancer-k8s.mon.dom"
-	#verif
-	################################################
-	#
-	# modification des droits SELINUX sur dhcpd et start du service
-	#
-	#
-	#vrai="1"
-	#semanage permissive -a dhcpd_t && \
-	#systemctl enable  --now  kea-dhcp4-server && \
-	#vrai="0"
-	#nom="Etape ${numetape} - restart du service dhcpd avec droits SELINUX"
-	#verif
 fi
 
 ############################################################################################
@@ -934,6 +630,8 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - echange des clés ssh avec le LB "
 	verif
+echo "avant 633"
+read tt
 	if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
 	then 
 		#################################################
@@ -946,7 +644,9 @@ then
 		nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 		verif
 	fi
- 	# 
+echo "apres 647"
+read tt
+	# 
 	#################################################
 	# 
 	# Suppression du swap
