@@ -152,6 +152,7 @@ EOF
 #
 #################################################
 containerd(){
+
 if [ -f containerd-${VersionContainerD}-linux-amd64.tar.gz ]
 then
 	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
@@ -630,8 +631,6 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - echange des clés ssh avec le LB "
 	verif
-echo "avant 633"
-read tt
 	if [ "${noeud}${x}-k8s.mon.dom" = "master2-k8s.mon.dom" -o "${noeud}${x}-k8s.mon.dom" = "master3-k8s.mon.dom" ]
 	then 
 		#################################################
@@ -644,8 +643,6 @@ read tt
 		nom="Etape ${numetape} - Echange des clés ssh avec master1-k8s.mon.dom"
 		verif
 	fi
-echo "apres 647"
-read tt
 	# 
 	#################################################
 	# 
@@ -674,15 +671,6 @@ read tt
 	vrai="0"
 	nom="Etape ${numetape} - Installation des outils et services sur le master"
 	verif
-	#################################################
-	# 
-	# Configuration SELinux à permissive.
-	#
-	#vrai="1"
-	#SELinux && \
-	#vrai="0"
-	#nom="Etape ${numetape} - Configuration du SElinux à : disabled "
-	#verif
 	#################################################
 	# 
 	# Configuration du temps.
