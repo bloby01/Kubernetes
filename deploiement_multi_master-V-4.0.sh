@@ -152,7 +152,7 @@ EOF
 #
 #################################################
 containerd(){
-
+wget  https://github.com/containerd/containerd/releases/download/v${VersionContainerD}/containerd-${VersionContainerD}-linux-amd64.tar.gz
 if [ -f containerd-${VersionContainerD}-linux-amd64.tar.gz ]
 then
 	tar Cxzf /usr/local/ containerd-${VersionContainerD}-linux-amd64.tar.gz
