@@ -139,10 +139,10 @@ repok8s(){
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/v${Version_k8s}/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/repodata/repomd.xml.key
+gpgkey=https://pkgs.k8s.io/core:/stable:/v${Version_k8s}/rpm/repodata/repomd.xml.key
 EOF
 }
 #################################################
@@ -510,7 +510,7 @@ then
 	mkhosts
 	systemctl restart NetworkManager
 	export node="master"
- 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: 1.29] : "
   	read vk8s
    	export Version_k8s="$vk8s"
 		if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
