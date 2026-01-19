@@ -1,6 +1,6 @@
 #!/bin/sh
 set -e
-#												FONCTIONNEL 09/01/2026 !
+#												FONCTIONNEL 19/01/2026 !
 #
 # vm de bases: https://drive.google.com/file/d/1bj-_BYa25Ms36Qy1aEb82C29UKZ3aTlD/view?usp=sharing
 #
@@ -139,10 +139,10 @@ repok8s(){
 cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/
+baseurl=https://pkgs.k8s.io/core:/stable:/v${Version_k8s}/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/${Version_k8s}/rpm/repodata/repomd.xml.key
+gpgkey=https://pkgs.k8s.io/core:/stable:/v${Version_k8s}/rpm/repodata/repomd.xml.key
 EOF
 }
 #################################################
@@ -500,7 +500,7 @@ then
 	mkhosts
 	systemctl restart NetworkManager
 	export node="worker"
- 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: 1.29] : "
   	read vk8s
    	export Version_k8s="$vk8s"
 elif [ ${noeud} = "master" ]
@@ -510,7 +510,7 @@ then
 	mkhosts
 	systemctl restart NetworkManager
 	export node="master"
- 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: 1.29] : "
   	read vk8s
    	export Version_k8s="$vk8s"
 		if [ "${noeud}${x}-k8s.mon.dom" = "master1-k8s.mon.dom" ]
@@ -745,8 +745,9 @@ then
 			#
 			vrai="1"
    			kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
-			sleep 20
+			sleep 25
 			kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
+			sleep 10
 			kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml
 			vrai="0"
 			nom="Etape ${numetape} - Deploiement Calico v${VersionCalico} en CNI sur le cluster"
@@ -837,21 +838,22 @@ then
 		echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 		echo "      Déploiement d'un nouveau master en cours "
 		echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-		vrai="1"
-		if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
-		then
-			scp root@master1-k8s.mon.dom:mesimages.tar  ./
-		else
-   			echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
-			ssh root@master1-k8s.mon.dom 'ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)'
-			scp root@master1-k8s.mon.dom:mesimages.tar  ./
-		fi && \
-		vrai="0"
-		nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
-		verif
-		vrai="1"
-  		echo "Import des Images"
-		ctr --namespace k8s.io images import mesimages.tar && \
+	    vrai="1"
+	    if [ `ssh root@master1-k8s.mon.dom ls calico-images.tar` ]
+	    then
+ 		scp root@master1-k8s.mon.dom:calico-images.tar  ./
+    	else
+ 		echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
+		# Lister dans une variable toutes les images Calico puis créer l'archive calico-images.tar
+        ssh root@master1-k8s.mon.dom 'CALICO_IMAGES=$(ctr --namespace k8s.io images list -q | grep calico) && ctr --namespace k8s.io images export calico-images.tar $CALICO_IMAGES'
+  		scp root@master1-k8s.mon.dom:calico-images.tar  ./
+	    fi && \
+	    vrai="0"
+	    nom="Etape ${numetape} - Copie de l'archive calico-images.tar à partir de master1-k8s.mon.dom"
+	    verif
+	    vrai="1"
+ 	    echo "Import des Images"
+	    ctr --namespace k8s.io images import calico-images.tar && \
 		vrai="0"
 		nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
 		verif
@@ -979,20 +981,22 @@ then
 	echo "      Déploiement d'un nouveau worker en cours "
 	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 	vrai="1"
-	if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
+	if [ `ssh root@master1-k8s.mon.dom ls calico-images.tar` ]
 	then
- 		scp root@master1-k8s.mon.dom:mesimages.tar  ./
+ 		scp root@master1-k8s.mon.dom:calico-images.tar  ./
 	else
  		echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
-		ssh root@master1-k8s.mon.dom 'ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)'
-  		scp root@master1-k8s.mon.dom:mesimages.tar  ./
+		# Lister dans une variable toutes les images Calico puis créer l'archive calico-images.tar
+        ssh root@master1-k8s.mon.dom 'CALICO_IMAGES=$(ctr --namespace k8s.io images list -q | grep calico) && ctr --namespace k8s.io images export calico-images.tar $CALICO_IMAGES'
+  		scp root@master1-k8s.mon.dom:calico-images.tar  ./
 	fi && \
 	vrai="0"
-	nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
+	nom="Etape ${numetape} - Copie de l'archive calico-images.tar à partir de master1-k8s.mon.dom"
 	verif
 	vrai="1"
  	echo "Import des Images"
-	ctr --namespace k8s.io images import mesimages.tar && \
+	ctr --namespace k8s.io images import calico-images.tar
+	########################################################
 	vrai="0"
 	nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
 	verif
