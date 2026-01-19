@@ -701,14 +701,6 @@ then
 	verif
 	#################################################
 	# 
-	# deployement du master
-	#
-	vrai="1"
-	if [ "$first" = "yes" ]
-	then
-		ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg' && \
-		ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service && \
-	################################################## 
 	# Démarrage du service kubelet
 	#
 	vrai="1"
@@ -716,6 +708,16 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Démarrage du service kubelet avec support IPTables"
 	verif
+	
+	#################################################
+	# 
+	# deployement du master
+	#
+	vrai="1"
+	if [ "$first" = "yes" ]
+	then
+		ssh root@loadBalancer-k8s.mon.dom 'sed -i -e "s|#    server noeud1|    server noeud1|g" /etc/haproxy/haproxy.cfg' && \
+		ssh root@loadBalancer-k8s.mon.dom systemctl restart haproxy.service && \
   		if [ "$Reseau" == "calico" ]
 		then
 			echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -835,39 +837,27 @@ then
 		echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 		echo "      Déploiement d'un nouveau master en cours "
 		echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-		vrai="1"
-		if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
-		then
-			scp root@master1-k8s.mon.dom:mesimages.tar  ./
-		else
-   			echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
-			ssh root@master1-k8s.mon.dom 'ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)'
-			scp root@master1-k8s.mon.dom:mesimages.tar  ./
-		fi && \
-		vrai="0"
-		nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
-		verif
-		vrai="1"
-  		echo "Import des Images"
-		ctr --namespace k8s.io images import mesimages.tar && \
+	    vrai="1"
+	    if [ `ssh root@master1-k8s.mon.dom ls calico-images.tar` ]
+	    then
+ 		scp root@master1-k8s.mon.dom:calico-images.tar  ./
+    	else
+ 		echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
+		# Lister dans une variable toutes les images Calico puis créer l'archive calico-images.tar
+        ssh root@master1-k8s.mon.dom 'CALICO_IMAGES=$(ctr --namespace k8s.io images list -q | grep calico) && ctr --namespace k8s.io images export calico-images.tar $CALICO_IMAGES'
+  		scp root@master1-k8s.mon.dom:calico-images.tar  ./
+	    fi && \
+	    vrai="0"
+	    nom="Etape ${numetape} - Copie de l'archive calico-images.tar à partir de master1-k8s.mon.dom"
+	    verif
+	    vrai="1"
+ 	    echo "Import des Images"
+	    ctr --namespace k8s.io images import calico-images.tar && \
 		vrai="0"
 		nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
 		verif
 		vrai="1"
-  	#################################################
-  	# 
-  	# Démarrage du service kubelet
-  	#
-  	vrai="1"
-  	StartServiceKubelet && \
-  	vrai="0"
-  	nom="Etape ${numetape} - Démarrage du service kubelet avec support IPTables"
-  	verif
-  	#################################################
-  	# 
-  	# Ajout du noeud au cluster
-  	#
-    kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \
+		kubeadm join 172.21.0.100:6443 --token ${token} --discovery-token-ca-cert-hash sha256:${tokensha} ${CertsKey}  && \
 		vrai="0"
 		nom="Etape ${numetape} - Intégration du noeud ${noeud}${x}-k8s.mon.dom au cluster K8S"
 		verif
@@ -963,6 +953,15 @@ then
 	vrai="0"
 	nom="Etape ${numetape} - Configuration et installation du service CONTAINERD , RUNC , CNI plugin"
 	verif
+	#################################################
+	# 
+	# Démarrage du service kubelet
+	#
+	vrai="1"
+	StartServiceKubelet && \
+	vrai="0"
+	nom="Etape ${numetape} - Demarrage du service kubelet sur le worker"
+	verif
 	##############################################
 	#
 	# Recuperation du token sur le master pour l'intégration au cluster
@@ -981,38 +980,27 @@ then
 	echo "      Déploiement d'un nouveau worker en cours "
 	echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
 	vrai="1"
-	if [ `ssh root@master1-k8s.mon.dom ls mesimages.tar` ]
+	if [ `ssh root@master1-k8s.mon.dom ls calico-images.tar` ]
 	then
- 		scp root@master1-k8s.mon.dom:mesimages.tar  ./
+ 		scp root@master1-k8s.mon.dom:calico-images.tar  ./
 	else
  		echo "Construction de l'archive des Images sur master1-k8s.mon.dom"
-		ssh root@master1-k8s.mon.dom 'ctr --namespace k8s.io images export mesimages.tar $(ctr --namespace k8s.io images list -q)'
-  		scp root@master1-k8s.mon.dom:mesimages.tar  ./
+		# Lister dans une variable toutes les images Calico puis créer l'archive calico-images.tar
+        ssh root@master1-k8s.mon.dom 'CALICO_IMAGES=$(ctr --namespace k8s.io images list -q | grep calico) && ctr --namespace k8s.io images export calico-images.tar $CALICO_IMAGES'
+  		scp root@master1-k8s.mon.dom:calico-images.tar  ./
 	fi && \
 	vrai="0"
-	nom="Etape ${numetape} - Copie de l'archive mesimages.tar à partir de master1-k8s.mon.dom"
+	nom="Etape ${numetape} - Copie de l'archive calico-images.tar à partir de master1-k8s.mon.dom"
 	verif
 	vrai="1"
  	echo "Import des Images"
-	ctr --namespace k8s.io images import mesimages.tar && \
+	ctr --namespace k8s.io images import calico-images.tar
+	########################################################
 	vrai="0"
 	nom="Etape ${numetape} - Intégration des images k8s dans ${noeud}${x}-k8s.mon.dom"
 	verif
 	vrai="1"
-	#################################################
-	# 
-	# Démarrage du service kubelet
-	#
-	vrai="1"
-	StartServiceKubelet && \
-	vrai="0"
-	nom="Etape ${numetape} - Demarrage du service kubelet sur le worker"
-	verif
- 	#################################################
- 	# 
- 	# Ajout du noeud au cluster
- 	#
-  kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
+	kubeadm join "172.21.0.100:6443" --token ${token}  --discovery-token-ca-cert-hash sha256:${tokencaworker} && \
 	vrai="0"
 	nom="Etape ${numetape} - Intégration du noeud worker au cluster"
 	verif
