@@ -500,7 +500,7 @@ then
 	mkhosts
 	systemctl restart NetworkManager
 	export node="worker"
- 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: v1.29] : "
+ 	echo -n "Quelle version de Kubernetes voulez-vous installer? [mettre au minimum: 1.29] : "
   	read vk8s
    	export Version_k8s="$vk8s"
 elif [ ${noeud} = "master" ]
