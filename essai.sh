@@ -745,8 +745,9 @@ then
 			#
 			vrai="1"
    			kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
-			sleep 20
+			sleep 25
 			kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/tigera-operator.yaml
+			sleep 10
 			kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v${VersionCalico}/manifests/custom-resources.yaml
 			vrai="0"
 			nom="Etape ${numetape} - Deploiement Calico v${VersionCalico} en CNI sur le cluster"
