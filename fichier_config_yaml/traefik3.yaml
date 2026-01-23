@@ -1,0 +1,1589 @@
+---
+# ============================================
+# CRDs Traefik v3 - API Group: traefik.io
+# ============================================
+
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: ingressroutes.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: IngressRoute
+    listKind: IngressRouteList
+    plural: ingressroutes
+    singular: ingressroute
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: IngressRoute is the CRD implementation of a Traefik HTTP Router.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                entryPoints:
+                  items:
+                    type: string
+                  type: array
+                routes:
+                  items:
+                    properties:
+                      kind:
+                        enum:
+                          - Rule
+                        type: string
+                      match:
+                        type: string
+                      middlewares:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                          required:
+                            - name
+                          type: object
+                        type: array
+                      priority:
+                        type: integer
+                      services:
+                        items:
+                          properties:
+                            kind:
+                              enum:
+                                - Service
+                                - TraefikService
+                              type: string
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            nativeLB:
+                              type: boolean
+                            passHostHeader:
+                              type: boolean
+                            port:
+                              anyOf:
+                                - type: integer
+                                - type: string
+                              x-kubernetes-int-or-string: true
+                            responseForwarding:
+                              properties:
+                                flushInterval:
+                                  type: string
+                              type: object
+                            scheme:
+                              type: string
+                            serversTransport:
+                              type: string
+                            sticky:
+                              properties:
+                                cookie:
+                                  properties:
+                                    httpOnly:
+                                      type: boolean
+                                    name:
+                                      type: string
+                                    sameSite:
+                                      type: string
+                                    secure:
+                                      type: boolean
+                                  type: object
+                              type: object
+                            strategy:
+                              type: string
+                            weight:
+                              type: integer
+                          required:
+                            - name
+                          type: object
+                        type: array
+                      syntax:
+                        type: string
+                    required:
+                      - kind
+                      - match
+                    type: object
+                  type: array
+                tls:
+                  properties:
+                    certResolver:
+                      type: string
+                    domains:
+                      items:
+                        properties:
+                          main:
+                            type: string
+                          sans:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      type: array
+                    options:
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                        - name
+                      type: object
+                    secretName:
+                      type: string
+                    store:
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                        - name
+                      type: object
+                  type: object
+              required:
+                - routes
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: ingressroutetcps.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: IngressRouteTCP
+    listKind: IngressRouteTCPList
+    plural: ingressroutetcps
+    singular: ingressroutetcp
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: IngressRouteTCP is the CRD implementation of a Traefik TCP Router.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                entryPoints:
+                  items:
+                    type: string
+                  type: array
+                routes:
+                  items:
+                    properties:
+                      match:
+                        type: string
+                      middlewares:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                          required:
+                            - name
+                          type: object
+                        type: array
+                      priority:
+                        type: integer
+                      services:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            nativeLB:
+                              type: boolean
+                            port:
+                              anyOf:
+                                - type: integer
+                                - type: string
+                              x-kubernetes-int-or-string: true
+                            proxyProtocol:
+                              properties:
+                                version:
+                                  type: integer
+                              type: object
+                            terminationDelay:
+                              type: integer
+                            tls:
+                              type: boolean
+                            weight:
+                              type: integer
+                          required:
+                            - name
+                            - port
+                          type: object
+                        type: array
+                      syntax:
+                        type: string
+                    required:
+                      - match
+                    type: object
+                  type: array
+                tls:
+                  properties:
+                    certResolver:
+                      type: string
+                    domains:
+                      items:
+                        properties:
+                          main:
+                            type: string
+                          sans:
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      type: array
+                    options:
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                        - name
+                      type: object
+                    passthrough:
+                      type: boolean
+                    secretName:
+                      type: string
+                    store:
+                      properties:
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                      required:
+                        - name
+                      type: object
+                  type: object
+              required:
+                - routes
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: ingressrouteudps.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: IngressRouteUDP
+    listKind: IngressRouteUDPList
+    plural: ingressrouteudps
+    singular: ingressrouteudp
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: IngressRouteUDP is the CRD implementation of a Traefik UDP Router.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                entryPoints:
+                  items:
+                    type: string
+                  type: array
+                routes:
+                  items:
+                    properties:
+                      services:
+                        items:
+                          properties:
+                            name:
+                              type: string
+                            namespace:
+                              type: string
+                            nativeLB:
+                              type: boolean
+                            port:
+                              anyOf:
+                                - type: integer
+                                - type: string
+                              x-kubernetes-int-or-string: true
+                            weight:
+                              type: integer
+                          required:
+                            - name
+                            - port
+                          type: object
+                        type: array
+                    type: object
+                  type: array
+              required:
+                - routes
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: middlewares.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: Middleware
+    listKind: MiddlewareList
+    plural: middlewares
+    singular: middleware
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: Middleware is the CRD implementation of a Traefik Middleware.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                addPrefix:
+                  properties:
+                    prefix:
+                      type: string
+                  type: object
+                basicAuth:
+                  properties:
+                    headerField:
+                      type: string
+                    realm:
+                      type: string
+                    removeHeader:
+                      type: boolean
+                    secret:
+                      type: string
+                  type: object
+                buffering:
+                  properties:
+                    maxRequestBodyBytes:
+                      format: int64
+                      type: integer
+                    maxResponseBodyBytes:
+                      format: int64
+                      type: integer
+                    memRequestBodyBytes:
+                      format: int64
+                      type: integer
+                    memResponseBodyBytes:
+                      format: int64
+                      type: integer
+                    retryExpression:
+                      type: string
+                  type: object
+                chain:
+                  properties:
+                    middlewares:
+                      items:
+                        properties:
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                          - name
+                        type: object
+                      type: array
+                  type: object
+                circuitBreaker:
+                  properties:
+                    checkPeriod:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    expression:
+                      type: string
+                    fallbackDuration:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    recoveryDuration:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    responseCode:
+                      type: integer
+                  type: object
+                compress:
+                  properties:
+                    excludedContentTypes:
+                      items:
+                        type: string
+                      type: array
+                    includedContentTypes:
+                      items:
+                        type: string
+                      type: array
+                    minResponseBodyBytes:
+                      type: integer
+                  type: object
+                digestAuth:
+                  properties:
+                    headerField:
+                      type: string
+                    realm:
+                      type: string
+                    removeHeader:
+                      type: boolean
+                    secret:
+                      type: string
+                  type: object
+                errors:
+                  properties:
+                    query:
+                      type: string
+                    service:
+                      properties:
+                        kind:
+                          enum:
+                            - Service
+                            - TraefikService
+                          type: string
+                        name:
+                          type: string
+                        namespace:
+                          type: string
+                        nativeLB:
+                          type: boolean
+                        passHostHeader:
+                          type: boolean
+                        port:
+                          anyOf:
+                            - type: integer
+                            - type: string
+                          x-kubernetes-int-or-string: true
+                        responseForwarding:
+                          properties:
+                            flushInterval:
+                              type: string
+                          type: object
+                        scheme:
+                          type: string
+                        serversTransport:
+                          type: string
+                        sticky:
+                          properties:
+                            cookie:
+                              properties:
+                                httpOnly:
+                                  type: boolean
+                                name:
+                                  type: string
+                                sameSite:
+                                  type: string
+                                secure:
+                                  type: boolean
+                              type: object
+                          type: object
+                        strategy:
+                          type: string
+                        weight:
+                          type: integer
+                      required:
+                        - name
+                      type: object
+                    status:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                forwardAuth:
+                  properties:
+                    address:
+                      type: string
+                    addAuthCookiesToResponse:
+                      items:
+                        type: string
+                      type: array
+                    authRequestHeaders:
+                      items:
+                        type: string
+                      type: array
+                    authResponseHeaders:
+                      items:
+                        type: string
+                      type: array
+                    authResponseHeadersRegex:
+                      type: string
+                    tls:
+                      properties:
+                        caOptional:
+                          type: boolean
+                        caSecret:
+                          type: string
+                        certSecret:
+                          type: string
+                        insecureSkipVerify:
+                          type: boolean
+                      type: object
+                    trustForwardHeader:
+                      type: boolean
+                  type: object
+                headers:
+                  properties:
+                    accessControlAllowCredentials:
+                      type: boolean
+                    accessControlAllowHeaders:
+                      items:
+                        type: string
+                      type: array
+                    accessControlAllowMethods:
+                      items:
+                        type: string
+                      type: array
+                    accessControlAllowOriginList:
+                      items:
+                        type: string
+                      type: array
+                    accessControlAllowOriginListRegex:
+                      items:
+                        type: string
+                      type: array
+                    accessControlExposeHeaders:
+                      items:
+                        type: string
+                      type: array
+                    accessControlMaxAge:
+                      format: int64
+                      type: integer
+                    addVaryHeader:
+                      type: boolean
+                    allowedHosts:
+                      items:
+                        type: string
+                      type: array
+                    browserXssFilter:
+                      type: boolean
+                    contentSecurityPolicy:
+                      type: string
+                    contentTypeNosniff:
+                      type: boolean
+                    customBrowserXSSValue:
+                      type: string
+                    customFrameOptionsValue:
+                      type: string
+                    customRequestHeaders:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    customResponseHeaders:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    forceSTSHeader:
+                      type: boolean
+                    frameDeny:
+                      type: boolean
+                    hostsProxyHeaders:
+                      items:
+                        type: string
+                      type: array
+                    isDevelopment:
+                      type: boolean
+                    permissionsPolicy:
+                      type: string
+                    publicKey:
+                      type: string
+                    referrerPolicy:
+                      type: string
+                    sslProxyHeaders:
+                      additionalProperties:
+                        type: string
+                      type: object
+                    stsIncludeSubdomains:
+                      type: boolean
+                    stsPreload:
+                      type: boolean
+                    stsSeconds:
+                      format: int64
+                      type: integer
+                  type: object
+                inFlightReq:
+                  properties:
+                    amount:
+                      format: int64
+                      type: integer
+                    sourceCriterion:
+                      properties:
+                        ipStrategy:
+                          properties:
+                            depth:
+                              type: integer
+                            excludedIPs:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        requestHeaderName:
+                          type: string
+                        requestHost:
+                          type: boolean
+                      type: object
+                  type: object
+                ipAllowList:
+                  properties:
+                    ipStrategy:
+                      properties:
+                        depth:
+                          type: integer
+                        excludedIPs:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    rejectStatusCode:
+                      type: integer
+                    sourceRange:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                passTLSClientCert:
+                  properties:
+                    info:
+                      properties:
+                        issuer:
+                          properties:
+                            commonName:
+                              type: boolean
+                            country:
+                              type: boolean
+                            domainComponent:
+                              type: boolean
+                            locality:
+                              type: boolean
+                            organization:
+                              type: boolean
+                            province:
+                              type: boolean
+                            serialNumber:
+                              type: boolean
+                          type: object
+                        notAfter:
+                          type: boolean
+                        notBefore:
+                          type: boolean
+                        sans:
+                          type: boolean
+                        serialNumber:
+                          type: boolean
+                        subject:
+                          properties:
+                            commonName:
+                              type: boolean
+                            country:
+                              type: boolean
+                            domainComponent:
+                              type: boolean
+                            locality:
+                              type: boolean
+                            organization:
+                              type: boolean
+                            province:
+                              type: boolean
+                            serialNumber:
+                              type: boolean
+                          type: object
+                      type: object
+                    pem:
+                      type: boolean
+                  type: object
+                plugin:
+                  additionalProperties:
+                    x-kubernetes-preserve-unknown-fields: true
+                  type: object
+                rateLimit:
+                  properties:
+                    average:
+                      format: int64
+                      type: integer
+                    burst:
+                      format: int64
+                      type: integer
+                    period:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    sourceCriterion:
+                      properties:
+                        ipStrategy:
+                          properties:
+                            depth:
+                              type: integer
+                            excludedIPs:
+                              items:
+                                type: string
+                              type: array
+                          type: object
+                        requestHeaderName:
+                          type: string
+                        requestHost:
+                          type: boolean
+                      type: object
+                  type: object
+                redirectRegex:
+                  properties:
+                    permanent:
+                      type: boolean
+                    regex:
+                      type: string
+                    replacement:
+                      type: string
+                  type: object
+                redirectScheme:
+                  properties:
+                    permanent:
+                      type: boolean
+                    port:
+                      type: string
+                    scheme:
+                      type: string
+                  type: object
+                replacePath:
+                  properties:
+                    path:
+                      type: string
+                  type: object
+                replacePathRegex:
+                  properties:
+                    regex:
+                      type: string
+                    replacement:
+                      type: string
+                  type: object
+                retry:
+                  properties:
+                    attempts:
+                      type: integer
+                    initialInterval:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                  type: object
+                stripPrefix:
+                  properties:
+                    forceSlash:
+                      type: boolean
+                    prefixes:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                stripPrefixRegex:
+                  properties:
+                    regex:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: middlewaretcps.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: MiddlewareTCP
+    listKind: MiddlewareTCPList
+    plural: middlewaretcps
+    singular: middlewaretcp
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: MiddlewareTCP is the CRD implementation of a Traefik TCP middleware.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                inFlightConn:
+                  properties:
+                    amount:
+                      format: int64
+                      type: integer
+                  type: object
+                ipAllowList:
+                  properties:
+                    sourceRange:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: serverstransports.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: ServersTransport
+    listKind: ServersTransportList
+    plural: serverstransports
+    singular: serverstransport
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: ServersTransport is the CRD implementation of a ServersTransport.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                certificatesSecrets:
+                  items:
+                    type: string
+                  type: array
+                disableHTTP2:
+                  type: boolean
+                forwardingTimeouts:
+                  properties:
+                    dialTimeout:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    idleConnTimeout:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    pingTimeout:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    readIdleTimeout:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    responseHeaderTimeout:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                  type: object
+                insecureSkipVerify:
+                  type: boolean
+                maxIdleConnsPerHost:
+                  type: integer
+                peerCertURI:
+                  type: string
+                rootCAsSecrets:
+                  items:
+                    type: string
+                  type: array
+                serverName:
+                  type: string
+                spiffe:
+                  properties:
+                    ids:
+                      items:
+                        type: string
+                      type: array
+                    trustDomain:
+                      type: string
+                  type: object
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: tlsoptions.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: TLSOption
+    listKind: TLSOptionList
+    plural: tlsoptions
+    singular: tlsoption
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: TLSOption is the CRD implementation of a Traefik TLS Option.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                alpnProtocols:
+                  items:
+                    type: string
+                  type: array
+                cipherSuites:
+                  items:
+                    type: string
+                  type: array
+                clientAuth:
+                  properties:
+                    clientAuthType:
+                      enum:
+                        - NoClientCert
+                        - RequestClientCert
+                        - RequireAnyClientCert
+                        - VerifyClientCertIfGiven
+                        - RequireAndVerifyClientCert
+                      type: string
+                    secretNames:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                curvePreferences:
+                  items:
+                    type: string
+                  type: array
+                maxVersion:
+                  type: string
+                minVersion:
+                  type: string
+                sniStrict:
+                  type: boolean
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: tlsstores.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: TLSStore
+    listKind: TLSStoreList
+    plural: tlsstores
+    singular: tlsstore
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: TLSStore is the CRD implementation of a Traefik TLS Store.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                certificates:
+                  items:
+                    properties:
+                      secretName:
+                        type: string
+                    required:
+                      - secretName
+                    type: object
+                  type: array
+                defaultCertificate:
+                  properties:
+                    secretName:
+                      type: string
+                  required:
+                    - secretName
+                  type: object
+                defaultGeneratedCert:
+                  properties:
+                    domain:
+                      properties:
+                        main:
+                          type: string
+                        sans:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    resolver:
+                      type: string
+                  type: object
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: traefikservices.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: TraefikService
+    listKind: TraefikServiceList
+    plural: traefikservices
+    singular: traefikservice
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: TraefikService is the CRD implementation of a Traefik Service.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                mirroring:
+                  properties:
+                    kind:
+                      enum:
+                        - Service
+                        - TraefikService
+                      type: string
+                    maxBodySize:
+                      format: int64
+                      type: integer
+                    mirrors:
+                      items:
+                        properties:
+                          kind:
+                            enum:
+                              - Service
+                              - TraefikService
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                          nativeLB:
+                            type: boolean
+                          passHostHeader:
+                            type: boolean
+                          percent:
+                            type: integer
+                          port:
+                            anyOf:
+                              - type: integer
+                              - type: string
+                            x-kubernetes-int-or-string: true
+                          responseForwarding:
+                            properties:
+                              flushInterval:
+                                type: string
+                            type: object
+                          scheme:
+                            type: string
+                          serversTransport:
+                            type: string
+                          sticky:
+                            properties:
+                              cookie:
+                                properties:
+                                  httpOnly:
+                                    type: boolean
+                                  name:
+                                    type: string
+                                  sameSite:
+                                    type: string
+                                  secure:
+                                    type: boolean
+                                type: object
+                            type: object
+                          strategy:
+                            type: string
+                          weight:
+                            type: integer
+                        required:
+                          - name
+                        type: object
+                      type: array
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                    nativeLB:
+                      type: boolean
+                    passHostHeader:
+                      type: boolean
+                    port:
+                      anyOf:
+                        - type: integer
+                        - type: string
+                      x-kubernetes-int-or-string: true
+                    responseForwarding:
+                      properties:
+                        flushInterval:
+                          type: string
+                      type: object
+                    scheme:
+                      type: string
+                    serversTransport:
+                      type: string
+                    sticky:
+                      properties:
+                        cookie:
+                          properties:
+                            httpOnly:
+                              type: boolean
+                            name:
+                              type: string
+                            sameSite:
+                              type: string
+                            secure:
+                              type: boolean
+                          type: object
+                      type: object
+                    strategy:
+                      type: string
+                    weight:
+                      type: integer
+                  required:
+                    - name
+                  type: object
+                weighted:
+                  properties:
+                    services:
+                      items:
+                        properties:
+                          kind:
+                            enum:
+                              - Service
+                              - TraefikService
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                          nativeLB:
+                            type: boolean
+                          passHostHeader:
+                            type: boolean
+                          port:
+                            anyOf:
+                              - type: integer
+                              - type: string
+                            x-kubernetes-int-or-string: true
+                          responseForwarding:
+                            properties:
+                              flushInterval:
+                                type: string
+                            type: object
+                          scheme:
+                            type: string
+                          serversTransport:
+                            type: string
+                          sticky:
+                            properties:
+                              cookie:
+                                properties:
+                                  httpOnly:
+                                    type: boolean
+                                  name:
+                                    type: string
+                                  sameSite:
+                                    type: string
+                                  secure:
+                                    type: boolean
+                                type: object
+                            type: object
+                          strategy:
+                            type: string
+                          weight:
+                            type: integer
+                        required:
+                          - name
+                        type: object
+                      type: array
+                    sticky:
+                      properties:
+                        cookie:
+                          properties:
+                            httpOnly:
+                              type: boolean
+                            name:
+                              type: string
+                            sameSite:
+                              type: string
+                            secure:
+                              type: boolean
+                          type: object
+                      type: object
+                  type: object
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
+
+---
+# ============================================
+# RBAC - Mise à jour pour traefik.io
+# ============================================
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: traefik-ingress-controller
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - traefik.io
+    resources:
+      - middlewares
+      - middlewaretcps
+      - ingressroutes
+      - traefikservices
+      - ingressroutetcps
+      - ingressrouteudps
+      - tlsoptions
+      - tlsstores
+      - serverstransports
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: traefik-ingress-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: traefik-ingress-controller
+    namespace: default
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: default
+
+---
+# ============================================
+# DaemonSet Traefik v3
+# ============================================
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: traefik-ingress-controller
+  labels:
+    k8s-app: traefik-ingress-lb
+    kubernetes.io/cluster-service: "true"
+spec:
+  selector:
+    matchLabels:
+      k8s-app: traefik-ingress-lb
+  template:
+    metadata:
+      labels:
+        k8s-app: traefik-ingress-lb
+        name: traefik-ingress-lb
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccountName: traefik-ingress-controller
+      terminationGracePeriodSeconds: 60
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          effect: NoSchedule
+      containers:
+        - image: traefik:v3.2
+          name: traefik-ingress-lb
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: "/cert"
+              name: cert
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          args:
+            - --providers.kubernetescrd
+            - --providers.kubernetescrd.allowCrossNamespace=true
+            - --entrypoints.web.address=:80
+            - --entrypoints.websecure.address=:443
+            - --api.dashboard=true
+            - --api.insecure=true
+            - --certificatesresolvers.le.acme.email=masuperadresse@monmail.com
+            - --certificatesresolvers.le.acme.storage=/cert/acme.json
+            - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      volumes:
+        - name: cert
+          persistentVolumeClaim:
+            claimName: mon-volume-pvc
+
+---
+# ============================================
+# Service Traefik
+# ============================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-web-ui
+spec:
+  selector:
+    k8s-app: traefik-ingress-lb
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: api
+    - port: 443
+      targetPort: 443
+      name: websecure
+    - port: 80
+      targetPort: 80
+      name: web
+
+---
+# ============================================
+# IngressRoutes - API traefik.io
+# ============================================
+
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-web-ui
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`traefik.mon.dom`)
+      services:
+        - name: api@internal
+          kind: TraefikService
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami
+  labels:
+    app: whoami
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: whoami
+  template:
+    metadata:
+      labels:
+        app: whoami
+    spec:
+      containers:
+        - name: whoami
+          image: bloby01/web:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: whoami
+spec:
+  ports:
+    - port: 80
+      name: web
+      protocol: TCP
+  selector:
+    app: whoami
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoami-web
+spec:
+  entryPoints:
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`w1.mon.dom`)
+      services:
+        - name: whoami
+          port: 80
+
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: whoami-web-tls
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`w1.mon.dom`)
+      services:
+        - name: whoami
+          port: 80
+  tls:
+    certResolver: le
