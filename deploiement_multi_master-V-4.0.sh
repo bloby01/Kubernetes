@@ -86,6 +86,7 @@ export VersionContainerD="2.2.0"
 export VersionRunC="1.4.0"
 export VersionCNI="1.9.0"
 export VersionCalico="3.31.2"
+export repKub=No
 #                                                                               	  #
 ###########################################################################################
 #                                                                               	  #
