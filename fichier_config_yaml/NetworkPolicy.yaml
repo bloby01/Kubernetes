@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: web-policy
+  namespace: moodle
+spec:
+  podSelector:
+    matchLabels:
+      app: moodle
+      tier: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Autorise le trafic HTTP/HTTPS depuis Traefik
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: traefik
+        - podSelector:
+            matchLabels:
+              app: traefik
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress:
+    # Vers la base PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+              tier: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Vers le DNS du cluster (indispensable)
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
