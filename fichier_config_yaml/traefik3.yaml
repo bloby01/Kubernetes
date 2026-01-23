@@ -1415,6 +1415,84 @@ spec:
           type: object
       served: true
       storage: true
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  name: serverstransporttcps.traefik.io
+spec:
+  group: traefik.io
+  names:
+    kind: ServersTransportTCP
+    listKind: ServersTransportTCPList
+    plural: serverstransporttcps
+    singular: serverstransporttcp
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      schema:
+        openAPIV3Schema:
+          description: ServersTransportTCP is the CRD implementation of a TCPServersTransport.
+          properties:
+            apiVersion:
+              type: string
+            kind:
+              type: string
+            metadata:
+              type: object
+            spec:
+              properties:
+                dialKeepAlive:
+                  anyOf:
+                    - type: integer
+                    - type: string
+                  x-kubernetes-int-or-string: true
+                dialTimeout:
+                  anyOf:
+                    - type: integer
+                    - type: string
+                  x-kubernetes-int-or-string: true
+                terminationDelay:
+                  anyOf:
+                    - type: integer
+                    - type: string
+                  x-kubernetes-int-or-string: true
+                tls:
+                  properties:
+                    certificatesSecrets:
+                      items:
+                        type: string
+                      type: array
+                    insecureSkipVerify:
+                      type: boolean
+                    peerCertURI:
+                      type: string
+                    rootCAsSecrets:
+                      items:
+                        type: string
+                      type: array
+                    serverName:
+                      type: string
+                    spiffe:
+                      properties:
+                        ids:
+                          items:
+                            type: string
+                          type: array
+                        trustDomain:
+                          type: string
+                      type: object
+                  type: object
+              type: object
+          required:
+            - metadata
+            - spec
+          type: object
+      served: true
+      storage: true
 ---
 # ============================================
 # RBAC - Mise à jour pour traefik.io
