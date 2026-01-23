@@ -1467,6 +1467,8 @@ spec:
             - --providers.kubernetescrd.allowCrossNamespace=true
             - --providers.kubernetescrd.namespaces=default,autre-ns
             # Ou pour surveiller tous les namespaces, ne pas spécifier namespaces du tout.
+            - --providers.kubernetesingress
+            - --providers.kubernetesingress.allowEmptyServices=true
             - --entrypoints.web.address=:80
             - --entrypoints.websecure.address=:443
             - --api.dashboard=true
