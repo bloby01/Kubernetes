@@ -1,0 +1,10 @@
+apiVersion: v1​
+kind: ConfigMap​
+metadata:​
+  name: nginx-config​
+data:​
+   toto.txt: | # Contenu du fichier​
+     server { ​
+       listen 80;​
+       server_name example.com;​
+       }​
