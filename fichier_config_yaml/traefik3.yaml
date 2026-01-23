@@ -1342,9 +1342,8 @@ spec:
 # ============================================
 # RBAC - Mise à jour pour traefik.io
 # ============================================
-
-kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
 metadata:
   name: traefik-ingress-controller
 rules:
@@ -1387,21 +1386,21 @@ rules:
   - apiGroups:
       - traefik.io
     resources:
-      - middlewares
-      - middlewaretcps
       - ingressroutes
-      - traefikservices
       - ingressroutetcps
       - ingressrouteudps
+      - middlewares
+      - middlewaretcps
+      - serverstransports
+      - serverstransporttcps
       - tlsoptions
       - tlsstores
-      - serverstransports
+      - traefikservices
     verbs:
       - get
       - list
       - watch
-
----
+      ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
