@@ -1,0 +1,201 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-kube-prometheus-stack-alertmanager
+  namespace: monitoring
+type: Opaque
+stringData:
+  alertmanager.yaml: |
+    global:
+      resolve_timeout: 5m
+      slack_api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+    
+    # Templates pour les messages
+    templates:
+    - '/etc/alertmanager/config/*.tmpl'
+    
+    # Routage des alertes
+    route:
+      # Labels de groupement
+      group_by:
+      - alertname
+      - cluster
+      - namespace
+      - service
+      
+      # Délais
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      
+      # Receiver par défaut
+      receiver: 'default-receiver'
+      
+      # Routes spécifiques
+      routes:
+      
+      # Alertes critiques -> PagerDuty + Slack critical
+      - match:
+          severity: critical
+        receiver: 'pagerduty-critical'
+        continue: true
+        routes:
+        - match:
+            component: kubernetes
+          receiver: 'slack-k8s-critical'
+        - match:
+            component: demo-metrics
+          receiver: 'slack-app-critical'
+      
+      # Alertes warning -> Slack warnings
+      - match:
+          severity: warning
+        receiver: 'slack-warnings'
+        routes:
+        - match:
+            team: platform
+          receiver: 'slack-platform-warnings'
+      
+      # Alertes info -> Logs seulement
+      - match:
+          severity: info
+        receiver: 'null'
+    
+    # Inhibition rules (empêcher spam d'alertes)
+    inhibit_rules:
+    
+    # Si un cluster est down, ne pas alerter sur tous les pods
+    - source_match:
+        severity: critical
+        alertname: ClusterDown
+      target_match_re:
+        severity: warning|critical
+        alertname: PodDown|ServiceDown
+      equal:
+      - cluster
+    
+    # Si un node est down, ne pas alerter sur ses pods
+    - source_match:
+        severity: critical
+        alertname: NodeDown
+      target_match_re:
+        alertname: PodNotReady|PodCrashLooping
+      equal:
+      - node
+    
+    # Si un déploiement est down, ne pas alerter sur les pods
+    - source_match:
+        severity: critical
+        alertname: DeploymentDown
+      target_match:
+        alertname: PodNotReady
+      equal:
+      - namespace
+      - deployment
+    
+    # Receivers (destinations des alertes)
+    receivers:
+    
+    # Default - Ne rien faire
+    - name: 'default-receiver'
+      webhook_configs:
+      - url: 'http://localhost:9093/api/v1/alerts'
+        send_resolved: true
+    
+    # Null receiver (ignorer)
+    - name: 'null'
+    
+    # PagerDuty pour les alertes critiques
+    - name: 'pagerduty-critical'
+      pagerduty_configs:
+      - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+        description: '{{ .CommonAnnotations.summary }}'
+        details:
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+        send_resolved: true
+    
+    # Slack - Canal alertes critiques Kubernetes
+    - name: 'slack-k8s-critical'
+      slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#k8s-alerts-critical'
+        username: 'Prometheus Alert'
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+        title: '[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alerte:* {{ .Labels.alertname }}
+          *Sévérité:* {{ .Labels.severity }}
+          *Namespace:* {{ .Labels.namespace }}
+          *Description:* {{ .Annotations.description }}
+          *Détails:* {{ .Annotations.summary }}
+          {{ end }}
+        send_resolved: true
+        actions:
+        - type: button
+          text: 'Dashboard Grafana'
+          url: '{{ .CommonAnnotations.dashboard }}'
+        - type: button
+          text: 'Runbook'
+          url: 'https://runbooks.example.com/{{ .GroupLabels.alertname }}'
+    
+    # Slack - Canal alertes critiques Application
+    - name: 'slack-app-critical'
+      slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#app-alerts-critical'
+        username: 'Prometheus Alert'
+        color: 'danger'
+        title: '[CRITICAL] {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Application:* {{ .Labels.component }}
+          *Namespace:* {{ .Labels.namespace }}
+          *Description:* {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
+    
+    # Slack - Canal warnings
+    - name: 'slack-warnings'
+      slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#alerts-warnings'
+        username: 'Prometheus Alert'
+        color: 'warning'
+        title: '[{{ .Status | toUpper }}] {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alerte:* {{ .Labels.alertname }}
+          *Namespace:* {{ .Labels.namespace }}
+          *Description:* {{ .Annotations.summary }}
+          {{ end }}
+        send_resolved: true
+    
+    # Slack - Warnings plateforme
+    - name: 'slack-platform-warnings'
+      slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#platform-warnings'
+        username: 'Prometheus Alert'
+        color: 'warning'
+        title: '[WARNING] {{ .GroupLabels.alertname }}'
+        text: '{{ .CommonAnnotations.summary }}'
+        send_resolved: true
+    
+    # Email pour alertes critiques
+    - name: 'email-critical'
+      email_configs:
+      - to: 'ops-team@example.com'
+        from: 'prometheus@example.com'
+        smarthost: 'smtp.example.com:587'
+        auth_username: 'prometheus@example.com'
+        auth_password: 'YOUR_SMTP_PASSWORD'
+        headers:
+          Subject: '[CRITICAL] Prometheus Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          Alert: {{ .Labels.alertname }}
+          Severity: {{ .Labels.severity }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+        send_resolved: true
