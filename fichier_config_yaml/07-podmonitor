@@ -1,0 +1,60 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: demo-pod-monitor
+  namespace: monitoring
+  labels:
+    app: demo-metrics
+    release: kube-prometheus-stack
+spec:
+  # Sélection des pods à monitorer
+  selector:
+    matchLabels:
+      app: demo-metrics
+  
+  # Namespaces à scanner
+  namespaceSelector:
+    matchNames:
+    - production
+  
+  # Configuration du scraping
+  podMetricsEndpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    scheme: http
+    scrapeTimeout: 10s
+    
+    # Relabeling avant le scrape
+    relabelings:
+    - sourceLabels:
+      - __meta_kubernetes_pod_name
+      targetLabel: pod
+      action: replace
+    
+    - sourceLabels:
+      - __meta_kubernetes_pod_node_name
+      targetLabel: node
+      action: replace
+    
+    - sourceLabels:
+      - __meta_kubernetes_namespace
+      targetLabel: namespace
+      action: replace
+    
+    - sourceLabels:
+      - __meta_kubernetes_pod_label_version
+      targetLabel: version
+      action: replace
+    
+    # Relabeling après le scrape (sur les métriques)
+    metricRelabelings:
+    - sourceLabels:
+      - __name__
+      regex: 'go_.*'
+      action: drop
+    
+    - sourceLabels:
+      - __name__
+      regex: 'promhttp_.*'
+      action: drop
