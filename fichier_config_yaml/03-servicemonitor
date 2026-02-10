@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: demo-metrics-monitor
+  namespace: monitoring
+  labels:
+    app: demo-metrics
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: demo-metrics
+  namespaceSelector:
+    matchNames:
+    - production
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    scheme: http
+    scrapeTimeout: 10s
+    honorLabels: false
+    relabelings:
+    - sourceLabels:
+      - __meta_kubernetes_pod_name
+      targetLabel: pod
+    - sourceLabels:
+      - __meta_kubernetes_namespace
+      targetLabel: namespace
