@@ -53,12 +53,12 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: managed-nfs-storage
+          storageClassName: nfs-client
           accessModes:
             - ReadWriteOnce
           resources:
             requests:
-              storage: 50Gi
+              storage: 20Gi
     
     # Intervalles de scraping et d'évaluation
     scrapeInterval: "30s"
@@ -180,7 +180,7 @@ alertmanager:
     storage:
       volumeClaimTemplate:
         spec:
-          storageClassName: managed-nfs-storage
+          storageClassName: nfs-client
           accessModes:
             - ReadWriteOnce
           resources:
@@ -225,7 +225,7 @@ grafana:
   persistence:
     enabled: true
     type: pvc
-    storageClassName: managed-nfs-storage
+    storageClassName: nfs-client
     accessModes:
       - ReadWriteOnce
     size: 10Gi
