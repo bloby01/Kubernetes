@@ -1,46 +1,22 @@
-# Configuration Helm pour kube-prometheus-stack
-# Fichier : custom-values.yaml
+# Configuration Helm pour kube-prometheus-stack - VERSION CORRIGÉE
+# Fichier : 06-helm-values-CORRECTED.yaml
 # 
 # Installation :
 # helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
 #   --namespace monitoring \
 #   --create-namespace \
-#   --values custom-values.yaml
-
-# ==============================================================================
-# CONFIGURATION GLOBALE
-# ==============================================================================
-
-# Nom du cluster (pour multi-cluster)
-nameOverride: ""
-fullnameOverride: ""
-
-# Labels communs
-commonLabels:
-  monitoring: prometheus
+#   --values 06-helm-values-CORRECTED.yaml
 
 # ==============================================================================
 # PROMETHEUS SERVER
 # ==============================================================================
 prometheus:
-  enabled: true
-  
-  # Configuration du StatefulSet Prometheus
   prometheusSpec:
-    
-    # Image
-    image:
-      repository: quay.io/prometheus/prometheus
-      tag: v2.48.0
-    
-    # Réplication (pour HA)
-    replicas: 1
-    
     # Rétention des données
-    retention: 30d
-    retentionSize: "45GB"
+    retention: 15d
+    retentionSize: "18GB"
     
-    # Ressources CPU/Mémoire
+    # Ressources
     resources:
       requests:
         cpu: 500m
@@ -60,113 +36,24 @@ prometheus:
             requests:
               storage: 20Gi
     
-    # Intervalles de scraping et d'évaluation
+    # Intervalles
     scrapeInterval: "30s"
     scrapeTimeout: "10s"
     evaluationInterval: "30s"
     
-    # Activation de l'API admin (snapshots, remote write)
-    enableAdminAPI: false
-    
-    # Configuration des fonctionnalités expérimentales
-    enableFeatures: []
-    # Exemples :
-    # - exemplar-storage
-    # - expand-external-labels
-    
-    # External Labels (utile pour federation ou remote write)
-    externalLabels:
-      cluster: production-cluster
-      environment: production
-    
-    # Remote Write (pour stockage long terme avec Thanos, Cortex, etc.)
-    remoteWrite: []
-    # Exemple :
-    # - url: http://thanos-receive:19291/api/v1/receive
-    #   queueConfig:
-    #     capacity: 10000
-    #     maxShards: 50
-    #   writeRelabelConfigs:
-    #   - sourceLabels: [__name__]
-    #     regex: 'expensive_metric.*'
-    #     action: drop
-    
-    # Remote Read (pour lecture depuis stockage long terme)
-    remoteRead: []
-    
-    # Selectors pour découverte automatique des CRD
-    # {} = découvrir dans tous les namespaces
+    # ✅ IMPORTANT : Laisser le chart gérer les sélecteurs automatiquement
     serviceMonitorSelector: {}
     serviceMonitorNamespaceSelector: {}
-    
     podMonitorSelector: {}
     podMonitorNamespaceSelector: {}
-    
     ruleSelector: {}
     ruleNamespaceSelector: {}
-    
-    probeSelector: {}
-    probeNamespaceSelector: {}
-    
-    # Configuration additionnelle Prometheus
-    additionalScrapeConfigs: []
-    # Exemple pour scraper un endpoint externe :
-    # - job_name: 'external-service'
-    #   static_configs:
-    #   - targets:
-    #     - external-service.example.com:9090
-    
-    # Affinity / Toleration pour placement des pods
-    affinity: {}
-    tolerations: []
-    nodeSelector: {}
-    
-    # Security Context
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 1000
-      fsGroup: 2000
-    
-    # Service Account
-    serviceAccountName: kube-prometheus-stack-prometheus
-  
-  # Service Prometheus
-  service:
-    type: ClusterIP
-    port: 9090
-    targetPort: 9090
-    annotations: {}
-  
-  # Ingress (désactivé par défaut, voir chapitre 7)
-  ingress:
-    enabled: false
-    annotations: {}
-    # Exemple pour Traefik :
-    # kubernetes.io/ingress.class: traefik
-    # cert-manager.io/cluster-issuer: letsencrypt-prod
-    hosts:
-    - prometheus.example.com
-    paths:
-    - /
-    tls: []
 
 # ==============================================================================
 # ALERTMANAGER
 # ==============================================================================
 alertmanager:
-  enabled: true
-  
-  # Configuration du StatefulSet Alertmanager
   alertmanagerSpec:
-    
-    # Image
-    image:
-      repository: quay.io/prometheus/alertmanager
-      tag: v0.26.0
-    
-    # Réplication (pour HA)
-    replicas: 1
-    
     # Ressources
     resources:
       requests:
@@ -176,7 +63,7 @@ alertmanager:
         cpu: 200m
         memory: 256Mi
     
-    # Stockage persistant
+    # Stockage
     storage:
       volumeClaimTemplate:
         spec:
@@ -187,27 +74,7 @@ alertmanager:
             requests:
               storage: 10Gi
     
-    # Rétention
     retention: 120h
-    
-    # Configuration (voir 05-alertmanager-config.yaml)
-    # La config est gérée via Secret
-    configSecret: alertmanager-kube-prometheus-stack-alertmanager
-    
-    # Security Context
-    securityContext:
-      runAsNonRoot: true
-      runAsUser: 1000
-      fsGroup: 2000
-  
-  # Service
-  service:
-    type: ClusterIP
-    port: 9093
-  
-  # Ingress
-  ingress:
-    enabled: false
 
 # ==============================================================================
 # GRAFANA
@@ -215,16 +82,12 @@ alertmanager:
 grafana:
   enabled: true
   
-  # Nombre de replicas
-  replicas: 1
-  
   # Mot de passe admin
-  adminPassword: "ChangeMe-VerySecurePassword123!"
+  adminPassword: "admin"
   
-  # Persistence des dashboards et config
+  # Persistence
   persistence:
     enabled: true
-    type: pvc
     storageClassName: nfs-client
     accessModes:
       - ReadWriteOnce
@@ -239,66 +102,10 @@ grafana:
       cpu: 500m
       memory: 1Gi
   
-  # Configuration Grafana
-  grafana.ini:
-    server:
-      root_url: "https://grafana.example.com"
-      serve_from_sub_path: false
-    
-    analytics:
-      reporting_enabled: false
-      check_for_updates: false
-    
-    security:
-      admin_user: admin
-      # admin_password défini via adminPassword
-      disable_gravatar: true
-    
-    auth:
-      disable_login_form: false
-    
-    auth.anonymous:
-      enabled: false
-    
-    users:
-      allow_sign_up: false
-      auto_assign_org_role: Viewer
-    
-    log:
-      mode: console
-      level: info
-  
-  # Datasources (Prometheus auto-configuré)
-  datasources:
-    datasources.yaml:
-      apiVersion: 1
-      datasources:
-      - name: Prometheus
-        type: prometheus
-        url: http://kube-prometheus-stack-prometheus.monitoring.svc:9090
-        access: proxy
-        isDefault: true
-        editable: false
-        jsonData:
-          timeInterval: 30s
-          queryTimeout: 60s
-          httpMethod: POST
+  # ✅ Configuration minimale qui fonctionne
+  # Le chart configure automatiquement la datasource Prometheus
   
   # Dashboards pré-installés
-  dashboardProviders:
-    dashboardproviders.yaml:
-      apiVersion: 1
-      providers:
-      - name: 'default'
-        orgId: 1
-        folder: ''
-        type: file
-        disableDeletion: false
-        editable: true
-        options:
-          path: /var/lib/grafana/dashboards/default
-  
-  # Dashboards à importer (IDs depuis grafana.com)
   dashboards:
     default:
       # Kubernetes Cluster Monitoring
@@ -318,108 +125,24 @@ grafana:
         gnetId: 6417
         revision: 1
         datasource: Prometheus
-      
-      # Kube State Metrics v2
-      kube-state-metrics:
-        gnetId: 13332
-        revision: 12
-        datasource: Prometheus
-  
-  # Service
-  service:
-    type: ClusterIP
-    port: 80
-    targetPort: 3000
-  
-  # Ingress
-  ingress:
-    enabled: false
-    annotations: {}
-    hosts:
-    - grafana.example.com
-    path: /
-    tls: []
 
 # ==============================================================================
-# PROMETHEUS OPERATOR
+# COMPOSANTS
 # ==============================================================================
-prometheusOperator:
-  enabled: true
-  
-  # Resources
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
-  
-  # Admission webhooks (validation des CRD)
-  admissionWebhooks:
-    enabled: true
-    patch:
-      enabled: true
 
-# ==============================================================================
-# NODE EXPORTER
-# ==============================================================================
+# Node Exporter
 nodeExporter:
   enabled: true
-  
-  # DaemonSet resources (par node)
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
-  
-  # Host network (nécessaire pour métriques système)
-  hostNetwork: true
-  hostPID: true
-  
-  # Tolération pour nodes master/control-plane
-  tolerations:
-  - effect: NoSchedule
-    operator: Exists
 
-# ==============================================================================
-# KUBE STATE METRICS
-# ==============================================================================
+# Kube State Metrics
 kubeStateMetrics:
   enabled: true
-  
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
 
-# ==============================================================================
-# PROMETHEUS ADAPTER (pour HPA custom metrics)
-# ==============================================================================
-prometheusAdapter:
+# Prometheus Operator
+prometheusOperator:
   enabled: true
-  
-  prometheus:
-    url: http://kube-prometheus-stack-prometheus.monitoring.svc
-    port: 9090
-  
-  # Règles pour exposer les métriques custom
-  rules:
-    default: true
-    # Ajoutez vos règles custom ici
-    custom: []
 
-# ==============================================================================
-# COMPOSANTS ADDITIONNELS
-# ==============================================================================
-
-# Service Monitors par défaut
+# ✅ Règles d'alerting par défaut (très important !)
 defaultRules:
   create: true
   rules:
@@ -428,9 +151,8 @@ defaultRules:
     configReloaders: true
     general: true
     k8s: true
+    kubeApiserver: true
     kubeApiserverAvailability: true
-    kubeApiserverBurnrate: true
-    kubeApiserverHistogram: true
     kubeApiserverSlos: true
     kubelet: true
     kubeProxy: true
@@ -440,7 +162,8 @@ defaultRules:
     kubernetesResources: true
     kubernetesStorage: true
     kubernetesSystem: true
-    kubeScheduler: true
+    kubeSchedulerAlerting: true
+    kubeSchedulerRecording: true
     kubeStateMetrics: true
     network: true
     node: true
@@ -449,13 +172,13 @@ defaultRules:
     prometheus: true
     prometheusOperator: true
 
-# Monitoring des composants K8s
+# ✅ Monitoring des composants Kubernetes
 kubeApiServer:
   enabled: true
 
 kubelet:
   enabled: true
-
+  
 kubeControllerManager:
   enabled: true
 
@@ -463,7 +186,7 @@ coreDns:
   enabled: true
 
 kubeEtcd:
-  enabled: true
+  enabled: false  # Souvent false en environnement managé
 
 kubeScheduler:
   enabled: true
