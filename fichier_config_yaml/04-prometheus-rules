@@ -1,0 +1,180 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: demo-app-rules
+  namespace: monitoring
+  labels:
+    app: demo-metrics
+    release: kube-prometheus-stack
+spec:
+  groups:
+  
+  # Recording Rules - Précalcul de métriques
+  - name: demo-app-recording-rules
+    interval: 30s
+    rules:
+    
+    - record: namespace:http_requests:rate5m
+      expr: |
+        sum(
+          rate(http_requests_total{namespace="production"}[5m])
+        ) by (namespace)
+    
+    - record: namespace:http_requests:rate5m:by_status
+      expr: |
+        sum(
+          rate(http_requests_total{namespace="production"}[5m])
+        ) by (namespace, status)
+    
+    - record: namespace:http_errors_5xx:rate5m
+      expr: |
+        sum(
+          rate(http_requests_total{namespace="production",status=~"5.."}[5m])
+        ) by (namespace)
+    
+    - record: namespace:http_error_ratio:rate5m
+      expr: |
+        (
+          namespace:http_errors_5xx:rate5m
+          /
+          namespace:http_requests:rate5m
+        ) or vector(0)
+    
+    - record: instance:http_request_duration_seconds:p95
+      expr: |
+        histogram_quantile(
+          0.95,
+          sum(
+            rate(http_request_duration_seconds_bucket[5m])
+          ) by (le, instance)
+        )
+    
+    - record: instance:http_request_duration_seconds:p99
+      expr: |
+        histogram_quantile(
+          0.99,
+          sum(
+            rate(http_request_duration_seconds_bucket[5m])
+          ) by (le, instance)
+        )
+  
+  # Alerting Rules - Règles d'alerte
+  - name: demo-app-alerting-rules
+    interval: 30s
+    rules:
+    
+    - alert: HighHTTPErrorRate
+      expr: |
+        namespace:http_error_ratio:rate5m > 0.05
+      for: 5m
+      labels:
+        severity: warning
+        component: demo-metrics
+        team: platform
+      annotations:
+        summary: "Taux d'erreurs HTTP élevé dans {{ $labels.namespace }}"
+        description: |
+          Le namespace {{ $labels.namespace }} a un taux d'erreur 5xx de {{ $value | humanizePercentage }} sur les 5 dernières minutes.
+          Cela dépasse le seuil de 5%.
+          
+          Vérifier les logs des pods :
+          kubectl logs -n {{ $labels.namespace }} -l app=demo-metrics --tail=100
+        dashboard: "https://grafana.example.com/d/app-overview"
+    
+    - alert: CriticalHTTPErrorRate
+      expr: |
+        namespace:http_error_ratio:rate5m > 0.20
+      for: 2m
+      labels:
+        severity: critical
+        component: demo-metrics
+        team: platform
+      annotations:
+        summary: "Taux d'erreurs HTTP critique dans {{ $labels.namespace }}"
+        description: |
+          CRITIQUE : Le namespace {{ $labels.namespace }} a un taux d'erreur 5xx de {{ $value | humanizePercentage }}.
+          Plus de 20% des requêtes sont en erreur !
+    
+    - alert: HighLatency
+      expr: |
+        instance:http_request_duration_seconds:p95 > 1.0
+      for: 10m
+      labels:
+        severity: warning
+        component: demo-metrics
+        team: platform
+      annotations:
+        summary: "Latence élevée sur {{ $labels.instance }}"
+        description: |
+          L'instance {{ $labels.instance }} a une latence P95 de {{ $value | humanizeDuration }}.
+          Cela dépasse le seuil de 1 seconde sur les 10 dernières minutes.
+    
+    - alert: PodCrashLooping
+      expr: |
+        rate(kube_pod_container_status_restarts_total{namespace="production"}[15m]) > 0
+      for: 5m
+      labels:
+        severity: critical
+        component: kubernetes
+        team: platform
+      annotations:
+        summary: "Pod en CrashLoop dans production"
+        description: |
+          Le pod {{ $labels.namespace }}/{{ $labels.pod }} redémarre continuellement.
+          Container : {{ $labels.container }}
+          
+          Vérifier les logs :
+          kubectl logs -n {{ $labels.namespace }} {{ $labels.pod }} -c {{ $labels.container }} --previous
+    
+    - alert: PodNotReady
+      expr: |
+        kube_pod_status_phase{namespace="production",phase!="Running"} > 0
+      for: 5m
+      labels:
+        severity: warning
+        component: kubernetes
+        team: platform
+      annotations:
+        summary: "Pod non opérationnel dans production"
+        description: |
+          Le pod {{ $labels.namespace }}/{{ $labels.pod }} est en phase {{ $labels.phase }} depuis plus de 5 minutes.
+          
+          Vérifier l'état :
+          kubectl describe pod -n {{ $labels.namespace }} {{ $labels.pod }}
+    
+    - alert: HighMemoryUsage
+      expr: |
+        (
+          sum(container_memory_working_set_bytes{namespace="production",container!=""}) by (pod, namespace)
+          /
+          sum(container_spec_memory_limit_bytes{namespace="production",container!=""}) by (pod, namespace)
+        ) > 0.90
+      for: 5m
+      labels:
+        severity: warning
+        component: kubernetes
+        team: platform
+      annotations:
+        summary: "Utilisation mémoire élevée"
+        description: |
+          Le pod {{ $labels.namespace }}/{{ $labels.pod }} utilise {{ $value | humanizePercentage }} de sa limite mémoire.
+          Risque de OOMKill imminent.
+    
+    - alert: DeploymentReplicasMismatch
+      expr: |
+        kube_deployment_spec_replicas{namespace="production"}
+        !=
+        kube_deployment_status_replicas_available{namespace="production"}
+      for: 10m
+      labels:
+        severity: warning
+        component: kubernetes
+        team: platform
+      annotations:
+        summary: "Nombre de replicas incorrect"
+        description: |
+          Le deployment {{ $labels.namespace }}/{{ $labels.deployment }} n'a pas le bon nombre de replicas.
+          Désiré : {{ $value }}
+          Disponibles : vérifier avec kubectl
+          
+          kubectl get deployment -n {{ $labels.namespace }} {{ $labels.deployment }}
