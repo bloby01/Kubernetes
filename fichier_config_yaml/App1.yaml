@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+  generation: 1
+  labels:
+    app: app1
+  name: app1
+  namespace: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "80"
+        prometheus.io/path: "/metrics"
+      labels:
+        app: app1
+    spec:
+      containers:
+      - image: bloby01/web:v1.1
+        imagePullPolicy: Always
+        name: app1
+      - name: exporter
+        image: nginx/nginx-prometheus-exporter
+        args:
+          - -nginx.scrape-uri=http://127.0.0.1:80/stub_status
+        ports:
+          - containerPort: 9113
+            name: metrics
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1
+  namespace: production
+  labels:
+    app: app1
+spec:
+  selector:
+    app: app1
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+    - name: metrics
+      port: 9113
+      targetPort: 9113
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: app1
+  namespace: production
+  labels:
+    release: kube-prometheus-stack
+spec:
+  selector:
+    matchLabels:
+      app: app1
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
