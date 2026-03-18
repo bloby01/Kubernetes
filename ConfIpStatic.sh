@@ -1,5 +1,15 @@
 #!/bin/bash
-
+ConfHosts(){
+cat <<EOF>> /etc/hosts
+172.21.0.100 loadbalancer-k8s.mon.dom
+172.21.0.101 master1-k8s.mon.dom
+172.21.0.102 master2-k8s.mon.dom
+172.21.0.103 master3-k8s.mon.dom
+172.21.0.104 worker1-k8s.mon.dom
+172.21.0.105 worker2-k8s.mon.dom
+172.21.0.106 worker3-k8s.mon.dom
+EOF
+}
 echo -n "Voulez vous exécuter le script initial de configuration IP ? [yes/no] : "
 read rep
 if [ "$rep" = "yes" -o "$rep" = "YES" -o "$rep" = "y" -o "$rep" = "Y" ]
@@ -19,31 +29,37 @@ case $choix in
         # configuration IP master1
         nmcli connection modify enp0s3 ipv4.addresses 172.21.0.101/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
 	    nmcli connection up enp0s3
+		ConfHosts
         ;;
     B)
         # configuration IP master2
         nmcli connection modify enp0s3 ipv4.addresses 172.21.0.102/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
 	    nmcli connection up enp0s3
+		ConfHosts
         ;;
     C)
         # configuration IP master3
         nmcli connection modify enp0s3 ipv4.addresses 172.21.0.103/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
 	    nmcli connection up enp0s3
+		ConfHosts
         ;;
     1)
         # configuration IP worker1
         nmcli connection modify enp0s3 ipv4.addresses 172.21.0.104/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
 	    nmcli connection up enp0s3
+		ConfHosts
         ;;
     2)
         # configuration IP worker2
         nmcli connection modify enp0s3 ipv4.addresses 172.21.0.105/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
 	    nmcli connection up enp0s3
+		ConfHosts
         ;;
     3)
         # configuration IP worker3
         nmcli connection modify enp0s3 ipv4.addresses 172.21.0.106/24 ipv4.gateway 172.21.0.100 ipv4.dns 8.8.8.8 ipv4.method manual
 	    nmcli connection up enp0s3
+		ConfHosts
         ;;
     *)
         # Relancer le script
