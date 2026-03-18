@@ -1,7 +1,8 @@
 #!/bin/bash
 ConfHosts(){
 cat <<EOF>> /etc/hosts
-172.21.0.100 loadbalancer-k8s.mon.dom
+127.0.0.1   localhost.local localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost.local localhost localhost.localdomain localhost6 localhost6.localdomain6172.21.0.100 loadbalancer-k8s.mon.dom
 172.21.0.101 master1-k8s.mon.dom
 172.21.0.102 master2-k8s.mon.dom
 172.21.0.103 master3-k8s.mon.dom
