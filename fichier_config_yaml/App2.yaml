@@ -4,23 +4,23 @@ metadata:
   annotations:
   generation: 1
   labels:
-    app: app1
-  name: app1
+    app: app2
+  name: app2
   namespace: production
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: app1
+      app: app2
   template:
     metadata:
       labels:
-        app: app1
+        app: app2
     spec:
       containers:
       - image: bloby01/web:v1.1
         imagePullPolicy: Always
-        name: app1
+        name: app2
       - name: exporter
         image: nginx/nginx-prometheus-exporter
         args:
@@ -32,13 +32,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: app1
+  name: app2
   namespace: production
   labels:
-    app: app1
+    app: app2
 spec:
   selector:
-    app: app1
+    app: app2
   ports:
     - name: http
       port: 80
@@ -50,14 +50,14 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: app1
+  name: app2
   namespace: production
   labels:
     release: kube-prometheus-stack
 spec:
   selector:
     matchLabels:
-      app: app1
+      app: app2
   endpoints:
     - port: metrics
       path: /metrics
