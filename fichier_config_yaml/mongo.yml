@@ -43,7 +43,7 @@ spec:
       name: database
     spec:
       accessModes: [ "ReadWriteOnce" ]
-      storageClassName: nfs-client
+      storageClassName: nfs-csi
       resources:
         requests:
           storage: 100Mi
